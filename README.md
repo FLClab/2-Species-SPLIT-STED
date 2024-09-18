@@ -1,16 +1,13 @@
 # 2 Species SPLIT-STED
 
 All the codes used to produce figures and analyze data for:  
-Fluorophore discrimination and resolution improvement of super-resolution images using fluorescence lifetime
+Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluorophore Discrimination and Resolution Improvement of Stimulated Emission Depletion Microscopy Images Using Fluorescence Lifetime
 ## Installation and requirements
 
 ## Folder contents
 ### Acquisition
-Codes to perform automatic image acquisition with different depletion powers on an Abberior-STED microscope. Based on specpy library
+Codes to perform automatic image acquisition with different depletion powers on an Abberior Expert Line STED microscope. Based on the specpy and [Abberior-STED](https://https://github.com/FLClab/Abberior-STED) libraries
 
-* **microscope**: Functions to interface with the Imspector acquisition software. Get and set different parameter values, launch and save measurements.
-* **user**: Functions to allow interactive selection of ROIs in an Overview image using matplotlib
-* **utils**: Functions to convert the regions selected in **user** to coordinates usable by Imspector
 * **FLIM_AutoAcquire_VaryPower_ConfocalsPrePost**: Main program that coordinates the acquisition sequence, randomly selects depletion power values from a list of repeated values and sets the value for acquisition.
 ### Functions
 Functions called in other folders
