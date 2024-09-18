@@ -1,0 +1,189 @@
+import numpy
+from convertmsr_bioformatsAB import MSRReader
+import os
+
+
+def to_polar_coord(g, s):
+    """
+    Converts Cartesian phasor coordinates in the first harmonic to polar coordinates and performs calibration based on IRF measurement
+
+    Parameters:
+    g (list): List of x-coordinates.
+    s (list): List of y-coordinates.
+
+    Returns:
+    tuple: A tuple containing two lists - m (magnitude) and phi (angle in radians).
+    """
+
+    m, phi = [], []
+    for g_ij, s_ij in zip(g, s) :
+        m.append(numpy.sqrt(g_ij ** 2 + s_ij ** 2))
+        phi.append(numpy.arctan2(s_ij , g_ij))
+
+    phi = [numpy.abs(i - 0.4695955819269703) for i in phi] # 0.469595581926970 = numpy.mean(phi) of a gold bead
+    m = [i / 0.9527011687260826 for i in m] # 0.9527011687260826 = nummpy.mean(m) of a gold bead
+
+    return m, phi
+
+def to_polar_coord_2ndharm(g, s) :
+    """
+    Converts Cartesian phasor coordinates in the first harmonic to polar coordinates and performs calibration based on IRF measurement
+
+    Parameters:
+    g (list): List of x-coordinates.
+    s (list): List of y-coordinates.
+
+    Returns:
+    tuple: A tuple containing two lists - m (magnitude) and phi (angle in radians).
+    """
+    m, phi = [], []
+    for g_ij, s_ij in zip(g, s) :
+        m.append(numpy.sqrt(g_ij ** 2 + s_ij ** 2))
+        phi.append(numpy.arctan2(s_ij , g_ij))
+    phi = [i - 0.8874357044014783 for i in phi]# 0.8874357044014783= numpy.mean(phi) of a gold bead
+    m = [i / 0.9460309688519306 for i in m] # 0.9460309688519306 = nummpy.mean(m)  of a gold bead
+
+    return m, phi
+
+
+def polar_to_cart(m, phi) :
+    """
+    Convert polar coordinates to Cartesian coordinates.
+
+    Parameters:
+    m (list): Magnitude values.
+    phi (list): Angle values in radians.
+
+    Returns:
+    tuple: A tuple containing two lists - g (x-coordinate values) and s (y-coordinate values).
+    """
+
+    g, s = [], []
+    for m_ij, phi_ij in zip(m, phi) :
+        g.append(m_ij * numpy.cos(phi_ij))
+        s.append(m_ij * numpy.sin(phi_ij))
+    return g, s
+
+
+# def choose_msr_file(images) :
+#     for imagei in images:
+#         print(imagei)
+#     numim = int(input('Fichier msr a extraire (1er=0): '))
+#     images = images[numim]
+#     print(images)
+#     return images
+
+
+def choose_msr_file(images):
+    """
+    Ask user to choose an MSR file in a folder to extract data from.
+
+    Args:
+        images (list): List of image file paths.
+
+    Returns:
+        tuple: A tuple containing the selected image file path and the data extracted from it.
+    """
+    with MSRReader() as msrreader:
+        # Print all the image files in the folder
+        for imagei in images:
+            print(os.path.basename(imagei))
+        # Ask user to choose an image file
+        numim = int(input('Fichier msr a extraire (1er=0): '))
+        images = images[numim]
+        # Read the selected image file
+        imagemsr = msrreader.read(images)
+        return images, imagemsr
+    
+def load_all_msr_files(images):
+    """
+    Load multiple MSR files and return a dictionary of loaded images.
+
+    Parameters:
+    images (list): A list of file paths to the MSR files.
+
+    Returns:
+    dict: A dictionary where the keys are the file paths and the values are the loaded MSR images.
+    """
+    imagemsr = {}
+    with MSRReader() as msrreader:
+        for imagei in images:
+            imagemsr[imagei] = msrreader.read(imagei)
+    return imagemsr
+
+
+
+from skimage import (
+    filters, measure, morphology, segmentation)
+from skimage.morphology import disk
+#from skimage.morphology import (erosion, dilation, opening, closing,  # noqa
+                               # white_tophat)
+
+def get_foreground(image1):
+    """
+    Calculates the foreground of an image using triangle thresholding.
+
+    Parameters:
+    image1 (numpy.ndarray): The input image.
+
+    Returns:
+    numpy.ndarray: The thresholded image.
+
+    """
+
+    if len(image1.shape) == 3 :
+        imsum = image1.sum(axis=2)
+    else :
+        imsum=image1
+    #sigma =1
+    #blurred = filters.gaussian(imsum, sigma=sigma)
+    #blurred /= blurred.max()
+    #blurred *= imsum
+    seuil= filters.threshold_triangle(imsum)
+    thresh =imsum > seuil
+    #skimage.morphology.remove_small_objects(ar, min_size=64, connectivity=1, in_place=False, *, out=None)
+    #footprint = morphology.disk(3)
+    #dilated = morphology.dilation(thresh, footprint) * imsum
+    return seuil
+
+
+
+from numpy import ones,vstack
+from numpy.linalg import lstsq
+
+def line_equation(P1, P2):
+    """
+    Calculates the equation of a line given two points.
+
+    Parameters:
+    P1 (array-like): The coordinates of the first point (x1, y1).
+    P2 (array-like): The coordinates of the second point (x2, y2).
+
+    Returns:
+    tuple: A tuple containing the slope (m) and y-intercept (c) of the line.
+
+    Example:
+    >>> P1 = [1, 2]
+    >>> P2 = [3, 4]
+    >>> line_equation(P1, P2)
+    (1.0, 1.0)
+    """
+    A = vstack([P1, ones(len(P1))]).T
+    m, c = lstsq(A, P2,rcond=None)[0]
+    #print("y = {m}x + {c}".format(m=numpy.round(m,2),c=numpy.round(c,2)))
+    return m, c
+
+def ask_user(question):
+    """Ask user a question and return the answer.
+
+    Args:
+        question (string): The question to ask the user.
+
+    Returns:
+        Bool: True if the answer is yes, False otherwise.
+    """
+    answer = input(question + " (Y/n) : ")
+    if answer == "Y" or answer == "y" or answer == "yes" or answer == "Yes" or answer == "YES" or answer == "":
+        return True
+    else:
+        return False

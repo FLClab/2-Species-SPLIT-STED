@@ -1,0 +1,15 @@
+.idea
+.ipynb_checkpoints
+__pycache__
+.DS_Store
+Unmixing/rabBassoon_STAR635P_STED_3.tif
+Unmixing/rabBassoon_STAR635P_STED_2.tif
+Unmixing/rabBassoon_STAR635P_STED_1.tif
+Unmixing/rabBassoon_STAR635P_Conf.tif
+Unmixing/alphaTubulin_AF647_STED_3.tif
+Unmixing/alphaTubulin_AF647_STED_2.tif
+Unmixing/alphaTubulin_AF647_STED_1.tif
+Unmixing/alphaTubulin_AF647_Conf.tif
+Unmixing/alphaTubulin_AF647_Bassoon_STAR635P_STED_2.tif
+Unmixing/alphaTubulin_AF647_Bassoon_STAR635P_STED.tif
+*.tif
