@@ -23,10 +23,10 @@ import math
 import os.path
 import time
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from convertmsr_bioformatsAB import MSRReader
-from Main_functions import (to_polar_coord, polar_to_cart, get_foreground)
+
+from Main_functions import (load_msr,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor, DTCWT_Phasor
 import scipy
 from shapely.geometry.point import Point
@@ -150,117 +150,115 @@ names= ['Bassoon CF594', 'Homer STAR Orange']
 
 MeanPositions={}
 Ellipsedims={}
-#initialize the file reader
-with MSRReader() as msrreader:
 
 #Create the figure and axes for the 2D plot of centroids and ellipses 
-    fig_centroids,ax_centroids = plt.subplots(figsize=(9,3),ncols=3)
-    theta = np.linspace(0, np.pi, 100)
-    r = 0.5
-    x1 = r * np.cos(theta) + 0.5
-    x2 = r * np.sin(theta)
+fig_centroids,ax_centroids = plt.subplots(figsize=(9,3),ncols=3)
+theta = np.linspace(0, np.pi, 100)
+r = 0.5
+x1 = r * np.cos(theta) + 0.5
+x2 = r * np.sin(theta)
 
 
 #For each dye, extract the images from the msr files and calculate the phasor distribution, their centroids and ellipses (70th percentile)
-    for k,filename in enumerate(filenames) :
-        
-         # For each depletion power, list the images acquired with this power 
-        for a,power in enumerate(powers):
-            path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
-            images = glob.glob(path)
-            msrfiles=images
+for k,filename in enumerate(filenames) :
+    
+        # For each depletion power, list the images acquired with this power 
+    for a,power in enumerate(powers):
+        path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
+        images = glob.glob(path)
+        msrfiles=images
 
-            #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
-            for i, msr in enumerate(msrfiles) :
-        # Read the msr file
-                imagemsr = msrreader.read(msr)
-                print(os.path.basename(msr))
-                print(imagemsr.keys())
+        #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
+        for i, msr in enumerate(msrfiles) :
+    # Read the msr file
+            imagemsr = load_msr(msr)
+            print(os.path.basename(msr))
+            print(imagemsr.keys())
 
-        # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
-                df = pd.DataFrame(columns=['x','y'])
-                dg = pd.DataFrame(columns=['g', 's'])
-                image1=imagemsr[keys[a]]
-                imsum = np.sum(image1, axis=2)
-                print("Caclulation for an image of shape", image1.shape, "...")
-                #params_dict["foreground_threshold"] = get_foreground(image1)
-                params_dict["foreground_threshold"]=10
-                for j,sm in enumerate([0,1]):
-                    ax_centroids[j].plot(x1, x2, color="black", ls="--",linewidth=0.8)
-                    ax_centroids[j].set_xlim(0, 1.)
-                    ax_centroids[j].set_ylim(0, 1.)
-                    ax_centroids[j].set_xlabel('g')
-                    ax_centroids[j].set_ylabel('s')
-
-
-                    params_dict[ "phasor_smooth_cycles"]=sm
-                    print("foreground_threshold=", params_dict["foreground_threshold"])
-                    x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
-                    df['x']=x.flatten()
-                    df['y']=y.flatten()
-            # Apply the calibration to the phasor distribution using the IRF measurement in polar coordinates and return the cartesian coordinates
-                    m, phi = to_polar_coord(df['x'], df['y'])
-                    g,s =polar_to_cart(m, phi)
-                    dg['g'], dg['s'] = g, s
-                    ax_centroids[j].scatter(dg['g'], dg['s'],s=0.5, c=colors[j],alpha=1,rasterized=True)
-
-            # Calculate the centroid of the phasor distribution
-                    kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
-                    y_kmeans = kmeans.fit_predict(dg)
-                    CoM_x=kmeans.cluster_centers_[:, 0][:]
-                    CoM_y=kmeans.cluster_centers_[:, 1][:]
-
-                    ax_centroids[j].scatter(CoM_x, CoM_y, color=colors_Centroids[j], s=25)
-
-                ax_centroids[2].plot(x1, x2, color="black", ls="--",linewidth=0.8)
-                ax_centroids[2].set_xlim(0, 1.)
-                ax_centroids[2].set_ylim(0, 1)
-                ax_centroids[2].set_xlabel('g')
-                ax_centroids[2].set_ylabel('s')
-
-
-             
-# Calculate the phasor distribution with DTCWT filtering
+    # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
             df = pd.DataFrame(columns=['x','y'])
             dg = pd.DataFrame(columns=['g', 's'])
-            start_DTCWT_Time = time.time()
-            x, y, original_indexs, Images, Images_Filtered = DTCWT_Phasor(image1,0, 2,50)
-            stop_DTCWT_Time = time.time()
-            DTCWT_Time = stop_DTCWT_Time - start_DTCWT_Time
-            print("DTCWT_Time", DTCWT_Time)
+            image1=imagemsr[keys[a]]
+            imsum = np.sum(image1, axis=2)
+            print("Caclulation for an image of shape", image1.shape, "...")
+            #params_dict["foreground_threshold"] = get_foreground(image1)
+            params_dict["foreground_threshold"]=10
+            for j,sm in enumerate([0,1]):
+                ax_centroids[j].plot(x1, x2, color="black", ls="--",linewidth=0.8)
+                ax_centroids[j].set_xlim(0, 1.)
+                ax_centroids[j].set_ylim(0, 1.)
+                ax_centroids[j].set_xlabel('g')
+                ax_centroids[j].set_ylabel('s')
+
+
+                params_dict[ "phasor_smooth_cycles"]=sm
+                print("foreground_threshold=", params_dict["foreground_threshold"])
+                x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+                df['x']=x.flatten()
+                df['y']=y.flatten()
+        # Apply the calibration to the phasor distribution using the IRF measurement in polar coordinates and return the cartesian coordinates
+                m, phi = to_polar_coord(df['x'], df['y'])
+                g,s =polar_to_cart(m, phi)
+                dg['g'], dg['s'] = g, s
+                ax_centroids[j].scatter(dg['g'], dg['s'],s=0.5, c=colors[j],alpha=1,rasterized=True)
+
+        # Calculate the centroid of the phasor distribution
+                kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
+                y_kmeans = kmeans.fit_predict(dg)
+                CoM_x=kmeans.cluster_centers_[:, 0][:]
+                CoM_y=kmeans.cluster_centers_[:, 1][:]
+
+                ax_centroids[j].scatter(CoM_x, CoM_y, color=colors_Centroids[j], s=25)
+
+            ax_centroids[2].plot(x1, x2, color="black", ls="--",linewidth=0.8)
+            ax_centroids[2].set_xlim(0, 1.)
+            ax_centroids[2].set_ylim(0, 1)
+            ax_centroids[2].set_xlabel('g')
+            ax_centroids[2].set_ylabel('s')
+
+
+            
+# Calculate the phasor distribution with DTCWT filtering
+        df = pd.DataFrame(columns=['x','y'])
+        dg = pd.DataFrame(columns=['g', 's'])
+        start_DTCWT_Time = time.time()
+        x, y, original_indexs, Images, Images_Filtered = DTCWT_Phasor(image1,0, 2,50)
+        stop_DTCWT_Time = time.time()
+        DTCWT_Time = stop_DTCWT_Time - start_DTCWT_Time
+        print("DTCWT_Time", DTCWT_Time)
 # Filter the phasor distribution to remove the background
-            x = x[imsum > params_dict["foreground_threshold"]]
-            y = y[imsum > params_dict["foreground_threshold"]]
-            Image_indices = np.arange(len(imsum.flatten())).reshape(imsum.shape)
-            Image_indices = Image_indices[imsum > params_dict["foreground_threshold"]]
-            #print('Image_indices', numpy.min(Image_indices), numpy.max(Image_indices))
-            df['x'] = x.flatten()
-            df['y'] = y.flatten()
+        x = x[imsum > params_dict["foreground_threshold"]]
+        y = y[imsum > params_dict["foreground_threshold"]]
+        Image_indices = np.arange(len(imsum.flatten())).reshape(imsum.shape)
+        Image_indices = Image_indices[imsum > params_dict["foreground_threshold"]]
+        #print('Image_indices', numpy.min(Image_indices), numpy.max(Image_indices))
+        df['x'] = x.flatten()
+        df['y'] = y.flatten()
 # Apply phasor calibration in polar coordinates (based on IRF measurement) and return to cartesan (g,s)
-            m, phi = to_polar_coord(x.flatten(), y.flatten())
-            g, s = polar_to_cart(m, phi)
-            g,s = np.array(g),np.array(s)
-            indexes = np.where((g > 0) & (g < 1) & (s > 0) & (s < 1))
-            g,s = g[indexes],s[indexes]
-            original_idxes = Image_indices[indexes]
-            #original_idxes = Image_indices
+        m, phi = to_polar_coord(x.flatten(), y.flatten())
+        g, s = polar_to_cart(m, phi)
+        g,s = np.array(g),np.array(s)
+        indexes = np.where((g > 0) & (g < 1) & (s > 0) & (s < 1))
+        g,s = g[indexes],s[indexes]
+        original_idxes = Image_indices[indexes]
+        #original_idxes = Image_indices
 
-            dg['g'] = g
-            dg['s'] = s
-            ax_centroids[2].scatter(dg['g'], dg['s'],s=0.5, c=colors[2],alpha=1,rasterized=True)
+        dg['g'] = g
+        dg['s'] = s
+        ax_centroids[2].scatter(dg['g'], dg['s'],s=0.5, c=colors[2],alpha=1,rasterized=True)
 
-    # Calculate the centroid of the phasor distribution
-            kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
-            y_kmeans = kmeans.fit_predict(dg)
-            CoM_x=kmeans.cluster_centers_[:, 0][:]
-            CoM_y=kmeans.cluster_centers_[:, 1][:]
+# Calculate the centroid of the phasor distribution
+        kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
+        y_kmeans = kmeans.fit_predict(dg)
+        CoM_x=kmeans.cluster_centers_[:, 0][:]
+        CoM_y=kmeans.cluster_centers_[:, 1][:]
 
-            ax_centroids[2].scatter(CoM_x, CoM_y, color=colors_Centroids[2], s=25)
-
-
+        ax_centroids[2].scatter(CoM_x, CoM_y, color=colors_Centroids[2], s=25)
 
 
-        
+
+
+    
 
 
 fig_centroids.savefig("Centroids_single.pdf",transparent=True, bbox_inches="tight",dpi=900)

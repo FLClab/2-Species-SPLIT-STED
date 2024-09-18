@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import os.path
 from sys import path as path1;
-#path1.append('/Users/marielafontaine/Documents/GitHub/Abberior-STED-FLIM/Functions')
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 import math
 import matplotlib.pyplot as plt
-from convertmsr_bioformatsAB import MSRReader
+
 import numpy
 import glob
 import itertools
@@ -15,12 +15,13 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib
 import matplotlib.patches as mpatches
 import pandas as pd
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, choose_msr_file, get_foreground)
+from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
 from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix2species
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 import skimage
-from tiffwrapper import LifetimeOverlayer,imsave
+from tiffwrapper import imsave
+from lifetime import LifetimeOverlayer
 from skimage import filters
 import scipy
 from decorr_res import decorr_res
@@ -133,7 +134,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         
         with open(os.path.join(savefolder,'legend.txt'),'a') as data: 
             data.write("{}\t{}\t{}\n".format(labels[i],keyscontrols[i],msr))
-        imagemsr = msrreader.read(msr)
+        imagemsr = load_msr(msr)
     
         image1 = imagemsr[keyscontrols[i]]
         imsum = image1[:,:,10:111].sum(axis=2)
@@ -227,7 +228,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         seuils = []
         for i, msr in enumerate(msrfiles):
             print("i",i)
-            imagemsr=msrreader.read(msr)
+            imagemsr=load_msr(msr)
             print(imagemsr.keys())
             image1 = imagemsr[keysmixed[i]]
             imagec1 = imagemsr[keyscontrols[i]]
@@ -641,9 +642,9 @@ globalcumstats=[]
 globalcumstatsmean=[]
 globalcumstatsstd=[]
 row=0
-with MSRReader() as msrreader:
-    for power in Powerslist:
-        stats=Simulate2SpeciesSTED(power[0],power[1])
-        print(stats.shape)
+
+for power in Powerslist:
+    stats=Simulate2SpeciesSTED(power[0],power[1])
+    print(stats.shape)
 
     plt.show()

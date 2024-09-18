@@ -1,7 +1,23 @@
 import numpy
-from convertmsr_bioformatsAB import MSRReader
 import os
+from specpy import File
 
+def load_msr(msrPATH):
+    """Loads the msr data from the msr file. The data is in a numpy array.
+
+    :param msrPATH: The path to the msr file
+
+    :returns: A dict with the name of the stack and the corresponding data
+    """
+    imageObj = File(msrPATH, File.Read)
+    outputDict = {}
+
+    for stack in range(imageObj.number_of_stacks()):
+        stackObj = imageObj.read(stack) # stack object
+
+        outputDict[stackObj.name()] = stackObj.data().squeeze() # removes shape of 1
+
+    return outputDict
 
 def to_polar_coord(g, s):
     """
@@ -63,53 +79,6 @@ def polar_to_cart(m, phi) :
         g.append(m_ij * numpy.cos(phi_ij))
         s.append(m_ij * numpy.sin(phi_ij))
     return g, s
-
-
-# def choose_msr_file(images) :
-#     for imagei in images:
-#         print(imagei)
-#     numim = int(input('Fichier msr a extraire (1er=0): '))
-#     images = images[numim]
-#     print(images)
-#     return images
-
-
-def choose_msr_file(images):
-    """
-    Ask user to choose an MSR file in a folder to extract data from.
-
-    Args:
-        images (list): List of image file paths.
-
-    Returns:
-        tuple: A tuple containing the selected image file path and the data extracted from it.
-    """
-    with MSRReader() as msrreader:
-        # Print all the image files in the folder
-        for imagei in images:
-            print(os.path.basename(imagei))
-        # Ask user to choose an image file
-        numim = int(input('Fichier msr a extraire (1er=0): '))
-        images = images[numim]
-        # Read the selected image file
-        imagemsr = msrreader.read(images)
-        return images, imagemsr
-    
-def load_all_msr_files(images):
-    """
-    Load multiple MSR files and return a dictionary of loaded images.
-
-    Parameters:
-    images (list): A list of file paths to the MSR files.
-
-    Returns:
-    dict: A dictionary where the keys are the file paths and the values are the loaded MSR images.
-    """
-    imagemsr = {}
-    with MSRReader() as msrreader:
-        for imagei in images:
-            imagemsr[imagei] = msrreader.read(imagei)
-    return imagemsr
 
 
 

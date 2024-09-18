@@ -2,20 +2,16 @@
     Ouvre chaque fichier et vérifie si les images indiquées par keys ont plus de photons que les valeurs dans limits
 """
 
-from fileinput import filename
+
 import os
 import glob
 import numpy
 import matplotlib.pyplot as plt
-from matplotlib_scalebar.scalebar import ScaleBar
 import easygui 
-
-import os.path
-from sys import path as syspath; syspath.append('/Users/marielafontaine/Documents/GitHub/Abberior-STED-FLIM/Functions')
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+from sys import path as syspath; 
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 syspath.append(dossier)
-from convertmsr_bioformatsAB import MSRReader
-
+from Main_functions import load_msr 
 
 filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
@@ -39,29 +35,28 @@ images = glob.glob(path)
 print('There are ',len(images), 'Images in this folder')
 
 
-with MSRReader() as msrreader:
-    for i, imagei in enumerate(images):
-        
-        imagemsr = msrreader.read(imagei)
-
-        #print(imagemsr.keys())
-        for k,key in enumerate(keys) :
-            #value = mapcomp[key]
-            image1=imagemsr[key]
-            #print(i, image1.shape, key)
-            print(os.path.basename(imagei)) #nom après le dernire / du path
-            if len(image1.shape) == 3 :
-                imsum= numpy.sum(image1, axis=2)
-                print(key,numpy.max(imsum))
-                if numpy.max(imsum)>limits[k]:
-                    print("")
-                    #print(key, "  We should consider removing this image it has: ",numpy.count_nonzero(imsum>limits[k]), 'pixels above the limit with a max of',numpy.max(imsum))
-            elif len(image1.shape) == 1 :
-                continue
-
-      
-                
+for i, imagei in enumerate(images):
     
+    imagemsr = load_msr(imagei)
+
+    #print(imagemsr.keys())
+    for k,key in enumerate(keys) :
+        #value = mapcomp[key]
+        image1=imagemsr[key]
+        #print(i, image1.shape, key)
+        print(os.path.basename(imagei)) 
+        if len(image1.shape) == 3 :
+            imsum= numpy.sum(image1, axis=2)
+            print(key,numpy.max(imsum))
+            if numpy.max(imsum)>limits[k]:
+                print("")
+                #print(key, "  We should consider removing this image it has: ",numpy.count_nonzero(imsum>limits[k]), 'pixels above the limit with a max of',numpy.max(imsum))
+        elif len(image1.shape) == 1 :
+            continue
+
+    
+            
+
 
 
 # cbar =fig.colorbar(imgplot1)

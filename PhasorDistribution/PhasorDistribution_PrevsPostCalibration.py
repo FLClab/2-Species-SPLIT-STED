@@ -22,10 +22,10 @@ import easygui
 import math
 import os.path
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from convertmsr_bioformatsAB import MSRReader
-from Main_functions import (to_polar_coord, polar_to_cart, get_foreground)
+
+from Main_functions import (to_polar_coord, polar_to_cart, get_foreground,load_msr)
 from Phasor_functions import Median_Phasor
 import scipy
 from shapely.geometry.point import Point
@@ -150,75 +150,75 @@ IRF= (0.9527011687260826, 0.4695955819269703)
 MeanPositions={}
 Ellipsedims={}
 #initialize the file reader
-with MSRReader() as msrreader:
+
 
 #Create the figure and axes for the 2D plot of centroids and ellipses 
-    fig_centroids,ax_centroids = plt.subplots(figsize=(4,4))
-    theta = np.linspace(0, np.pi, 100)
-    r = 0.5
-    x1 = r * np.cos(theta) + 0.5
-    x2 = r * np.sin(theta)
-    ax_centroids.plot(x1, x2, color="black", ls="--",linewidth=0.8)
-    ax_centroids.set_xlim(-0.02, 1.02)
-    ax_centroids.set_ylim(-0.02, 1.02)
-    ax_centroids.set_xlabel('g')
-    ax_centroids.set_ylabel('s')
+fig_centroids,ax_centroids = plt.subplots(figsize=(4,4))
+theta = np.linspace(0, np.pi, 100)
+r = 0.5
+x1 = r * np.cos(theta) + 0.5
+x2 = r * np.sin(theta)
+ax_centroids.plot(x1, x2, color="black", ls="--",linewidth=0.8)
+ax_centroids.set_xlim(-0.02, 1.02)
+ax_centroids.set_ylim(-0.02, 1.02)
+ax_centroids.set_xlabel('g')
+ax_centroids.set_ylabel('s')
 
 #For each dye, extract the images from the msr files and calculate the phasor distribution, their centroids and ellipses (70th percentile)
-    for k,filename in enumerate(filenames) :
-        
-         # For each depletion power, list the images acquired with this power 
-        for a,power in enumerate(powers):
-            path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
-            images = glob.glob(path)
-            msrfiles=images
+for k,filename in enumerate(filenames) :
+    
+        # For each depletion power, list the images acquired with this power 
+    for a,power in enumerate(powers):
+        path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
+        images = glob.glob(path)
+        msrfiles=images
 
-            #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
-            for i, msr in enumerate(msrfiles) :
-        # Read the msr file
-                imagemsr = msrreader.read(msr)
-                print(os.path.basename(msr))
-                print(imagemsr.keys())
+        #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
+        for i, msr in enumerate(msrfiles) :
+    # Read the msr file
+            imagemsr = load_msr(msr)
+            print(os.path.basename(msr))
+            print(imagemsr.keys())
 
-        # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
-                df = pd.DataFrame(columns=['x','y'])
-                dg = pd.DataFrame(columns=['g', 's'])
-                image1=imagemsr[keys[a]]
-                print("Caclulation for an image of shape", image1.shape, "...")
-                #params_dict["foreground_threshold"] = get_foreground(image1)
-                params_dict["foreground_threshold"]=10
-                print("foreground_threshold=", params_dict["foreground_threshold"])
-                x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
-                df['x']=x.flatten()
-                df['y']=y.flatten()
-                ax_centroids.scatter(df['x'],df['y'],s=0.5, c=colors[0],alpha=0.1,rasterized=True)
-                # Calculate the centroid of the phasor distribution
-                kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
-                y_kmeans = kmeans.fit_predict(df)
-                CoM_x=kmeans.cluster_centers_[:, 0][:]
-                CoM_y=kmeans.cluster_centers_[:, 1][:]
+    # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
+            df = pd.DataFrame(columns=['x','y'])
+            dg = pd.DataFrame(columns=['g', 's'])
+            image1=imagemsr[keys[a]]
+            print("Caclulation for an image of shape", image1.shape, "...")
+            #params_dict["foreground_threshold"] = get_foreground(image1)
+            params_dict["foreground_threshold"]=10
+            print("foreground_threshold=", params_dict["foreground_threshold"])
+            x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+            df['x']=x.flatten()
+            df['y']=y.flatten()
+            ax_centroids.scatter(df['x'],df['y'],s=0.5, c=colors[0],alpha=0.1,rasterized=True)
+            # Calculate the centroid of the phasor distribution
+            kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
+            y_kmeans = kmeans.fit_predict(df)
+            CoM_x=kmeans.cluster_centers_[:, 0][:]
+            CoM_y=kmeans.cluster_centers_[:, 1][:]
 
-                ax_centroids.scatter(CoM_x, CoM_y, color=colors_Centroids[0], s=25)
-        # Apply the calibration to the phasor distribution using the IRF measurement in polar coordinates and return the cartesian coordinates
-                m, phi = to_polar_coord(df['x'], df['y'])
-                g,s =polar_to_cart(m, phi)
-                dg['g'], dg['s'] = g, s
+            ax_centroids.scatter(CoM_x, CoM_y, color=colors_Centroids[0], s=25)
+    # Apply the calibration to the phasor distribution using the IRF measurement in polar coordinates and return the cartesian coordinates
+            m, phi = to_polar_coord(df['x'], df['y'])
+            g,s =polar_to_cart(m, phi)
+            dg['g'], dg['s'] = g, s
 
-                ax_centroids.scatter(dg['g'], dg['s'],s=0.5, c=colors[1],alpha=0.1,rasterized=True)
-                calibx,caliby=polar_to_cart([IRF[0],1],[IRF[1],0])
-                ax_centroids.scatter(calibx,caliby,color=colors_Centroids[1], s=25)
-                
+            ax_centroids.scatter(dg['g'], dg['s'],s=0.5, c=colors[1],alpha=0.1,rasterized=True)
+            calibx,caliby=polar_to_cart([IRF[0],1],[IRF[1],0])
+            ax_centroids.scatter(calibx,caliby,color=colors_Centroids[1], s=25)
+            
 
-        # Calculate the centroid of the phasor distribution
-                kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
-                y_kmeans = kmeans.fit_predict(dg)
-                CoM_x=kmeans.cluster_centers_[:, 0][:]
-                CoM_y=kmeans.cluster_centers_[:, 1][:]
+    # Calculate the centroid of the phasor distribution
+            kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
+            y_kmeans = kmeans.fit_predict(dg)
+            CoM_x=kmeans.cluster_centers_[:, 0][:]
+            CoM_y=kmeans.cluster_centers_[:, 1][:]
 
-                ax_centroids.scatter(CoM_x, CoM_y, color=colors_Centroids[2], s=25)
+            ax_centroids.scatter(CoM_x, CoM_y, color=colors_Centroids[2], s=25)
 
 
-        
+    
 
 
 fig_centroids.savefig("Centroids_single.pdf",transparent=True, bbox_inches="tight",dpi=900)

@@ -9,12 +9,12 @@ The program then calculates the fraction of each species in the mixture and comp
 # -*- coding: utf-8 -*-
 import os.path
 from sys import path as path1;
-#path1.append('/Users/marielafontaine/Documents/GitHub/Abberior-STED-FLIM/Functions')
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 import math
 import matplotlib.pyplot as plt
-from convertmsr_bioformatsAB import MSRReader
+
 import numpy
 import glob
 import itertools
@@ -24,15 +24,15 @@ from matplotlib.gridspec import GridSpec
 import matplotlib.patches as mpatches
 import seaborn
 import pandas as pd
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, choose_msr_file, get_foreground)
+from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix3species
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 import skimage
-from tiffwrapper import LifetimeOverlayer,imsave
+from lifetime import LifetimeOverlayer
 from skimage import filters
 import scipy
-
+from tiffwrapper import imsave
 from decorr_res import decorr_res
 from objectives import (Squirrel, Bleach)
 from skspatial.objects import Circle
@@ -210,7 +210,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         
         with open(os.path.join(savefolder,'legend.txt'),'a') as data: 
             data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
-        imagemsr=msrreader.read(msr)
+        imagemsr=load_msr(msr)
 
         image1 = imagemsr[keys[i]]
         imsum = image1.sum(axis=2)
@@ -364,7 +364,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         # For each image in the pair, calculate the resolution and the foreground mask
         for i, msr in enumerate(msrfiles):
 
-            imagemsr=msrreader.read(msr)
+            imagemsr=load_msr(msr)
             print(imagemsr.keys())
             image1 = imagemsr[keysmixed[i]]
             res_mix = decorr_res(imname=None, image=numpy.sum(image1[:, :, 10:111],axis=2))
@@ -825,10 +825,10 @@ Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,
 #numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
 #numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
 
-with MSRReader() as msrreader:
-    for power in Powerslist:
-        stats=Simulate3speciesLineControls(power[0],power[1])
-        print(stats.shape)
+
+for power in Powerslist:
+    stats=Simulate3speciesLineControls(power[0],power[1])
+    print(stats.shape)
 
     plt.show()
 

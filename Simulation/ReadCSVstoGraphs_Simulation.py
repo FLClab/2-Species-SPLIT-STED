@@ -11,8 +11,8 @@ containing metrics of unmixed simulation images, such as resolution and SQUIRREL
 # -*- coding: utf-8 -*-
 import os.path
 from sys import path as path1;
-#path1.append('/Users/marielafontaine/Documents/GitHub/Abberior-STED-FLIM/Functions')
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 import functools
 from statistics_functions import get_significance

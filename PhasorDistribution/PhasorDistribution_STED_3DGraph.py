@@ -22,10 +22,10 @@ import easygui
 import math
 import os.path
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from convertmsr_bioformatsAB import MSRReader
-from Main_functions import (to_polar_coord, polar_to_cart, get_foreground)
+
+from Main_functions import (load_msr,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor
 import scipy
 from shapely.geometry.point import Point
@@ -151,107 +151,107 @@ Positions={}
 MeanPositions={}
 Ellipsedims={}
 #initialize the file reader
-with MSRReader() as msrreader:
+
 
 #Create the figure and axes for the 2D plot of centroids and ellipses 
-    fig_centroids,ax_centroids = plt.subplots(figsize=(3,3))
-    theta = np.linspace(0, np.pi, 100)
-    r = 0.5
-    x1 = r * np.cos(theta) + 0.5
-    x2 = r * np.sin(theta)
-    ax_centroids.plot(x1, x2, color="black", ls="--",linewidth=0.8)
-    ax_centroids.set_xlim(0, 1)
-    ax_centroids.set_ylim(0, 1)
-    ax_centroids.set_xlabel('g')
-    ax_centroids.set_ylabel('s')
+fig_centroids,ax_centroids = plt.subplots(figsize=(3,3))
+theta = np.linspace(0, np.pi, 100)
+r = 0.5
+x1 = r * np.cos(theta) + 0.5
+x2 = r * np.sin(theta)
+ax_centroids.plot(x1, x2, color="black", ls="--",linewidth=0.8)
+ax_centroids.set_xlim(0, 1)
+ax_centroids.set_ylim(0, 1)
+ax_centroids.set_xlabel('g')
+ax_centroids.set_ylabel('s')
 
 #Create the figure and axes for the 3D plot of the phasor distributions
-    figellipse=plt.figure(figsize=(4,4))
-    axellipse = figellipse.add_subplot(projection="3d")
-    axellipse.set_xlim(0, 1)
-    axellipse.set_ylim(0, 0.6)
-    axellipse.view_init(azim=40,elev=20,vertical_axis='y') #Set the view angle of the 3D plot
-    axellipse.grid(False)
-    axellipse.xaxis.pane.fill = False  # Left pane
-    axellipse.yaxis.pane.fill = False  # Right pane
-    axellipse.zaxis.pane.fill = False  # Right pane
-    axellipse.set_zticks(ticks=[0,10,20,30,40],labels=["0","44","88","132","176"])
-    axellipse.set_zlabel("Depletion Power [mW]")
-    #For each depletion power, draw the universal semi-circle
-    for power in powersnum:
-        axellipse.plot(x1, x2,zs=power, color="black", ls="--",linewidth=0.8)
+figellipse=plt.figure(figsize=(4,4))
+axellipse = figellipse.add_subplot(projection="3d")
+axellipse.set_xlim(0, 1)
+axellipse.set_ylim(0, 0.6)
+axellipse.view_init(azim=40,elev=20,vertical_axis='y') #Set the view angle of the 3D plot
+axellipse.grid(False)
+axellipse.xaxis.pane.fill = False  # Left pane
+axellipse.yaxis.pane.fill = False  # Right pane
+axellipse.zaxis.pane.fill = False  # Right pane
+axellipse.set_zticks(ticks=[0,10,20,30,40],labels=["0","44","88","132","176"])
+axellipse.set_zlabel("Depletion Power [mW]")
+#For each depletion power, draw the universal semi-circle
+for power in powersnum:
+    axellipse.plot(x1, x2,zs=power, color="black", ls="--",linewidth=0.8)
 
 
 #For each dye, extract the images from the msr files and calculate the phasor distribution, their centroids and ellipses (70th percentile)
-    for k,filename in enumerate(filenames) :
-        
-         # For each depletion power, list the images acquired with this power 
-        for a,power in enumerate(powers):
-            path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
-            images = glob.glob(path)
-            msrfiles=images
+for k,filename in enumerate(filenames) :
+    
+        # For each depletion power, list the images acquired with this power 
+    for a,power in enumerate(powers):
+        path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
+        images = glob.glob(path)
+        msrfiles=images
 
-            #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
-            for i, msr in enumerate(msrfiles) :
-        # Read the msr file
-                imagemsr = msrreader.read(msr)
-                print(os.path.basename(msr))
-                print(imagemsr.keys())
+        #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
+        for i, msr in enumerate(msrfiles) :
+    # Read the msr file
+            imagemsr = load_msr(msr)
+            print(os.path.basename(msr))
+            print(imagemsr.keys())
 
-        # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
-                df = pd.DataFrame(columns=['x','y'])
-                dg = pd.DataFrame(columns=['g', 's'])
-                image1=imagemsr[keys[a]]
-                print("Caclulation for an image of shape", image1.shape, "...")
-                #params_dict["foreground_threshold"] = get_foreground(image1)
-                params_dict["foreground_threshold"]=10
-                print("foreground_threshold=", params_dict["foreground_threshold"])
-                x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
-                df['x']=x.flatten()
-                df['y']=y.flatten()
-        # Apply the calibration to the phasor distribution using the IRF measurement in polar coordinates and return the cartesian coordinates
-                m, phi = to_polar_coord(df['x'], df['y'])
-                g,s =polar_to_cart(m, phi)
-                dg['g'], dg['s'] = g, s
+    # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
+            df = pd.DataFrame(columns=['x','y'])
+            dg = pd.DataFrame(columns=['g', 's'])
+            image1=imagemsr[keys[a]]
+            print("Caclulation for an image of shape", image1.shape, "...")
+            #params_dict["foreground_threshold"] = get_foreground(image1)
+            params_dict["foreground_threshold"]=10
+            print("foreground_threshold=", params_dict["foreground_threshold"])
+            x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+            df['x']=x.flatten()
+            df['y']=y.flatten()
+    # Apply the calibration to the phasor distribution using the IRF measurement in polar coordinates and return the cartesian coordinates
+            m, phi = to_polar_coord(df['x'], df['y'])
+            g,s =polar_to_cart(m, phi)
+            dg['g'], dg['s'] = g, s
 
-        # Plot the phasor distribution in the 3D plot
-                zs=np.ones((len(g)))
-                axellipse.scatter(g, s, np.multiply(zs,powersnum[a]),s=0.5, c=colors[k][a],alpha=0.1,rasterized=True)
+    # Plot the phasor distribution in the 3D plot
+            zs=np.ones((len(g)))
+            axellipse.scatter(g, s, np.multiply(zs,powersnum[a]),s=0.5, c=colors[k][a],alpha=0.1,rasterized=True)
+            
+
+    # Calculate the centroid of the phasor distribution
+            kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
+            y_kmeans = kmeans.fit_predict(dg)
+            CoM_x=kmeans.cluster_centers_[:, 0][:]
+            CoM_y=kmeans.cluster_centers_[:, 1][:]
+
+        # Calculate the eigenvalues and eigenvectors of the covariance matrix of the phasor distribution and use them to fit an ellipse
+            cov = np.cov(g, s)
+            val, vec = np.linalg.eig(cov)
+            order = val.argsort()[::-1]
+
+            eigen_val=val[order]
+            norm_eigen_vec = vec[:,order]
+            eigen_val = np.sort(np.sqrt(eigen_val))
+            ppfs=[0.3]
+            for ppf in ppfs:
+                width = 2 * eigen_val[0] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+                height = 2 * eigen_val[1] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+                angle = np.rad2deg(np.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
+                                            norm_eigen_vec[0, eigen_val.argmax()]))
                 
-
-        # Calculate the centroid of the phasor distribution
-                kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
-                y_kmeans = kmeans.fit_predict(dg)
-                CoM_x=kmeans.cluster_centers_[:, 0][:]
-                CoM_y=kmeans.cluster_centers_[:, 1][:]
-
-            # Calculate the eigenvalues and eigenvectors of the covariance matrix of the phasor distribution and use them to fit an ellipse
-                cov = np.cov(g, s)
-                val, vec = np.linalg.eig(cov)
-                order = val.argsort()[::-1]
-  
-                eigen_val=val[order]
-                norm_eigen_vec = vec[:,order]
-                eigen_val = np.sort(np.sqrt(eigen_val))
-                ppfs=[0.3]
-                for ppf in ppfs:
-                    width = 2 * eigen_val[0] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-                    height = 2 * eigen_val[1] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-                    angle = np.rad2deg(np.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
-                                                norm_eigen_vec[0, eigen_val.argmax()]))
-                    
-                    #Create Ellipse patch and plot it on the 3D plot
-                    ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
-                    axellipse.add_patch(ell)
-                    pathpatch_2d_to_3d(ell, z=0, normal='z')
-                    pathpatch_translate(ell, (0,0, powersnum[a]))
-                    ell.set_facecolor("None")
-                    #ell.set_edgecolor(colors[k][a])
-                    ell.set_edgecolor("k")
-                    ell.set_linewidth(1.0)
+                #Create Ellipse patch and plot it on the 3D plot
+                ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
+                axellipse.add_patch(ell)
+                pathpatch_2d_to_3d(ell, z=0, normal='z')
+                pathpatch_translate(ell, (0,0, powersnum[a]))
+                ell.set_facecolor("None")
+                #ell.set_edgecolor(colors[k][a])
+                ell.set_edgecolor("k")
+                ell.set_linewidth(1.0)
 
 
-        
+    
         #plt.close(figellipse)
 # Save the figures
 figellipse.savefig("Ellipses.pdf",transparent=True, bbox_inches="tight",dpi=900)

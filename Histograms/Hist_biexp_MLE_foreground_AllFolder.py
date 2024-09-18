@@ -11,22 +11,20 @@ import matplotlib.pyplot as plt
 import glob
 import numpy
 import easygui
-from sys import path as syspath; syspath.append(os.path.expanduser("~/Documents/Github/TCSPC/Analyse/Fit - MLE - TDE/"))
-from Multi import fit
-
-
 from scipy.optimize import minimize
 from tqdm import tqdm
 import tifffile
 import os.path
 import pandas as pd
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (choose_msr_file, get_foreground)
-from convertmsr_bioformatsAB import MSRReader
-from tiffwrapper import LifetimeOverlayer
+from Multi_fit import ExpFun_bi_MLE_tau_and_alpha
+from Main_functions import get_foreground,load_msr
+from lifetime import LifetimeOverlayer
 import seaborn
+
+
 # -----------------------------------------------------------
 
 # Path to the folder containing the images
@@ -66,74 +64,74 @@ graphcolor="hotpink"
 # -----------------------------------------------------------
 
 
-with MSRReader() as msrreader:
 
-    for image_id,imagei in enumerate(images):
-        print("##################")
-        print("Image {} of {}".format(image_id,len(images)))
-        print("##################")
-           # Use the last part of the image name to get the STED power
-        sted_percent = str(os.path.basename(imagei).split('_')[-1].split('percentSTED')[0])
-        conf_percent=0
-        print(os.path.basename(imagei))
-        imagemsr = msrreader.read(imagei)
+
+for image_id,imagei in enumerate(images):
+    print("##################")
+    print("Image {} of {}".format(image_id,len(images)))
+    print("##################")
+        # Use the last part of the image name to get the STED power
+    sted_percent = str(os.path.basename(imagei).split('_')[-1].split('percentSTED')[0])
+    conf_percent=0
+    print(os.path.basename(imagei))
+    imagemsr = load_msr(imagei)
 
 # -----------------------------------------------------------
 #     Open mapcomp's images
 
-        for k,key in enumerate(mapcomp):
-            print(mapcomp[key])
-            image1=imagemsr[mapcomp[key]]
-            dim = image1.shape
-            if k==0:
-                ov_data = [int(conf_percent), os.path.basename(imagei)]
-            else:
-                ov_data=[int(sted_percent),os.path.basename(imagei)]
+    for k,key in enumerate(mapcomp):
+        print(mapcomp[key])
+        image1=imagemsr[mapcomp[key]]
+        dim = image1.shape
+        if k==0:
+            ov_data = [int(conf_percent), os.path.basename(imagei)]
+        else:
+            ov_data=[int(sted_percent),os.path.basename(imagei)]
 
-            if dim[2] > 250 :
-                image1 = image1[:,:,:250].astype(numpy.int16)
-                print(image1.shape)
-                dim=image1.shape
+        if dim[2] > 250 :
+            image1 = image1[:,:,:250].astype(numpy.int16)
+            print(image1.shape)
+            dim=image1.shape
 
-            dim = image1.shape
+        dim = image1.shape
 
-            imsum= numpy.sum(image1, axis=2, dtype = numpy.int16)
+        imsum= numpy.sum(image1, axis=2, dtype = numpy.int16)
 
-        # -----------------------------------------------------------
-            #seuil = get_foreground(image1)
-            seuil= 3
-            # Sum of all the histograms of the foreground pixels
-            y=numpy.sum(image1[imsum>seuil, :],axis=0)
+    # -----------------------------------------------------------
+        #seuil = get_foreground(image1)
+        seuil= 3
+        # Sum of all the histograms of the foreground pixels
+        y=numpy.sum(image1[imsum>seuil, :],axis=0)
 
-            # Cut histogram to start at max value
-            maxy = numpy.max(y)
-            indice = numpy.argmax(y)
-            y = y[indice:]
-            y= y / y.sum()
-            absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
-        #   Computes lifetime with MLE fit of biexponential model
-    
-            w = minimize(fit.ExpFun_bi_MLE_tau_and_alpha, 
-                        x0 = x0,
-                        args = [absci, y], 
-                        bounds = [(0,5), (0, 1),(0,1), (0,1)]
-                        ) # (min, max) : tau1, tau2, f1, f2
+        # Cut histogram to start at max value
+        maxy = numpy.max(y)
+        indice = numpy.argmax(y)
+        y = y[indice:]
+        y= y / y.sum()
+        absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
+    #   Computes lifetime with MLE fit of biexponential model
 
-            print(w)
-            p1 = w['x'][0]  #tau1
-            p2 = w['x'][1]  #tau2
-            p3 = w['x'][2]  #f1
-            p4 = w['x'][3]  #f2 
-            print('tau1 :', p1)
-            print('tau2 :', p2)
-            print('f1 :', p3)
-            print('f2 :', p4)
-            # -----------------------------------
+        w = minimize(ExpFun_bi_MLE_tau_and_alpha, 
+                    x0 = x0,
+                    args = [absci, y], 
+                    bounds = [(0,5), (0, 1),(0,1), (0,1)]
+                    ) # (min, max) : tau1, tau2, f1, f2
 
-            # Add the lifetime values to the dataframe
-            ov_data.extend([p1,p2,p3,p4, (p1 * p3) + (p2 * p4)])
-            Overall_data.loc[len(Overall_data)] = ov_data
-    Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_Biexp_{}.csv".format(savefoldername)))
+        print(w)
+        p1 = w['x'][0]  #tau1
+        p2 = w['x'][1]  #tau2
+        p3 = w['x'][2]  #f1
+        p4 = w['x'][3]  #f2 
+        print('tau1 :', p1)
+        print('tau2 :', p2)
+        print('f1 :', p3)
+        print('f2 :', p4)
+        # -----------------------------------
+
+        # Add the lifetime values to the dataframe
+        ov_data.extend([p1,p2,p3,p4, (p1 * p3) + (p2 * p4)])
+        Overall_data.loc[len(Overall_data)] = ov_data
+Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_Biexp_{}.csv".format(savefoldername)))
 
 print(Overall_data.shape)
 print(list(Overall_data.columns))

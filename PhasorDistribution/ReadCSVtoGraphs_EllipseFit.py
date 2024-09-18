@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn
 import itertools
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 from statistics_functions import get_significance
 import scipy

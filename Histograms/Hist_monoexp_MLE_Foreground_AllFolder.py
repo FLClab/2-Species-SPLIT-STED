@@ -10,19 +10,19 @@ import matplotlib.pyplot as plt
 import glob
 import numpy
 import easygui
-from sys import path as syspath; syspath.append(os.path.expanduser("~/Documents/Github/TCSPC/Analyse/Fit - MLE - TDE/"))
-from Mono import fit
+
 from scipy.optimize import minimize
 from tqdm import tqdm
 import tifffile
 import os.path
 import pandas as pd
-from sys import path as path1; path1.append('/Users/marielafontaine/Documents/GitHub/Abberior-STED-FLIM/Functions')
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+from sys import path as path1;
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (choose_msr_file, get_foreground)
-from convertmsr_bioformatsAB import MSRReader
-from tiffwrapper import LifetimeOverlayer
+from Mono_fit import ExpFunMono_MLE
+from Main_functions import get_foreground,load_msr
+from specpy import File
+from lifetime import LifetimeOverlayer
 import seaborn
 # -----------------------------------------------------------
 
@@ -64,70 +64,70 @@ Overall_data = pd.DataFrame(
 # -----------------------------------------------------------
 
 
-with MSRReader() as msrreader:
 
-    for image_id,imagei in enumerate(images):
-        print("##################")
-        print("Image {} of {}\n".format(image_id,len(images)))
-        print("##################")
-        # Use the last part of the image name to get the STED power
-        sted_percent = str(os.path.basename(imagei).split('_')[-1].split('percentSTED')[0])
-        conf_percent=0
-        ov_data=[int(sted_percent),os.path.basename(imagei)]
-        ov_data_conf = [int(conf_percent), os.path.basename(imagei)]
-        print(os.path.basename(imagei))
-        imagemsr = msrreader.read(imagei)
+
+for image_id,imagei in enumerate(images):
+    print("##################")
+    print("Image {} of {}\n".format(image_id,len(images)))
+    print("##################")
+    # Use the last part of the image name to get the STED power
+    sted_percent = str(os.path.basename(imagei).split('_')[-1].split('percentSTED')[0])
+    conf_percent=0
+    ov_data=[int(sted_percent),os.path.basename(imagei)]
+    ov_data_conf = [int(conf_percent), os.path.basename(imagei)]
+    print(os.path.basename(imagei))
+    imagemsr = load_msr(imagei)
 
 # -----------------------------------------------------------
 #     Open mapcomp's images
 
-        for k,key in enumerate(mapcomp):
-            print(mapcomp[key])
-            image1=imagemsr[mapcomp[key]]
-            dim = image1.shape
+    for k,key in enumerate(mapcomp):
+        print(mapcomp[key])
+        image1=imagemsr[mapcomp[key]]
+        dim = image1.shape
 
 
-            if dim[2] > 250 :
-                image1 = image1[:,:,:250].astype(numpy.int16)
-                print(image1.shape)
-                dim=image1.shape
+        if dim[2] > 250 :
+            image1 = image1[:,:,:250].astype(numpy.int16)
+            print(image1.shape)
+            dim=image1.shape
 
-            dim = image1.shape
+        dim = image1.shape
 
-            imsum= numpy.sum(image1, axis=2, dtype = numpy.int16)
+        imsum= numpy.sum(image1, axis=2, dtype = numpy.int16)
 
-        # -----------------------------------------------------------
-    
-            #seuil = get_foreground(image1)
-            seuil= 3
-        # Sum of all the histograms of the foreground pixels
-            y=numpy.sum(image1[imsum>seuil, :],axis=0)
-        # Cut histogram to start at max value
-            maxy = numpy.max(y)
-            indice = numpy.argmax(y)
-            y = y[indice:]
-            y= y / y.sum()
-            absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
+    # -----------------------------------------------------------
+
+        #seuil = get_foreground(image1)
+        seuil= 3
+    # Sum of all the histograms of the foreground pixels
+        y=numpy.sum(image1[imsum>seuil, :],axis=0)
+    # Cut histogram to start at max value
+        maxy = numpy.max(y)
+        indice = numpy.argmax(y)
+        y = y[indice:]
+        y= y / y.sum()
+        absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
 #   Computes lifetime for sum of foreground with MLE fit of monoexponential model
 
-            tau = 2
-            nb_photons = 100
-            bounds = [(0,0.0001),(0.1,5),(0,900000)] # (min, max): Background, tau, amp
-            w = minimize(fit.ExpFunMono_MLE,
-                        x0 = [0,tau,nb_photons],
-                        args = [absci, y],
-                        bounds = bounds)
-            bg, tau, amp =  w["x"]
-            lifetime= w['x'][1]
-            print(lifetime)
-            if k==0:
-                ov_data_conf.append(lifetime)
-                Overall_data.loc[len(Overall_data)] = ov_data_conf
-            else:
-                ov_data.append(lifetime)
- # Add the lifetime values to the dataframe
-                Overall_data.loc[len(Overall_data)] = ov_data
-    Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_{}.csv".format(savefoldername)))
+        tau = 2
+        nb_photons = 100
+        bounds = [(0,0.0001),(0.1,5),(0,900000)] # (min, max): Background, tau, amp
+        w = minimize(ExpFunMono_MLE,
+                    x0 = [0,tau,nb_photons],
+                    args = [absci, y],
+                    bounds = bounds)
+        bg, tau, amp =  w["x"]
+        lifetime= w['x'][1]
+        print(lifetime)
+        if k==0:
+            ov_data_conf.append(lifetime)
+            Overall_data.loc[len(Overall_data)] = ov_data_conf
+        else:
+            ov_data.append(lifetime)
+# Add the lifetime values to the dataframe
+            Overall_data.loc[len(Overall_data)] = ov_data
+Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_{}.csv".format(savefoldername)))
 
 print(Overall_data.shape)
 print(list(Overall_data.columns))

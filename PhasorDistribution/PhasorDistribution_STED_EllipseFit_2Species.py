@@ -33,13 +33,13 @@ from plotly.offline import plot
 import math
 import os.path
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 
 
 from statistics_functions import get_significance
-from convertmsr_bioformatsAB import MSRReader
-from Main_functions import (to_polar_coord, polar_to_cart, get_foreground)
+
+from Main_functions import (load_msr,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor
 import scipy
 from shapely.geometry.point import Point
@@ -208,107 +208,107 @@ Overall_data = pd.DataFrame(columns=["Power",'image1', 'image2', 'IOU','Centroid
 savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefoldername + "_PhasorDists")
 os.makedirs(savefolder,exist_ok=True)
     
-with MSRReader() as msrreader:
+
 # Create a figure to plot the phasors
-    fig,ax_scatter= plt.subplots(figsize=(3,3))
-    ax_scatter.set_xlim(0, 1)
-    ax_scatter.set_ylim(0, 1)
-    #axcentroids.set_box_aspect(aspect=0.6)
-   # gs = GridSpec(4, 4)
+fig,ax_scatter= plt.subplots(figsize=(3,3))
+ax_scatter.set_xlim(0, 1)
+ax_scatter.set_ylim(0, 1)
+#axcentroids.set_box_aspect(aspect=0.6)
+# gs = GridSpec(4, 4)
 
-   # ax_scatter = fig.add_subplot(gs[0:4, 0:4])
+# ax_scatter = fig.add_subplot(gs[0:4, 0:4])
 # Create the universal semi-circle and plot it
-    theta = np.linspace(0, np.pi, 100)
-    r = 0.5
-    x1 = r * np.cos(theta) + 0.5
-    x2 = r * np.sin(theta)
-    ax_scatter.plot(x1, x2, color="black", ls="--",linewidth=0.8)
-    ax_scatter.set_xlabel('g')
-    ax_scatter.set_ylabel('s')
+theta = np.linspace(0, np.pi, 100)
+r = 0.5
+x1 = r * np.cos(theta) + 0.5
+x2 = r * np.sin(theta)
+ax_scatter.plot(x1, x2, color="black", ls="--",linewidth=0.8)
+ax_scatter.set_xlabel('g')
+ax_scatter.set_ylabel('s')
 
 
-    #axcentroids.plot(x1, x2, color="black", ls="--")
-    for k,filename in enumerate(filenames) :
-        Filenames[k]={}
-        Positions[k]={}
-        MeanPositions[k]={}
-        Ellipsedims[k]={}
+#axcentroids.plot(x1, x2, color="black", ls="--")
+for k,filename in enumerate(filenames) :
+    Filenames[k]={}
+    Positions[k]={}
+    MeanPositions[k]={}
+    Ellipsedims[k]={}
+    
+    for a,power in enumerate(powers):
+        ## For each power in the list of powers find all the images in the folder that have the power in their name
         
-        for a,power in enumerate(powers):
-            ## For each power in the list of powers find all the images in the folder that have the power in their name
-            
-            path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
-            images = glob.glob(path)
-            print("there are {} images in this folder".format(len(images)))
-            
-            msrfiles=images
-            Positions[k][powersnum[a]]=np.zeros((2,len(msrfiles)))
-            Ellipsedims[k][powersnum[a]]=np.zeros((3,len(msrfiles)))
-            Filenames[k][powersnum[a]]=[]
-            for i, msr in enumerate(msrfiles) :
-            # Read the image and calculate its phasor distribution with median filtering
-                imagemsr = msrreader.read(msr)
-                print(os.path.basename(msr))
-                print(imagemsr.keys())
-                Filenames[k][powersnum[a]].append(os.path.basename(msr))
-
-
-                df = pd.DataFrame(columns=['x','y'])
-                dg = pd.DataFrame(columns=['g', 's'])
-                image1=imagemsr[keys[a]]
-                print("Caclulation for an image of shape", image1.shape, "...")
-                #params_dict["foreground_threshold"] = get_foreground(image1)
-                params_dict["foreground_threshold"]=10
-                print("foreground_threshold=", params_dict["foreground_threshold"])
-                x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
-                df['x']=x.flatten()
-                df['y']=y.flatten()
-            # Calibrate the phasor distribution in polar coordinates based on the IRF measurement and return to (g,s) coordinates
-                m, phi = to_polar_coord(df['x'], df['y'])
-                g,s =polar_to_cart(m, phi)
-                dg['g'], dg['s'] = g, s
-
-            # Calculate the centroid of the phasor distribution
-                kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
-                y_kmeans = kmeans.fit_predict(dg)
-                
-                CoM_x=kmeans.cluster_centers_[:, 0][:]
-                CoM_y=kmeans.cluster_centers_[:, 1][:]
-                #print(CoM_x,CoM_y)
-                #print(a)
-            # Calculate the ellipse that best fits the phasor distribution's 70th percentile
-                cov = np.cov(g, s)
-                val, vec = np.linalg.eig(cov)
-                order = val.argsort()[::-1]
-  
-                eigen_val=val[order]
-                norm_eigen_vec = vec[:,order]
-                eigen_val = np.sort(np.sqrt(eigen_val))
-                ppfs=[0.3]
-                for ppf in ppfs:
-                    width = 2 * eigen_val[0] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-                    height = 2 * eigen_val[1] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-                    angle = np.rad2deg(np.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
-                                                norm_eigen_vec[0, eigen_val.argmax()]))
-                    ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
-
-
-
-                Positions[k][powersnum[a]][0,i]=CoM_x
-                Positions[k][powersnum[a]][1, i] =CoM_y
-
-                Ellipsedims[k][powersnum[a]][0, i] =width
-                Ellipsedims[k][powersnum[a]][1, i] =height
-                if angle >0:
-                    Ellipsedims[k][powersnum[a]][2, i] =angle
-                else:
-                    Ellipsedims[k][powersnum[a]][2, i] = 180+angle
-                #axcentroids.scatter(CoM_x, CoM_y, s=50, c = colors[k][a])
-                
-                #axellipse.scatter(CoM_x, CoM_y,powersnum[a],marker="X", s=100, linewidth=2, c = "k",edgecolor="k")
-            MeanPositions[k][powersnum[a]]=np.mean(Positions[k][powersnum[a]],axis=1)
+        path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
+        images = glob.glob(path)
+        print("there are {} images in this folder".format(len(images)))
         
-        #plt.close(figellipse)
+        msrfiles=images
+        Positions[k][powersnum[a]]=np.zeros((2,len(msrfiles)))
+        Ellipsedims[k][powersnum[a]]=np.zeros((3,len(msrfiles)))
+        Filenames[k][powersnum[a]]=[]
+        for i, msr in enumerate(msrfiles) :
+        # Read the image and calculate its phasor distribution with median filtering
+            imagemsr = load_msr(msr)
+            print(os.path.basename(msr))
+            print(imagemsr.keys())
+            Filenames[k][powersnum[a]].append(os.path.basename(msr))
+
+
+            df = pd.DataFrame(columns=['x','y'])
+            dg = pd.DataFrame(columns=['g', 's'])
+            image1=imagemsr[keys[a]]
+            print("Caclulation for an image of shape", image1.shape, "...")
+            #params_dict["foreground_threshold"] = get_foreground(image1)
+            params_dict["foreground_threshold"]=10
+            print("foreground_threshold=", params_dict["foreground_threshold"])
+            x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+            df['x']=x.flatten()
+            df['y']=y.flatten()
+        # Calibrate the phasor distribution in polar coordinates based on the IRF measurement and return to (g,s) coordinates
+            m, phi = to_polar_coord(df['x'], df['y'])
+            g,s =polar_to_cart(m, phi)
+            dg['g'], dg['s'] = g, s
+
+        # Calculate the centroid of the phasor distribution
+            kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
+            y_kmeans = kmeans.fit_predict(dg)
+            
+            CoM_x=kmeans.cluster_centers_[:, 0][:]
+            CoM_y=kmeans.cluster_centers_[:, 1][:]
+            #print(CoM_x,CoM_y)
+            #print(a)
+        # Calculate the ellipse that best fits the phasor distribution's 70th percentile
+            cov = np.cov(g, s)
+            val, vec = np.linalg.eig(cov)
+            order = val.argsort()[::-1]
+
+            eigen_val=val[order]
+            norm_eigen_vec = vec[:,order]
+            eigen_val = np.sort(np.sqrt(eigen_val))
+            ppfs=[0.3]
+            for ppf in ppfs:
+                width = 2 * eigen_val[0] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+                height = 2 * eigen_val[1] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+                angle = np.rad2deg(np.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
+                                            norm_eigen_vec[0, eigen_val.argmax()]))
+                ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
+
+
+
+            Positions[k][powersnum[a]][0,i]=CoM_x
+            Positions[k][powersnum[a]][1, i] =CoM_y
+
+            Ellipsedims[k][powersnum[a]][0, i] =width
+            Ellipsedims[k][powersnum[a]][1, i] =height
+            if angle >0:
+                Ellipsedims[k][powersnum[a]][2, i] =angle
+            else:
+                Ellipsedims[k][powersnum[a]][2, i] = 180+angle
+            #axcentroids.scatter(CoM_x, CoM_y, s=50, c = colors[k][a])
+            
+            #axellipse.scatter(CoM_x, CoM_y,powersnum[a],marker="X", s=100, linewidth=2, c = "k",edgecolor="k")
+        MeanPositions[k][powersnum[a]]=np.mean(Positions[k][powersnum[a]],axis=1)
+    
+    #plt.close(figellipse)
 
 
 #dists=[math.dist([CoM_x1[i],CoM_x1[i]],[CoM_x2[i],CoM_x2[i]])for i in range(len(CoM_x1))]

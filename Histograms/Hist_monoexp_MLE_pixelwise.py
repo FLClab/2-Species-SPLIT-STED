@@ -10,17 +10,16 @@ import matplotlib.pyplot as plt
 import glob
 import numpy
 import easygui
-from sys import path as syspath; syspath.append(os.path.expanduser("~/Documents/Github/TCSPC/Analyse/Fit - MLE - TDE/"))
-from Mono import fit
+
 from scipy.optimize import minimize
 from tqdm import tqdm
 import tifffile
 import os.path
-from sys import path as path1; path1.append('/Users/marielafontaine/Documents/GitHub/Abberior-STED-FLIM/Functions')
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+from sys import path as path1; 
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (choose_msr_file, get_foreground)
-
+from Mono_fit import ExpFunMono_MLE
+from Main_functions import load_msr, get_foreground
 from tiffwrapper import LifetimeOverlayer
 # -----------------------------------------------------------
 
@@ -33,11 +32,18 @@ path=os.path.join(filename,"*.msr")
 images = glob.glob(path)
 print('There are ',len(images), 'Images in this folder')
 
-
 # -----------------------------------------------------------
 #     Choose msr file in folder
 
-images,imagemsr = choose_msr_file(images)
+for imagei in images:
+    print(os.path.basename(imagei))
+# Ask user to choose an image file
+numim = int(input('Fichier msr a extraire (1er=0): '))
+images = images[numim]
+# Read the selected image file
+imagemsr = load_msr(images)
+print(imagemsr.keys())
+
 
 # -----------------------------------------------------------
 #     Open mapcomp's images
@@ -89,7 +95,7 @@ for key in mapcomp:
             tau = 2
             nb_photons = 100
             bounds = [(0,0.0001),(0.1,5),(0,900000)] # (min, max): Background, tau, amp
-            w = minimize(fit.ExpFunMono_MLE, 
+            w = minimize(ExpFunMono_MLE, 
                         x0 = [0,tau,nb_photons], 
                         args = [absci, y], 
                         bounds = bounds)

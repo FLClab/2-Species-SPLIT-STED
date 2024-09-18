@@ -19,40 +19,34 @@ from skimage import io
 import os
 import glob
 import numpy
-
+import time
 import tifffile
 import easygui
 import skimage.io as skio
-import numpy as np
 import scipy 
 from scipy.optimize import curve_fit
+import sklearn
 from pandas.plotting import table
 import pandas as pd
+import matplotlib
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-
-
-import os
+from matplotlib.gridspec import GridSpec
 import easygui
 from plotly.offline import plot
-
-
 from sklearn.cluster import KMeans
-
-import os.path
 from sys import path as syspath; 
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 syspath.append(dossier)
 from decorr_res import decorr_res
 from objectives import (Squirrel, Bleach)
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, choose_msr_file, get_foreground)
+from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import DTCWT_Phasor,Median_Phasor,SPLIT_STED
-from matplotlib.gridspec import GridSpec
-from convertmsr_bioformatsAB import MSRReader
-from tiffwrapper import imsave,LifetimeOverlayer
-import time
-import matplotlib
-import sklearn
+from tiffwrapper import imsave
+from lifetime import LifetimeOverlayer
+
+
+
 matplotlib.rcParams['axes.linewidth'] = 0.8
 # -----------------------------------------------------------
 #    Sélection des images dans un même fichier avec easygui
@@ -66,7 +60,7 @@ params_dict = {
     "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": np.inf,  # % 'Tau_exc'
+    "tau_exc": numpy.inf,  # % 'Tau_exc'
     "intercept_at_origin": False,  # % 'Fix Intercept at origin'
 
     # Parameters that are calculated in th matlab code but that could be modified manually
@@ -157,332 +151,332 @@ matplotlib.colormaps.register(cmap=cmap.reversed(), force=True)
 
 phasorcolor="springcool"
 #phasorcolor="springcool"
-with MSRReader() as msrreader:
+
 # Create a figure to plot the phasors
-    fig4,ax4 = plt.subplots(figsize=(2,2))
-    ax4.set_xlim(0, 1)
-    ax4.set_ylim(0, 1)
+fig4,ax4 = plt.subplots(figsize=(2,2))
+ax4.set_xlim(0, 1)
+ax4.set_ylim(0, 1)
 
-    fig5,ax5 = plt.subplots(figsize=(2,2))
-    ax5.set_xlim(0, 1)
-    ax5.set_ylim(0, 1)
+fig5,ax5 = plt.subplots(figsize=(2,2))
+ax5.set_xlim(0, 1)
+ax5.set_ylim(0, 1)
 
-    ax4.set_xlabel('g')
-    ax4.set_ylabel('s')
+ax4.set_xlabel('g')
+ax4.set_ylabel('s')
 # Create universal semi-circle for phasor space and add it to the plot
-    edge = np.linspace(start=0, stop=15, num=200)
-    theta = np.linspace(0, np.pi, 100)
-    r = 0.5
-    x1 = r * np.cos(theta) + 0.5
-    x2 = r * np.sin(theta)
-    ax4.plot(x1, x2, color="black", ls="--",linewidth=0.8)
-    ax5.plot(x1, x2, color="black", ls="--", linewidth=0.8)
+edge = numpy.linspace(start=0, stop=15, num=200)
+theta = numpy.linspace(0, numpy.pi, 100)
+r = 0.5
+x1 = r * numpy.cos(theta) + 0.5
+x2 = r * numpy.sin(theta)
+ax4.plot(x1, x2, color="black", ls="--",linewidth=0.8)
+ax5.plot(x1, x2, color="black", ls="--", linewidth=0.8)
 
-    # Loop through images in the folder
-    for i,im in enumerate(images) : 
-        print("######################")
-        print(i,"of",numim, os.path.basename(im))
-        print("######################")
-        imagemsr = msrreader.read(im)
-        print(imagemsr.keys())
-        print('image opened with success')
+# Loop through images in the folder
+for i,im in enumerate(images) : 
+    print("######################")
+    print(i,"of",numim, os.path.basename(im))
+    print("######################")
+    imagemsr = load_msr(im)
+    print(imagemsr.keys())
+    print('image opened with success')
 
-        #Extract the depletion power from the image filename
-        image_id=i
-        sted_percent = str(os.path.basename(im).split('_')[-1].split('percentSTED')[0])
+    #Extract the depletion power from the image filename
+    image_id=i
+    sted_percent = str(os.path.basename(im).split('_')[-1].split('percentSTED')[0])
 
-        #Extract the intensity confocal images from the image file
-        Conf_init = imagemsr[mapcomp['Conf pre']]
-        Conf_end = imagemsr[mapcomp['Conf post']]
-        objec = []
-        objec.append(os.path.basename(im))
-        objec.append(sted_percent)
-        fg = []
+    #Extract the intensity confocal images from the image file
+    Conf_init = imagemsr[mapcomp['Conf pre']]
+    Conf_end = imagemsr[mapcomp['Conf post']]
+    objec = []
+    objec.append(os.path.basename(im))
+    objec.append(sted_percent)
+    fg = []
 
-        for i,key in enumerate(mapcomp) : 
+    for i,key in enumerate(mapcomp) : 
 
-            if key == 'Conf pre' :
-                continue
-            if key =='Conf post' :
-                continue
-            if key == 'STED High' :
-                if mapcomp['STED High'] in imagemsr.keys():   
-                    image1 = imagemsr[mapcomp[key]]
-                    imsumhigh = image1[:,:,10:111].sum(axis=2)
+        if key == 'Conf pre' :
+            continue
+        if key =='Conf post' :
+            continue
+        if key == 'STED High' :
+            if mapcomp['STED High'] in imagemsr.keys():   
+                image1 = imagemsr[mapcomp[key]]
+                imsumhigh = image1[:,:,10:111].sum(axis=2)
 
-                    filenameout = os.path.join(savefolder,
-                                           os.path.basename(im).split(".msr")[0] + "_HighP_STED.tiff")
-                    imsave(filenameout, imsumhigh.astype(numpy.uint16), luts="Red Hot")
-                    res_HighSTED = decorr_res(imname=None, image=imsumhigh)
-                    objec.append(res_HighSTED)
-                    fg_highpSTED=get_foreground(imsumhigh)   
-                    squirrel_highp_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([imsumhigh], conf_stack, conf_stack,imsumhigh > fg_highpSTED, conf_stack >fg_conf_stack )
-                    squirrel_sted_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([im_splitsted], sted_stack, conf_stack,im_splitsted > fg_splitsted, sted_stack >fg_sted_stack )
-                    objec.extend([squirrel_highp_vs_conf,squirrel_sted_vs_conf])
-                else:
-                    print("No high power images taken")
-                    objec.extend([numpy.nan,numpy.nan,numpy.nan])
-                continue
-            CoM_x, CoM_y = [], []
-            
-            df = pd.DataFrame(columns=['x','y'])
-            dg = pd.DataFrame(columns=['g', 's'])
-            df1 = pd.DataFrame(columns=['x','y'])
-            dg1 = pd.DataFrame(columns=['g', 's'])
+                filenameout = os.path.join(savefolder,
+                                        os.path.basename(im).split(".msr")[0] + "_HighP_STED.tiff")
+                imsave(filenameout, imsumhigh.astype(numpy.uint16), luts="Red Hot")
+                res_HighSTED = decorr_res(imname=None, image=imsumhigh)
+                objec.append(res_HighSTED)
+                fg_highpSTED=get_foreground(imsumhigh)   
+                squirrel_highp_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([imsumhigh], conf_stack, conf_stack,imsumhigh > fg_highpSTED, conf_stack >fg_conf_stack )
+                squirrel_sted_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([im_splitsted], sted_stack, conf_stack,im_splitsted > fg_splitsted, sted_stack >fg_sted_stack )
+                objec.extend([squirrel_highp_vs_conf,squirrel_sted_vs_conf])
+            else:
+                print("No high power images taken")
+                objec.extend([numpy.nan,numpy.nan,numpy.nan])
+            continue
+        CoM_x, CoM_y = [], []
+        
+        df = pd.DataFrame(columns=['x','y'])
+        dg = pd.DataFrame(columns=['g', 's'])
+        df1 = pd.DataFrame(columns=['x','y'])
+        dg1 = pd.DataFrame(columns=['g', 's'])
 
 # Measure the foreground threshold of the image
-            image1 = imagemsr[mapcomp[key]]
-            imsum = image1[:,:,10:111].sum(axis=2)
+        image1 = imagemsr[mapcomp[key]]
+        imsum = image1[:,:,10:111].sum(axis=2)
 
-            seuil = get_foreground(image1)
-            fg.append(seuil)
-            #print("Caclulation for an image of shape", image1.shape, "...")
-            params_dict["foreground_threshold"] = seuil
+        seuil = get_foreground(image1)
+        fg.append(seuil)
+        #print("Caclulation for an image of shape", image1.shape, "...")
+        params_dict["foreground_threshold"] = seuil
 
-            params_dict["Nb_to_sum"] = image1.shape[2]
-            print("foreground_threshold=", params_dict["foreground_threshold"])
+        params_dict["Nb_to_sum"] = image1.shape[2]
+        print("foreground_threshold=", params_dict["foreground_threshold"])
 
 
 # Calculate the phasor distribution with DTCWT filtering
-            start_DTCWT_Time = time.time()
-            x, y, original_indexs, Images, Images_Filtered = DTCWT_Phasor(image1, 0, nlevels,neighbours)
-            stop_DTCWT_Time = time.time()
-            DTCWT_Time = stop_DTCWT_Time - start_DTCWT_Time
-            print("DTCWT_Time", DTCWT_Time)
+        start_DTCWT_Time = time.time()
+        x, y, original_indexs, Images, Images_Filtered = DTCWT_Phasor(image1, 0, nlevels,neighbours)
+        stop_DTCWT_Time = time.time()
+        DTCWT_Time = stop_DTCWT_Time - start_DTCWT_Time
+        print("DTCWT_Time", DTCWT_Time)
 # Filter the phasor distribution to remove the background
-            x = x[imsum > params_dict["foreground_threshold"]]
-            y = y[imsum > params_dict["foreground_threshold"]]
-            Image_indices = np.arange(len(imsum.flatten())).reshape(imsum.shape)
-            Image_indices = Image_indices[imsum > params_dict["foreground_threshold"]]
-            #print('Image_indices', numpy.min(Image_indices), numpy.max(Image_indices))
-            df['x'] = x.flatten()
-            df['y'] = y.flatten()
+        x = x[imsum > params_dict["foreground_threshold"]]
+        y = y[imsum > params_dict["foreground_threshold"]]
+        Image_indices = numpy.arange(len(imsum.flatten())).reshape(imsum.shape)
+        Image_indices = Image_indices[imsum > params_dict["foreground_threshold"]]
+        #print('Image_indices', numpy.min(Image_indices), numpy.max(Image_indices))
+        df['x'] = x.flatten()
+        df['y'] = y.flatten()
 # Apply phasor calibration in polar coordinates (based on IRF measurement) and return to cartesan (g,s)
-            m, phi = to_polar_coord(x.flatten(), y.flatten())
-            g, s = polar_to_cart(m, phi)
-            g,s = numpy.array(g),numpy.array(s)
-            indexes = numpy.where((g > 0) & (g < 1) & (s > 0) & (s < 1))
-            g,s = g[indexes],s[indexes]
-            original_idxes = Image_indices[indexes]
-            #original_idxes = Image_indices
+        m, phi = to_polar_coord(x.flatten(), y.flatten())
+        g, s = polar_to_cart(m, phi)
+        g,s = numpy.array(g),numpy.array(s)
+        indexes = numpy.where((g > 0) & (g < 1) & (s > 0) & (s < 1))
+        g,s = g[indexes],s[indexes]
+        original_idxes = Image_indices[indexes]
+        #original_idxes = Image_indices
 
-            dg['g'] = g
-            dg['s'] = s
+        dg['g'] = g
+        dg['s'] = s
 
-            
-            if key == 'Conf FLIM' :
-            # Save the confocal-flim image (sum intensity over time bins) and measure its resolution
-                conf_stack = imsum
-                filenameout = os.path.join(savefolder,
-                                           os.path.basename(im).split(".msr")[0] + "_Confocal.tiff")
-                imsave(filenameout, imsum.astype(numpy.uint16), luts="Red Hot")
-                #tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
-                res_conf = decorr_res(imname=None, image=imsum)
-                objec.append(res_conf)
-            # Find the centroid coordinates of the phasor distribution
-                n=1
-                kmeans = KMeans(n_clusters = n, init = 'k-means++', random_state = 42)
-                y_kmeans = kmeans.fit_predict(dg)
-                CoM_x, CoM_y = kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1]
-            # Project the centroids on the semi-circle in the phasor space
-                r = 0.5 
-                norm = numpy.sqrt((CoM_x[0] - 0.5) ** 2 + (CoM_y[0] ** 2) )
-                Pn_x = 0.5 + (r * (CoM_x[0] - 0.5) / norm)
-                Pn_y = 0 + r * (CoM_y[0] - 0) / norm
-
-                xaxis = np.linspace(0, 1, 100)
-
-            #Line between P_n and (1,0)
-                x2, y2 = numpy.asarray([Pn_x, 1.0], dtype = 'float64'), numpy.asarray([Pn_y, 0.0], dtype = 'float64')
-                m2, c2 = line_equation(x2, y2)
-                y2 = m2 * xaxis + c2
-                P_n = numpy.array([Pn_x, Pn_y])
-                p2 = numpy.array([1,0])
-
-            # Plot the Confocal-FLIM phasor distribution 
-                confphasor=ax5.scatter(g,s,c="lime",s=0.5,alpha=0.2,rasterized=True)
-
-
-                continue
-            
-
-            #print(key, 'Im here now')
-            sted_stack = imsum
-
-        # Measure the resolution of the STED-FLIM image (intensity sum over time bins)
-            res_sted_stack = decorr_res(imname=None, image=image1[:,:,10:].sum(axis=2))
-            if numpy.isinf(res_sted_stack):
-                res_sted_stack = 0
-            objec.append(res_sted_stack)
-
-  
-        # Calculate the position of 2 centroids for STED-FLIM phasor distribution
-            kmeans = KMeans(n_clusters = 2, init = 'k-means++', random_state = 42)
+        
+        if key == 'Conf FLIM' :
+        # Save the confocal-flim image (sum intensity over time bins) and measure its resolution
+            conf_stack = imsum
+            filenameout = os.path.join(savefolder,
+                                        os.path.basename(im).split(".msr")[0] + "_Confocal.tiff")
+            imsave(filenameout, imsum.astype(numpy.uint16), luts="Red Hot")
+            #tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
+            res_conf = decorr_res(imname=None, image=imsum)
+            objec.append(res_conf)
+        # Find the centroid coordinates of the phasor distribution
+            n=1
+            kmeans = KMeans(n_clusters = n, init = 'k-means++', random_state = 42)
             y_kmeans = kmeans.fit_predict(dg)
+            CoM_x, CoM_y = kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1]
+        # Project the centroids on the semi-circle in the phasor space
+            r = 0.5 
+            norm = numpy.sqrt((CoM_x[0] - 0.5) ** 2 + (CoM_y[0] ** 2) )
+            Pn_x = 0.5 + (r * (CoM_x[0] - 0.5) / norm)
+            Pn_y = 0 + r * (CoM_y[0] - 0) / norm
 
-            CoM_x.extend(kmeans.cluster_centers_[:, 0][:].tolist())
-            CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
+            xaxis = numpy.linspace(0, 1, 100)
 
-            CoM_x.sort()
-            CoM_y.sort(reverse=True) # To get the order CoM = [STED1 < STED2, ...]
-        # Calculate the phasor of the STED-FLIM image with a lower foreground threshold to include all pixels in SPLIT-STED 
-            start_DTCWT_Time = time.time()
-            x, y, original_indexs, Images, Images_Filtered = DTCWT_Phasor(image1, 0,nlevels,neighbours)
-            stop_DTCWT_Time = time.time()
-            DTCWT_Time = stop_DTCWT_Time - start_DTCWT_Time
-            params_dict["foreground_threshold"] = 3
-            print("DTCWT_Time", DTCWT_Time)
-            x = x[imsum > params_dict["foreground_threshold"]]
-            y = y[imsum > params_dict["foreground_threshold"]]
-            Image_indices = np.arange(len(imsum.flatten())).reshape(imsum.shape)
-            Image_indices = Image_indices[imsum > params_dict["foreground_threshold"]]
-        # Apply phasor calibration in polar coordinates (based on IRF measurement) and return to cartesan (g,s)
-            df1['x'],df1['y'] = x.flatten(),y.flatten()
-            x,y= x.flatten(),y.flatten()
-            m, phi = to_polar_coord(x, y)
-            g, s = polar_to_cart(m, phi)
-            g,s = numpy.array(g),numpy.array(s)
-            indexes = numpy.where((g > 0) & (g < 1) & (s > 0) & (s < 1))
-            g,s = g[indexes], s[indexes]
-            original_idxes = Image_indices[indexes]
-            dg1['g'],dg1['s'] = g,s
+        #Line between P_n and (1,0)
+            x2, y2 = numpy.asarray([Pn_x, 1.0], dtype = 'float64'), numpy.asarray([Pn_y, 0.0], dtype = 'float64')
+            m2, c2 = line_equation(x2, y2)
+            y2 = m2 * xaxis + c2
+            P_n = numpy.array([Pn_x, Pn_y])
+            p2 = numpy.array([1,0])
 
-            p3 = dg1[['g', 's']].to_numpy()
-
-            p3_min = numpy.array([CoM_x[0], CoM_y[0]]) #STED1
-            p3_max =numpy.array([CoM_x[1], CoM_y[1]]) #STED2
-        # Plot the phasor distribution of the STED-FLIM image
-            stedphasor=ax5.scatter(g, s, c="orange", s=0.5,alpha=0.2, rasterized=True)
+        # Plot the Confocal-FLIM phasor distribution 
+            confphasor=ax5.scatter(g,s,c="lime",s=0.5,alpha=0.2,rasterized=True)
 
 
-            
-        # Calculate the SPLIT-STED fractional components and apply to the STED-FLIM image
-            im_fract, projection,t2 = SPLIT_STED(p3, P_n, p2, p3_min, p3_max, image1, original_idxes)
+            continue
+        
 
-            im_splitsted = im_fract * imsum
+        #print(key, 'Im here now')
+        sted_stack = imsum
 
-            l2 = numpy.sum((P_n - p2) ** 2)  # distance between P_n and p2
-            t_min = numpy.sum((p3_min - P_n) * (p2 - P_n)) / l2  #Project phasor centroids on line connecting p2 and P_n
-            t_max = numpy.sum((p3_max - P_n) * (p2 - P_n)) / l2
-            projectionp3min = P_n + numpy.multiply(p2 - P_n, t_min) # Find g,s coordinates of projected points (for phasor space graphs)
-            projectionp3max = P_n + numpy.multiply(p2 - P_n, t_max) # Find g,s coordinates of projected points (for phasor space graphs)
+    # Measure the resolution of the STED-FLIM image (intensity sum over time bins)
+        res_sted_stack = decorr_res(imname=None, image=image1[:,:,10:].sum(axis=2))
+        if numpy.isinf(res_sted_stack):
+            res_sted_stack = 0
+        objec.append(res_sted_stack)
 
 
-        # Plot the color-coded phasor distribution of the SPLIT-STED image and line connecting the phasor centroids
-            mixphasor = ax4.scatter(g, s, c=t2[1,:],cmap=phasorcolor, s=2,rasterized=True)
-            p3minscat=ax4.scatter(projectionp3min[0],projectionp3min[1],s=50,c='orangered')
-            p3maxscat=ax4.scatter(projectionp3max[0],projectionp3max[1],s=50,c='orangered')
-            p2pnscat=ax4.scatter([P_n[0],p2[0]],[P_n[1],p2[1]],s=50,c='gold')
-            lineplot=ax4.plot([P_n[0],p2[0]],[P_n[1],p2[1]],linewidth=3,c='deepskyblue')
+    # Calculate the position of 2 centroids for STED-FLIM phasor distribution
+        kmeans = KMeans(n_clusters = 2, init = 'k-means++', random_state = 42)
+        y_kmeans = kmeans.fit_predict(dg)
 
-        # Fit ellipse on the 70th percentile of the phasor distribution of the STED-FLIM image and plot it
-            cov = np.cov(g, s)
-            val, vec = np.linalg.eig(cov)
-            order = val.argsort()[::-1]
-            eigen_val=val[order]
-            norm_eigen_vec = vec[:,order]
-            eigen_val = np.sort(np.sqrt(eigen_val))
-            ppfs=[0.3]
-            for ppf in ppfs:
-                width = 2 * eigen_val[0] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-                height = 2 * eigen_val[1] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-                angle = np.rad2deg(np.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
-                                            norm_eigen_vec[0, eigen_val.argmax()]))
-                ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
-                ax4.add_patch(ell)
-                ell.set_facecolor("None")
-                #ell.set_edgecolor(colors[k][a])
-                ell.set_edgecolor("k")
-                ell.set_linewidth(1.0)
+        CoM_x.extend(kmeans.cluster_centers_[:, 0][:].tolist())
+        CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
+
+        CoM_x.sort()
+        CoM_y.sort(reverse=True) # To get the order CoM = [STED1 < STED2, ...]
+    # Calculate the phasor of the STED-FLIM image with a lower foreground threshold to include all pixels in SPLIT-STED 
+        start_DTCWT_Time = time.time()
+        x, y, original_indexs, Images, Images_Filtered = DTCWT_Phasor(image1, 0,nlevels,neighbours)
+        stop_DTCWT_Time = time.time()
+        DTCWT_Time = stop_DTCWT_Time - start_DTCWT_Time
+        params_dict["foreground_threshold"] = 3
+        print("DTCWT_Time", DTCWT_Time)
+        x = x[imsum > params_dict["foreground_threshold"]]
+        y = y[imsum > params_dict["foreground_threshold"]]
+        Image_indices = numpy.arange(len(imsum.flatten())).reshape(imsum.shape)
+        Image_indices = Image_indices[imsum > params_dict["foreground_threshold"]]
+    # Apply phasor calibration in polar coordinates (based on IRF measurement) and return to cartesan (g,s)
+        df1['x'],df1['y'] = x.flatten(),y.flatten()
+        x,y= x.flatten(),y.flatten()
+        m, phi = to_polar_coord(x, y)
+        g, s = polar_to_cart(m, phi)
+        g,s = numpy.array(g),numpy.array(s)
+        indexes = numpy.where((g > 0) & (g < 1) & (s > 0) & (s < 1))
+        g,s = g[indexes], s[indexes]
+        original_idxes = Image_indices[indexes]
+        dg1['g'],dg1['s'] = g,s
+
+        p3 = dg1[['g', 's']].to_numpy()
+
+        p3_min = numpy.array([CoM_x[0], CoM_y[0]]) #STED1
+        p3_max =numpy.array([CoM_x[1], CoM_y[1]]) #STED2
+    # Plot the phasor distribution of the STED-FLIM image
+        stedphasor=ax5.scatter(g, s, c="orange", s=0.5,alpha=0.2, rasterized=True)
+
+
+        
+    # Calculate the SPLIT-STED fractional components and apply to the STED-FLIM image
+        im_fract, projection,t2 = SPLIT_STED(p3, P_n, p2, p3_min, p3_max, image1, original_idxes)
+
+        im_splitsted = im_fract * imsum
+
+        l2 = numpy.sum((P_n - p2) ** 2)  # distance between P_n and p2
+        t_min = numpy.sum((p3_min - P_n) * (p2 - P_n)) / l2  #Project phasor centroids on line connecting p2 and P_n
+        t_max = numpy.sum((p3_max - P_n) * (p2 - P_n)) / l2
+        projectionp3min = P_n + numpy.multiply(p2 - P_n, t_min) # Find g,s coordinates of projected points (for phasor space graphs)
+        projectionp3max = P_n + numpy.multiply(p2 - P_n, t_max) # Find g,s coordinates of projected points (for phasor space graphs)
+
+
+    # Plot the color-coded phasor distribution of the SPLIT-STED image and line connecting the phasor centroids
+        mixphasor = ax4.scatter(g, s, c=t2[1,:],cmap=phasorcolor, s=2,rasterized=True)
+        p3minscat=ax4.scatter(projectionp3min[0],projectionp3min[1],s=50,c='orangered')
+        p3maxscat=ax4.scatter(projectionp3max[0],projectionp3max[1],s=50,c='orangered')
+        p2pnscat=ax4.scatter([P_n[0],p2[0]],[P_n[1],p2[1]],s=50,c='gold')
+        lineplot=ax4.plot([P_n[0],p2[0]],[P_n[1],p2[1]],linewidth=3,c='deepskyblue')
+
+    # Fit ellipse on the 70th percentile of the phasor distribution of the STED-FLIM image and plot it
+        cov = numpy.cov(g, s)
+        val, vec = numpy.linalg.eig(cov)
+        order = val.argsort()[::-1]
+        eigen_val=val[order]
+        norm_eigen_vec = vec[:,order]
+        eigen_val = numpy.sort(numpy.sqrt(eigen_val))
+        ppfs=[0.3]
+        for ppf in ppfs:
+            width = 2 * eigen_val[0] * numpy.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+            height = 2 * eigen_val[1] * numpy.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+            angle = numpy.rad2deg(numpy.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
+                                        norm_eigen_vec[0, eigen_val.argmax()]))
+            ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
+            ax4.add_patch(ell)
+            ell.set_facecolor("None")
+            #ell.set_edgecolor(colors[k][a])
+            ell.set_edgecolor("k")
+            ell.set_linewidth(1.0)
 
 # Save the SPLIT-STED Phasor graph
-            fig4.savefig(os.path.join(savefolder,"Phasor_SPLITSTED_DTCWT_{}.pdf".format(os.path.basename(im).split(".msr")[0])),transparent='True', bbox_inches="tight",dpi=900)
- # Save the Confocal-FLIM and STED-FLIM Phasor graph and clean the plot for the next image       
-            fig5.savefig(
-                os.path.join(savefolder, "Phasor_raw_DTCWT_{}.pdf".format(os.path.basename(im).split(".msr")[0])),
-                transparent='True', bbox_inches="tight", dpi=900)
-            stedphasor.remove()
-            confphasor.remove()
-            p3minscat.remove()
-            p3maxscat.remove()
-            p2pnscat.remove()
-            ax4.lines.pop(-1)
-            mixphasor.remove()
-            ell.remove()
+        fig4.savefig(os.path.join(savefolder,"Phasor_SPLITSTED_DTCWT_{}.pdf".format(os.path.basename(im).split(".msr")[0])),transparent='True', bbox_inches="tight",dpi=900)
+# Save the Confocal-FLIM and STED-FLIM Phasor graph and clean the plot for the next image       
+        fig5.savefig(
+            os.path.join(savefolder, "Phasor_raw_DTCWT_{}.pdf".format(os.path.basename(im).split(".msr")[0])),
+            transparent='True', bbox_inches="tight", dpi=900)
+        stedphasor.remove()
+        confphasor.remove()
+        p3minscat.remove()
+        p3maxscat.remove()
+        p2pnscat.remove()
+        ax4.lines.pop(-1)
+        mixphasor.remove()
+        ell.remove()
 
-    # Save the STED image, SPLIT-STED image and its fractional component maps     
-            overlayer = LifetimeOverlayer(1-im_fract, imsum/imsum.max(), cname=phasorcolor)
-            lifetime_rgb, cmap = overlayer.get_overlay(
-            lifetime_minmax=(0, 1.0),
-            intensity_minmax=(0, 0.6) # inensity saturated to get more bright regions
-            )
-            fig, ax = plt.subplots()
-            ax.axis('off')
-            ax.imshow(lifetime_rgb)
-            cbar = fig.colorbar(cmap, ax=ax)
-            fig.savefig(os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_F1Overlay.pdf"),transparent='True', bbox_inches="tight")
-            plt.close(fig)
-
-            im_fractnan=im_fract.copy()
-            im_fractnan[imsum < params_dict["foreground_threshold"]]=numpy.nan
-
-            fig, ax = plt.subplots()
-            ax.axis('off')
-            ims=ax.imshow(im_fractnan,cmap=phasorcolor)
-            fig.colorbar(ims, ax=ax)
-            filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_{}_{}.pdf".format(nlevels,neighbours))
-            #imsave(filenameout, im_fractnan, luts=phasorcolor)
-            fig.savefig(filenameout,transparent='True', bbox_inches="tight")
-            plt.close(fig)
-
-            reversefract=(1-im_fract)
-            reversefract[imsum < params_dict["foreground_threshold"]]=numpy.nan
-
-            fig, ax = plt.subplots()
-            ax.axis('off')
-            ims=ax.imshow(reversefract,cmap=phasorcolor)
-            fig.colorbar(ims,ax=ax)
-
-            filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_reversed_{}_{}.pdf".format(nlevels,neighbours))
-            #imsave(filenameout, reversefract, luts=phasorcolor)
-            fig.savefig(filenameout,transparent='True', bbox_inches="tight")
-            plt.close(fig)
-
-
-            filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_{}_{}.tiff".format(nlevels,neighbours))
-            imsave(filenameout, im_fract, luts="Red Hot")
-
-            filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_dtcwt_{}_{}.tiff".format(nlevels,neighbours))
-            imsave(filenameout, im_splitsted.astype(numpy.uint16), luts="Red Hot")
-            #tifffile.imwrite(filenameout, im_splitsted.astype(numpy.uint16))
-            filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_STED.tiff")
-            imsave(filenameout,image1[:,:,10:111].sum(axis=2).astype(numpy.uint16), luts="Red Hot")
-            #tifffile.imwrite(filenameout, image1[:,:,10:].sum(axis=2).astype(numpy.uint16))
-           
-# Measure the resolution of the SPLIT-STED image
-            res_splitsted = decorr_res(imname=None, image=im_splitsted)
-            if numpy.isinf(res_splitsted):
-                res_splitsted = 0
-            objec.append(res_splitsted)
-
-            fg_splitsted = get_foreground(im_splitsted)
-            fg_sted_stack=get_foreground(sted_stack)
-            fg_conf_stack=get_foreground(conf_stack)
-   # Calculate the Squirrel metrics of the SPLIT-STED image compared to the STED-FLIM image         
-            y_result = Squirrel(method="L-BFGS-B", normalize=True).evaluate([sted_stack], conf_stack, conf_stack, im_splitsted > fg_splitsted, conf_stack > fg_conf_stack )
-            objec.append(y_result)
- # Calculate the photobleaching caused by the acquisition of the STED-FLIM image
-            bleach = Bleach().evaluate(sted_stack , Conf_init, Conf_end, sted_stack > fg_sted_stack, Conf_init > fg_conf_stack)
-   
-            objec.append(bleach)
-        if 0 not in objec[3:5]: #Don't include image in stats if resolution did not converge
-            data_objectifs.loc[image_id] = objec
-        else:
-            print("Resolution didn't converge")
-            print(res_splitsted ,res_sted_stack)
+# Save the STED image, SPLIT-STED image and its fractional component maps     
+        overlayer = LifetimeOverlayer(1-im_fract, imsum/imsum.max(), cname=phasorcolor)
+        lifetime_rgb, cmap = overlayer.get_overlay(
+        lifetime_minmax=(0, 1.0),
+        intensity_minmax=(0, 0.6) # inensity saturated to get more bright regions
+        )
+        fig, ax = plt.subplots()
+        ax.axis('off')
+        ax.imshow(lifetime_rgb)
+        cbar = fig.colorbar(cmap, ax=ax)
+        fig.savefig(os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_F1Overlay.pdf"),transparent='True', bbox_inches="tight")
         plt.close(fig)
+
+        im_fractnan=im_fract.copy()
+        im_fractnan[imsum < params_dict["foreground_threshold"]]=numpy.nan
+
+        fig, ax = plt.subplots()
+        ax.axis('off')
+        ims=ax.imshow(im_fractnan,cmap=phasorcolor)
+        fig.colorbar(ims, ax=ax)
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_{}_{}.pdf".format(nlevels,neighbours))
+        #imsave(filenameout, im_fractnan, luts=phasorcolor)
+        fig.savefig(filenameout,transparent='True', bbox_inches="tight")
+        plt.close(fig)
+
+        reversefract=(1-im_fract)
+        reversefract[imsum < params_dict["foreground_threshold"]]=numpy.nan
+
+        fig, ax = plt.subplots()
+        ax.axis('off')
+        ims=ax.imshow(reversefract,cmap=phasorcolor)
+        fig.colorbar(ims,ax=ax)
+
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_reversed_{}_{}.pdf".format(nlevels,neighbours))
+        #imsave(filenameout, reversefract, luts=phasorcolor)
+        fig.savefig(filenameout,transparent='True', bbox_inches="tight")
+        plt.close(fig)
+
+
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_{}_{}.tiff".format(nlevels,neighbours))
+        imsave(filenameout, im_fract, luts="Red Hot")
+
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_dtcwt_{}_{}.tiff".format(nlevels,neighbours))
+        imsave(filenameout, im_splitsted.astype(numpy.uint16), luts="Red Hot")
+        #tifffile.imwrite(filenameout, im_splitsted.astype(numpy.uint16))
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_STED.tiff")
+        imsave(filenameout,image1[:,:,10:111].sum(axis=2).astype(numpy.uint16), luts="Red Hot")
+        #tifffile.imwrite(filenameout, image1[:,:,10:].sum(axis=2).astype(numpy.uint16))
         
-        
+# Measure the resolution of the SPLIT-STED image
+        res_splitsted = decorr_res(imname=None, image=im_splitsted)
+        if numpy.isinf(res_splitsted):
+            res_splitsted = 0
+        objec.append(res_splitsted)
+
+        fg_splitsted = get_foreground(im_splitsted)
+        fg_sted_stack=get_foreground(sted_stack)
+        fg_conf_stack=get_foreground(conf_stack)
+# Calculate the Squirrel metrics of the SPLIT-STED image compared to the STED-FLIM image         
+        y_result = Squirrel(method="L-BFGS-B", normalize=True).evaluate([sted_stack], conf_stack, conf_stack, im_splitsted > fg_splitsted, conf_stack > fg_conf_stack )
+        objec.append(y_result)
+# Calculate the photobleaching caused by the acquisition of the STED-FLIM image
+        bleach = Bleach().evaluate(sted_stack , Conf_init, Conf_end, sted_stack > fg_sted_stack, Conf_init > fg_conf_stack)
+
+        objec.append(bleach)
+    if 0 not in objec[3:5]: #Don't include image in stats if resolution did not converge
+        data_objectifs.loc[image_id] = objec
+    else:
+        print("Resolution didn't converge")
+        print(res_splitsted ,res_sted_stack)
+    plt.close(fig)
+    
+    
 
 # Save the dataframe with the metrics and calculate the mean and standard deviation of the metrics
 data_objectifs.STEDpercent= data_objectifs.STEDpercent.astype(float)
@@ -538,8 +532,8 @@ def STEDRes(x, a, b):
     float: The calculated resolution.
 
     """
-    return a/np.sqrt(1+(a**2*b**2*x))
-xs = np.linspace(np.min(x), np.max(x),(np.max(x)-np.min(x)).astype(int))
+    return a/numpy.sqrt(1+(a**2*b**2*x))
+xs = numpy.linspace(numpy.min(x), numpy.max(x),(numpy.max(x)-numpy.min(x)).astype(int))
 # Fit the resolution vs STED power graph
 try:
 
@@ -548,7 +542,7 @@ try:
     print("x",x[0].dtype,x)
     print("m",m.dtype,m)
     print("b",b.dtype,b)
-    y_pred =STEDRes(np.array(x), m,b)
+    y_pred =STEDRes(numpy.array(x), m,b)
     rsquared=sklearn.metrics.r2_score(y, y_pred)
     Ax.plot( xs, STEDRes(xs,m,b), '-',c='deepskyblue')
     Ax.text(5,200,"Parameters: \nalpha={0:.3g} \ndc={1:.4g}\n".format(m,b),c='deepskyblue')
@@ -569,9 +563,9 @@ def monoExp(x, m, t, b):
     Returns:
     float: The value of the monotonically decreasing exponential function at the given point.
     """
-    return m * np.exp(-t * x) + b
+    return m * numpy.exp(-t * x) + b
 
-xs = np.linspace(np.min(pp), np.max(pp),(np.max(pp)-np.min(pp)).astype(int))
+xs = numpy.linspace(numpy.min(pp), numpy.max(pp),(numpy.max(pp)-numpy.min(pp)).astype(int))
 # Fit the SPLIT-STED resolution vs STED power graph
 try:
     params, cv = curve_fit(monoExp,data_objectifs['STEDpercent'],data_objectifs['Res splitsted']*20,p0=(dfmeanoverall['Res splitsted']*20,3.4E-3,dfmeanoverall['Res splitsted']*20),maxfev = 10000)

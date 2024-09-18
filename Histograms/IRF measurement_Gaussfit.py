@@ -1,31 +1,29 @@
 """ Computes IRF (FWHM) value with a gaussian fit
     Use a FLIM confocal gold bead images because the 
-    gold reflects all laser beam in the detector
+    gold reflects the laser towards the detector
 """
 
 import matplotlib.pyplot as plt
 import glob
 import numpy
-from matplotlib_scalebar.scalebar import ScaleBar
 import easygui
-
 from scipy.optimize import curve_fit
 from scipy import asarray as ar,exp
-
+from specpy import File
 
 import os.path
-from sys import path as path1; path1.append('/Users/marielafontaine/Documents/GitHub/Abberior-STED-FLIM/Functions')
-dossier = os.path.expanduser("~/Documents/Github/Abberior-STED-FLIM/Functions")
+from sys import path as path1;
+dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (choose_msr_file, get_foreground)
+from Main_functions import get_foreground,load_msr
+
+
 # -----------------------------------------------------------
 #                  Sélectionner les images
-#easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+filename=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
-filename = '/Users/marielafontaine/valeria-s3/flclab-abberior-sted/mlafontaine/22-06-23_Gold_Bead'
+#filename = '/Users/marielafontaine/valeria-s3/flclab-abberior-sted/mlafontaine/22-06-23_Gold_Bead'
 mapcomp = {'CONF' : 'STAR 635P_CONF {0}'}
-
-
 
 path=os.path.join(filename,"*.msr")
 images = glob.glob(path)
@@ -33,10 +31,17 @@ print('There are ',len(images), 'Images in this folder')
 
 
 # -----------------------------------------------------------
-#     Choisir un fichier msr parmi plusieurs
+#     Select the image file to extract the IRF
 
-imagemsr = choose_msr_file(images)
+for imagei in images:
+    print(os.path.basename(imagei))
+# Ask user to choose an image file
+numim = int(input('Fichier msr a extraire (1er=0): '))
+images = images[numim]
+# Read the selected image file
+imagemsr = load_msr(images)
 print(imagemsr.keys())
+
 
 
 #plt.style.use('dark_background')
@@ -53,8 +58,8 @@ for key in mapcomp :
     fig, ax = plt.subplots()
     ax.imshow(imsum)
     ax.axis('off')
-    scalebar = ScaleBar(0.02, "um", length_fraction=0.25)
-    ax.add_artist(scalebar)
+   
+
     imgplot1 = ax.imshow(imsum, cmap='hot')
     cbar =fig.colorbar(imgplot1)
 
@@ -62,8 +67,7 @@ for key in mapcomp :
 
     fig_seuil, ax_seuil = plt.subplots()
     ax_seuil.imshow(imsum > seuil) 
-    scalebar = ScaleBar(0.02, "um", length_fraction=0.25)
-    #ax.add_artist(scalebar)
+    
     ax_seuil.axis('off')
 
 
