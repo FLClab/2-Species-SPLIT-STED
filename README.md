@@ -34,25 +34,40 @@ Curve fitting of FLIM histograms
 
 ### PhasorDistribution
 Display and analysis of phasor distributions of STED-FLIM images
+
+* **PhasorDistribution_STED_EllipseFit_2Species** Analysis of phasor distribution trajectories as a function of STED depletion power by fitting ellipses on phasor distributions. Saves metrics (shortest distance between ellipses, IOU, distance between ellipse centroids , ...) to a csv file and graphs properties (mean phasor centroid, ellipse dimensions) for each depletion power.
+<p align="center">    
+<img src="images/2Dye_Centroids.png" width="270"/>
+</p>
+
+ <p> 
+   <center><em>Mean ellipse and centroid for each depletion power </em></center>
+ </p> 
+
+* **ReadCSVtoGraphs_EllipseFit**: Reads csv file produced by **PhasorDistribution_STED_EllipseFit_2Species** and plots the different metrics as a function of depletion power
 * **PhasorDistribution_STED_3DGraph** Makes 3D graph of phasor distributions of 2 stainings as a function of STED depletion power 
 <p align="center">
 <img src="images/3D_Phasor.png" width="400"/>
  <p> 
    <center><em>3D graph of phasors of 2 dyes as a function of depletion power</em></center>
  </p> 
-
-* **PhasorDistribution_STED_EllipseFit_2Species** Analysis of phasor distribution trajectories as a function of STED depletion power by fitting ellipses on phasor distributions. Saves metrics (shortest distance between ellipses, IOU, distance between ellipse centroids , ...) to a csv file and graphs properties (mean phasor centroid, ellipse dimensions) for each depletion power.
-<p float="middle">    
-<img src="images/2Dye_Centroids.png" width="270"/>
-<img src="images/Bargraph_EllipseAxes.png" width="320"/>
 </p>
 
+* **PhasorDistribution_PrevsPostCalibration**: Plots a phasor before and after the calibration with the IRF
+<p align="center">
+<img src="images/PrevsPostCalibration.png" width="270"/>
  <p> 
-   <left><em>Mean ellipse and centroid for each depletion power &emsp;&emsp;&emsp; Bar graphs of ellipse dimensions</em></left>
+   <center><em>phasors before and after application of calibration</em></center>
  </p> 
+</p>
 
-* **ReadCSVtoGraphs_EllipseFit**: Reads csv file produced by **PhasorDistribution_STED_EllipseFit_2Species** and plots the different metrics as a function of depletion power
-
+* **PhasorDistribution_RawvsMedianvsCWF**: Plots the same phasor with different filtering techniques (raw,median and CWF)
+<p align="center">
+<img src="images/RawvsFilters.png" width="400"/>
+ <p> 
+   <center><em>phasors before and after application of median and CWF filters</em></center>
+ </p> 
+</p>
 
 
 ### SPLIT-STED
