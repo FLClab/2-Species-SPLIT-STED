@@ -6,9 +6,12 @@ Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluoropho
 
 ## Folder contents
 ### Acquisition
-Codes to perform automatic image acquisition with different depletion powers on an Abberior Expert Line STED microscope. Based on the specpy and [Abberior-STED](https://https://github.com/FLClab/Abberior-STED) libraries
+Codes to perform automatic image acquisition with different depletion powers on an Abberior Expert Line STED microscope. Based on the [specpy](https://pypi.org/project/specpy/) and [Abberior-STED](https://https://github.com/FLClab/Abberior-STED) libraries
 
-* **FLIM_AutoAcquire_VaryPower_ConfocalsPrePost**: Main program that coordinates the acquisition sequence, randomly selects depletion power values from a list of repeated values and sets the value for acquisition.
+* **FLIM_AutoAcquire_VaryPower_ConfocalsPrePost**: Main program that coordinates the acquisition sequence, randomly selects depletion power values from a list of repeated values and sets the value for acquisition. For each region, it lauches the acquisition a predefined sequence of images :
+1) Confocal image
+2) Pair of STED-FLIM and Confocal-FLIM images
+3) Confocal image.
 ### Functions
 Functions called in other folders
 * **Main_Functions**: Contains phasor calibration codes, foreground detection
