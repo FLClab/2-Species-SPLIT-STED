@@ -38,7 +38,7 @@ from sklearn.cluster import KMeans
 from sys import path as syspath; 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 syspath.append(dossier)
-from decorr_res import decorr_res
+import decorr 
 from objectives import (Squirrel, Bleach)
 from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import DTCWT_Phasor,Median_Phasor,SPLIT_STED
@@ -89,9 +89,9 @@ filename= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3
 filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
 filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq")
-filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','alphaTubulin_Alexa647')
-filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','B2Spectrin Alexa647')
-filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P')
+#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','alphaTubulin_Alexa647')
+#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','B2Spectrin Alexa647')
+#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P')
 ## Dictionary of the images to be used (keys in the .msr files)
 
 # mapcomp = { 'Conf pre'  :  'Conf_Pre {13}',
@@ -100,17 +100,17 @@ filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','C
 #             'Conf post' : 'Conf_Post {14}',
 #            'STED High' : 'STED_635P_HighP {8}'}
 
-# mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
-#              'Conf FLIM' : 'Confocal_561 {11}',
-#              'STED FLIM' :'STED 561 {11}',
-#              'Conf post' : 'Confocal_Post {15}',
-#             'STED High' : 'STED 561_HighP {16}'}
-
-mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
-             'Conf FLIM' : 'Conf_635P {2}', 
-             'STED FLIM' :'STED_635P {2}',
-             'Conf post' :  'Conf_post {7}',
+mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
+             'Conf FLIM' : 'Confocal_561 {11}',
+             'STED FLIM' :'STED 561 {11}',
+             'Conf post' : 'Confocal_Post {15}',
             'STED High' : 'STED 561_HighP {16}'}
+
+# mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
+#              'Conf FLIM' : 'Conf_635P {2}', 
+#              'STED FLIM' :'STED_635P {2}',
+#              'Conf post' :  'Conf_post {7}',
+#             'STED High' : 'STED 561_HighP {16}'}
 
 
 colors=["springgreen",'orangered','gold','deepskyblue']
@@ -207,7 +207,7 @@ for i,im in enumerate(images) :
                 filenameout = os.path.join(savefolder,
                                         os.path.basename(im).split(".msr")[0] + "_HighP_STED.tiff")
                 imsave(filenameout, imsumhigh.astype(numpy.uint16), luts="Red Hot")
-                res_HighSTED = decorr_res(imname=None, image=imsumhigh)
+                res_HighSTED = decorr.calculate(imsumhigh)
                 objec.append(res_HighSTED)
                 fg_highpSTED=get_foreground(imsumhigh)   
                 squirrel_highp_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([imsumhigh], conf_stack, conf_stack,imsumhigh > fg_highpSTED, conf_stack >fg_conf_stack )
@@ -271,7 +271,7 @@ for i,im in enumerate(images) :
                                         os.path.basename(im).split(".msr")[0] + "_Confocal.tiff")
             imsave(filenameout, imsum.astype(numpy.uint16), luts="Red Hot")
             #tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
-            res_conf = decorr_res(imname=None, image=imsum)
+            res_conf = decorr.calculate(imsum)
             objec.append(res_conf)
         # Find the centroid coordinates of the phasor distribution
             n=1
@@ -304,7 +304,8 @@ for i,im in enumerate(images) :
         sted_stack = imsum
 
     # Measure the resolution of the STED-FLIM image (intensity sum over time bins)
-        res_sted_stack = decorr_res(imname=None, image=image1[:,:,10:].sum(axis=2))
+        res_sted_stack = decorr.calculate(image1[:,:,10:].sum(axis=2))
+
         if numpy.isinf(res_sted_stack):
             res_sted_stack = 0
         objec.append(res_sted_stack)
@@ -454,7 +455,7 @@ for i,im in enumerate(images) :
         #tifffile.imwrite(filenameout, image1[:,:,10:].sum(axis=2).astype(numpy.uint16))
         
 # Measure the resolution of the SPLIT-STED image
-        res_splitsted = decorr_res(imname=None, image=im_splitsted)
+        res_splitsted = decorr.calculate(im_splitsted)
         if numpy.isinf(res_splitsted):
             res_splitsted = 0
         objec.append(res_splitsted)

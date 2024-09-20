@@ -33,7 +33,7 @@ from lifetime import LifetimeOverlayer
 from skimage import filters
 import scipy
 from tiffwrapper import imsave
-from decorr_res import decorr_res
+import decorr
 from objectives import (Squirrel, Bleach)
 from skspatial.objects import Circle
 from skspatial.objects import Line
@@ -367,7 +367,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
             imagemsr=load_msr(msr)
             print(imagemsr.keys())
             image1 = imagemsr[keysmixed[i]]
-            res_mix = decorr_res(imname=None, image=numpy.sum(image1[:, :, 10:111],axis=2))
+            res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):
                 res_mix=10
             print("res_mix ",res_mix*20 )
@@ -568,9 +568,9 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         print("difference", numpy.min(difference), numpy.max(difference))
         fraction1 *= difference
         fraction2 *= difference
-        res_fraction1 = decorr_res(imname=None, image=fraction1.astype(numpy.uint16) )
-        res_fraction2 = decorr_res(imname=None, image=fraction2.astype(numpy.uint16))
-        res_fraction3 = decorr_res(imname=None, image=imsum_flat_lin3.astype(numpy.uint16))
+        res_fraction1 = decorr.calculate(fraction1.astype(numpy.uint16) )
+        res_fraction2 = decorr.calculate(fraction2.astype(numpy.uint16))
+        res_fraction3 = decorr.calculate(imsum_flat_lin3.astype(numpy.uint16))
         if math.isinf(res_fraction2):
             res_fraction2=10
         if math.isinf(res_fraction1):

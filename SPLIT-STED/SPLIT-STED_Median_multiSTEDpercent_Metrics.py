@@ -39,7 +39,7 @@ from sklearn.cluster import KMeans
 from sys import path as syspath; 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 syspath.append(dossier)
-from decorr_res import decorr_res
+import decorr
 from objectives import (Squirrel, Bleach)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
 from Phasor_functions import DTCWT_Phasor,Median_Phasor,SPLIT_STED
@@ -192,7 +192,7 @@ for i,im in enumerate(images) :
                 filenameout = os.path.join(savefolder,
                                         os.path.basename(im).split(".msr")[0] + "_HighP_STED.tiff")
                 imsave(filenameout, imsumhigh.astype(numpy.uint16), luts="Red Hot")
-                res_HighSTED = decorr_res(imname=None, image=imsumhigh)
+                res_HighSTED = decorr.calculate(imsumhigh)
                 objec.append(res_HighSTED)
                 fg_highpSTED=get_foreground(imsumhigh)   
                 squirrel_highp_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([imsumhigh], conf_stack, conf_stack,imsumhigh > fg_highpSTED, conf_stack >fg_conf_stack )
@@ -243,7 +243,7 @@ for i,im in enumerate(images) :
                                         os.path.basename(im).split(".msr")[0] + "_Confocal.tiff")
             imsave(filenameout, imsum.astype(numpy.uint16), luts="Red Hot")
             #tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
-            res_conf = decorr_res(imname=None, image=imsum)
+            res_conf = decorr.calculate(imsum)
             objec.append(res_conf)
 # Find the centroid coordinates of the phasor distribution
             n=1
@@ -278,7 +278,7 @@ for i,im in enumerate(images) :
 
     # Measure the resolution of the STED-FLIM image (intensity sum over time bins)
     
-        res_sted_stack = decorr_res(imname=None, image=image1[:,:,10:].sum(axis=2))
+        res_sted_stack = decorr.calculate(image1[:,:,10:].sum(axis=2))
         if numpy.isinf(res_sted_stack):
             res_sted_stack = 0
         objec.append(res_sted_stack)
@@ -428,7 +428,7 @@ for i,im in enumerate(images) :
         #tifffile.imwrite(filenameout, image1[:,:,10:].sum(axis=2).astype(numpy.uint16))
         
 # Measure the resolution of the SPLIT-STED image
-        res_splitsted = decorr_res(imname=None, image=im_splitsted)
+        res_splitsted = decorr.calculate(im_splitsted)
         objec.append(res_splitsted)
 
         fg_splitsted = get_foreground(im_splitsted)

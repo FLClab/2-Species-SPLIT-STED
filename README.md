@@ -21,7 +21,7 @@ Functions called in other folders
 * **Phasor_functions**: Contains code to calculate both median and [CWF](https://doi.org/10.1364/BOE.420953) filtered phasor distributions, codes to perform unmixing and SPLIT-STED. 
 * **convertmsr_bioformatsAB**: Contains MSRReader class which allows to read msr files (raw data files saved by Abberior microscope)
 * **objectives** : Contains photobleaching and [SQUIRREL metric](https://doi.org/10.1038/nmeth.4605) calculation functions
-* **decorr_res** : Function to calculate image resolution based on [Decorrelation analysis](https://doi.org/10.1038/s41592-019-0515-7)
+* **decorr** : Function to calculate image resolution based on [Decorrelation analysis](https://doi.org/10.1038/s41592-019-0515-7). Script originally made for [this paper](https://doi.org/10.1101/2024.03.25.586697) and available [here](https://github.com/FLClab/bandit-optimization)
 * **lifetime** : Function to create images colorcoded by lifetime overlayed on the intensity values.
 
 ###  Histograms

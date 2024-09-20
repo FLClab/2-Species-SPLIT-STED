@@ -23,7 +23,7 @@ import skimage
 from lifetime import LifetimeOverlayer
 from skimage import filters
 import scipy
-from decorr_res import decorr_res
+import decorr
 from objectives import (Squirrel, Bleach)
 import tifffile
 from scipy.optimize import minimize
@@ -129,8 +129,8 @@ def Simulate2SpeciesSTED(STEDPOWER):
             print(imagemsr.keys())
             image1 = imagemsr[keysmixed[i]]
             imagec1 = imagemsr[keyscontrols[i]]
-            #res_control = decorr_res(imname=None, image=numpy.sum(imagec1[:,:,10:],axis=2))
-            res_mix = decorr_res(imname=None, image=numpy.sum(image1[:, :, 10:111],axis=2))
+            #res_control = decorr.calculate(numpy.sum(imagec1[:,:,10:],axis=2))
+            res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):
                 res_mix=10
             #print("res_control",res_control*20,"res_mix ",res_mix*20 )

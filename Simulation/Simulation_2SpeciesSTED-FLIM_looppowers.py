@@ -24,7 +24,7 @@ from tiffwrapper import imsave
 from lifetime import LifetimeOverlayer
 from skimage import filters
 import scipy
-from decorr_res import decorr_res
+import decorr
 from objectives import (Squirrel, Bleach)
 import tifffile
 matplotlib.rcParams['axes.linewidth'] = 0.8
@@ -232,8 +232,8 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
             print(imagemsr.keys())
             image1 = imagemsr[keysmixed[i]]
             imagec1 = imagemsr[keyscontrols[i]]
-            #res_control = decorr_res(imname=None, image=numpy.sum(imagec1[:,:,10:],axis=2))
-            res_mix = decorr_res(imname=None, image=numpy.sum(image1[:, :, 10:111],axis=2))
+            #res_control = decorr.calculate(numpy.sum(imagec1[:,:,10:],axis=2))
+            res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):
                 res_mix=10
             #print("res_control",res_control*20,"res_mix ",res_mix*20 )
@@ -403,8 +403,8 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         imsum = Combo[:, :, 10:111].sum(axis=2)
         fraction1 *= imsum
         fraction2 *= imsum
-        res_fraction1 = decorr_res(imname=None, image=fraction1.astype(numpy.uint16) )
-        res_fraction2 = decorr_res(imname=None, image=fraction2.astype(numpy.uint16) )
+        res_fraction1 = decorr.calculate(fraction1.astype(numpy.uint16) )
+        res_fraction2 = decorr.calculate(fraction2.astype(numpy.uint16) )
         if math.isinf(res_fraction2):
             res_fraction2=10
         if math.isinf(res_fraction1):
