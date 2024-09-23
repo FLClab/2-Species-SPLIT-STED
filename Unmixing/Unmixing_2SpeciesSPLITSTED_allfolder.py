@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 """
+Script that performs 2 species SPLIT-STED phasor analysis on a set of images.
+The script takes as input 2 folders of control images, one for each species, and a folder of mixed images.
+It calculates the phasor distribution for each control image, builds a triangle in phasor space
+ and then uses it to unmix the mixed images. 
  
+ The script outputs:
+    - the phasor distribution of the mixed images colored by the unmixing results
+    - the mixed images colored by the unmixing results and the separated fractions
+    - the phasor distribution of the control images
+    - Composite image of the unmixed fluorophores with the third fraction removed
 """
 
 import os
@@ -97,15 +106,6 @@ if None in [f1,f2,f3,savefolder]:
     #f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
 
-    f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","MediumAcq")
-    f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","MediumAcq")
-    f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","MediumAcq")
-    f2=os.path.join('U:', os.sep,'adeschenes',"2023-04-25_CalgarySampleTests","FLIM","Phalloidin_AF594_STEDPowerBleach_5to40_50PControl")
-    f1=os.path.join('U:', os.sep,'adeschenes',"2023-04-25_CalgarySampleTests","FLIM","Spectrin_CF594_STEDPowerBleach_5to40_50PControl")
-
-    f3=os.path.join('U:', os.sep,'adeschenes',"2023-04-25_CalgarySampleTests","FLIM","Spectrin_CF594_PhalloidinAF594_STEDPowerBleach_5to40_50PControl")
-    f3=os.path.join('U:', os.sep,'adeschenes',"2023-04-25_CalgarySampleTests","FLIM","Spectrin_CF594_PhalloidinAF594_STEDPowerBleach_5to40_50PControl_1")
-
     f1 = os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"PSD95_AF647_STEDPowerBleach_5to30_1")
     f2=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5','rab_Bassoon_STAR635P_STEDPowerBleach_5to30_1')
     f1= os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_STEDPowerBleach_5to30_1")
@@ -118,13 +118,18 @@ if None in [f1,f2,f3,savefolder]:
     #f2= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_STEDPowerBleach_MediumAcq_MoreReps_1")
     #f3= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_rabBassoon_CF594_STEDPowerBleach_MediumAcq_MoreReps_1")
     #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","PSD95_STOrange_rabBassoon_CF594")
-    #f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-    #f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Phalloidin_AF594_STEDPowerBleach_MediumAcq_1")
-    #f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Phalloidin_AF594_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
+
    # f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
     #f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
     #f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-            
+    
+    #f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","MediumAcq")
+    #f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","MediumAcq")
+    #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","MediumAcq")      
+    
+    f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","HighP")
+    f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","HighP")
+    f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","HighP controls")  
 
     savefolder=str(input("Name of Output folder: "))
     #numimlist=[3,3,5,2,16,16,1,4]
@@ -133,24 +138,27 @@ if None in [f1,f2,f3,savefolder]:
     #numimlist=[6,6,1,4,5,5,3,1]
     #numimlist=[1,1,5,4,17,17,7,0] # PSD-Bassoon Cy5
     #numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
-    numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
+    #numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
     #numimlist=[7,7,1,0,0,0,1,19] # PSD Bassoon Cy3
     #numimlist = [1,1,0,8,8,8,9,7] #Actin Bassoon CY3
     #numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
+    #numimlist=[0,0,6,2,5,5,6,0] # Homer Bassoon Cy3 MediumAcq
+    #numimlist=[0,0,5,1,4,4,3,2] # Homer Bassoon Cy3 ShortAcq
+    #numimlist=[2,2,0,3,7,7,6,0] # Homer Bassoon Cy3 LongAcq
     
 
 colors=['lightskyblue', 'deepskyblue','blue','mediumblue',"pink","lightpink",'lightcoral','indianred','springgreen']
 
 labels=["Confocal","STED 10%","STED 20%","STED 30%","Confocal","STED 10%","STED 20%","STED 30%",'Mixture STED']
-labels=["Confocal","STED 5%","STED 10%","STED 15%","Confocal","STED 5%","STED 10%","STED 15%",'Mixture STED']
+#labels=["Confocal","STED 5%","STED 10%","STED 15%","Confocal","STED 5%","STED 10%","STED 15%",'Mixture STED']
 
 filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
 filenamemixed=f3
-keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
+#keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','STED_594 {2}']
 #keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}']
-#keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}',  'STED 561 {11}']
+keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}',  'STED 561 {11}']
 #keys = [ 'Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}','Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}']
 msrfiles = []
 #plt.style.use('dark_background')

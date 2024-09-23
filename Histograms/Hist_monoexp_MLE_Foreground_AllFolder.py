@@ -41,10 +41,11 @@ filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','C
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P')
 #filename=  os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
 #filename= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
-
+filename=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","HighP")
+#filename=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","HighP")
 # Dictionary of the image identifiers (Channel names) to be included
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
-mapcomp = {'Conf635': 'Conf_635P {2}','STED635': 'STED_635P {2}'}
+#mapcomp = {'Conf635': 'Conf_635P {2}','STED635': 'STED_635P {2}'}
 
 # Make list of all the images in the folder
 print(filename)
