@@ -23,9 +23,11 @@ from specpy import File
 
 
 
-plotcolors = ( 'gray','blue','gold')
-labels=["2 species phasor-FLIM - Confocal","2 species phasor-FLIM - STED","2 species SPLIT-STED"]
-dispchannel=2
+plotcolors = ( 'gray','blue','gold','gray','blue','gold')
+labels=["2 species phasor-FLIM - Confocal","2 species phasor-FLIM - STED","2 species SPLIT-STED","2 species phasor-FLIM - Confocal","2 species phasor-FLIM - STED","2 species SPLIT-STED"]
+luts=("Cyan Hot", "Magenta Hot")
+rangelut=((0, 100), (0, 100))
+dispchannel=[2,5]
 Width=5
 pixelsize=20
 
@@ -130,9 +132,22 @@ for imagei in images:
 
     imagecomp = numpy.moveaxis(imagecomp, 0, -1)
     print(imagecomp.shape)
+
+# 
+    
     nchannels=imagecomp.shape[2]
-    img=imagecomp[:,:,dispchannel]
-    linelist = beadlines(img)
+    print('nchannels',nchannels)
+    if len(dispchannel)==1:
+        img=imagecomp[:,:,dispchannel[0]]
+        print('img',img.shape)
+        linelist = beadlines(img)
+    else:
+        img=imagecomp[:,:,dispchannel]
+        print('img',img.shape)
+        img= numpy.moveaxis(img, -1, 0)
+        print('img',img.shape)
+        img = make_composite(img, luts,ranges=rangelut)
+        linelist = beadlines(img)
 
     num_lines = len(linelist)
     print('num_lines',num_lines)
@@ -146,7 +161,7 @@ for imagei in images:
         for line in linelist:
             writerlines.writerow(line)
     for i, line in enumerate(linelist):
-        fig, axes = pyplot.subplots(nrows=nchannels+1, ncols=1, sharex=False,figsize=(2,8))
+        fig, axes = pyplot.subplots(nrows=nchannels+1, ncols=1, sharex=True)
         axesim.plot(line[0], line[1],label='Line{}'.format(i))
 
         xcouple = (line[1][1], line[1][0])
