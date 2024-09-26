@@ -44,9 +44,7 @@ from objectives import (Squirrel, Bleach)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
 from Phasor_functions import DTCWT_Phasor,Median_Phasor,SPLIT_STED
 from matplotlib.gridspec import GridSpec
-from lifetime import LifetimeOverlayer
-
-from tiffwrapper import imsave
+from tiffwrapper import imsave,LifetimeOverlayer
 
 
 matplotlib.rcParams['axes.linewidth'] = 0.8

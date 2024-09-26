@@ -35,8 +35,7 @@ dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions"
 path1.append(dossier)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
 from Phasor_functions import Median_Phasor,unmix3species,unmix3species_norescale
-from lifetime import LifetimeOverlayer
-from tiffwrapper import make_composite,imsave
+from tiffwrapper import make_composite,imsave,LifetimeOverlayer
 
 
 from skspatial.objects import Circle
@@ -127,9 +126,9 @@ if None in [f1,f2,f3,savefolder]:
     #f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","MediumAcq")
     #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","MediumAcq")      
     
-    f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","HighP")
-    f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","HighP")
-    f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","HighP controls")  
+    f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594")
+    f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE")
+    f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594")  
 
     savefolder=str(input("Name of Output folder: "))
     #numimlist=[3,3,5,2,16,16,1,4]
@@ -143,7 +142,7 @@ if None in [f1,f2,f3,savefolder]:
     #numimlist = [1,1,0,8,8,8,9,7] #Actin Bassoon CY3
     #numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
     #numimlist=[0,0,6,2,5,5,6,0] # Homer Bassoon Cy3 MediumAcq
-    #numimlist=[0,0,5,1,4,4,3,2] # Homer Bassoon Cy3 ShortAcq
+    numimlist=[0,0,5,1,4,4,3,2] # Homer Bassoon Cy3 ShortAcq
     #numimlist=[2,2,0,3,7,7,6,0] # Homer Bassoon Cy3 LongAcq
     
 
@@ -535,17 +534,6 @@ for m,mixedimage in enumerate(mixedimages):
     cbar3 =fig_im3.colorbar(imsum_flat6,ax=ax_im3[3], fraction=0.025, pad=0.01)
     #cbar3.set_label("Intensity", fontsize=12)
 
-
-    #imsum = indexes2intensity5(original_idxes, imsum, t2[0,:])
-    # overlayer = LifetimeOverlayer(imsum_flat_bi, difference/difference.max(), cname="CET-I1")
-    # lifetime_rgb, cmap = overlayer.get_overlay(
-    #     lifetime_minmax=(0., 1),
-    #     intensity_minmax=(0, 0.5) # inTensity saturated to get more bright regions
-    #             )
-
-    # imsum_flattt =ax_im3[4].imshow(lifetime_rgb)
-    # cbar4 = fig_im3.colorbar(cmap,ax=ax_im3[4],fraction=0.025, pad=0.01)
-
     
     lifetime=numpy.dstack(( imsum_flat_lin1, imsum_flat_lin2, imsum_flat_lin3))
 
@@ -555,7 +543,7 @@ for m,mixedimage in enumerate(mixedimages):
     blue=lifetime[:,:,0]+lifetime[:,:,1]
     
     lifetime_rgb =numpy.dstack((red,green,blue))
-    #lifetime_rgb=numpy.where(lifetime_rgb>1, 1,lifetime_rgb)
+
     print(lifetime_rgb.shape,lifetime_rgb.dtype)
     print(numpy.min(lifetime_rgb[:,:,0]),numpy.max(lifetime_rgb[:,:,0]))  
     print(numpy.min(lifetime_rgb[:,:,1]),numpy.max(lifetime_rgb[:,:,1]))  
@@ -573,7 +561,7 @@ for m,mixedimage in enumerate(mixedimages):
     tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32), photometric='rgb')
 
     overlayer = LifetimeOverlayer(lifetime, imsum/imsum.max(), cname='coolwarm')
-    lifetime_rgb = overlayer.get_overlay_test(
+    lifetime_rgb = overlayer.get_overlay_RGB(
         lifetime_minmax=(0., 1),
         intensity_minmax=(0, 0.5) # inTensity saturated to get more bright regions
                 )

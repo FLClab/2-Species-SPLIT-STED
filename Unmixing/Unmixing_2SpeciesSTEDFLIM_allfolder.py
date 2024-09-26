@@ -23,8 +23,8 @@ dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions"
 path1.append(dossier)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
 from Phasor_functions import Median_Phasor,unmix2species
-from tiffwrapper import imsave
-from lifetime import  LifetimeOverlayer
+from tiffwrapper import imsave,LifetimeOverlayer
+
 #plt.style.use('dark_background')
 # ------------------ Default Input variables ----------------
 params_dict = {
