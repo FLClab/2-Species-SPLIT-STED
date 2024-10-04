@@ -107,7 +107,7 @@ if None in [f1,f2,f3,savefolder]:
 
     f1 = os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"PSD95_AF647_STEDPowerBleach_5to30_1")
     f2=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5','rab_Bassoon_STAR635P_STEDPowerBleach_5to30_1')
-    f1= os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_STEDPowerBleach_5to30_1")
+    #f1= os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_STEDPowerBleach_5to30_1")
 
     f1=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_STEDPowerBleach_5to20_1")
     #f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_rabBassoon_STAR635P_STEDPowerBleach_5to30_1")
@@ -126,9 +126,9 @@ if None in [f1,f2,f3,savefolder]:
     #f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","MediumAcq")
     #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","MediumAcq")      
     
-    f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594")
-    f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE")
-    f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594")  
+    #f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","LongAcq")
+    #f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","LongAcq")
+    #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","LongAcq")  
 
     savefolder=str(input("Name of Output folder: "))
     #numimlist=[3,3,5,2,16,16,1,4]
@@ -137,12 +137,12 @@ if None in [f1,f2,f3,savefolder]:
     #numimlist=[6,6,1,4,5,5,3,1]
     #numimlist=[1,1,5,4,17,17,7,0] # PSD-Bassoon Cy5
     #numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
-    #numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
+    numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
     #numimlist=[7,7,1,0,0,0,1,19] # PSD Bassoon Cy3
     #numimlist = [1,1,0,8,8,8,9,7] #Actin Bassoon CY3
     #numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
     #numimlist=[0,0,6,2,5,5,6,0] # Homer Bassoon Cy3 MediumAcq
-    numimlist=[0,0,5,1,4,4,3,2] # Homer Bassoon Cy3 ShortAcq
+    #numimlist=[0,0,5,1,4,4,3,2] # Homer Bassoon Cy3 ShortAcq
     #numimlist=[2,2,0,3,7,7,6,0] # Homer Bassoon Cy3 LongAcq
     
 
@@ -153,11 +153,11 @@ labels=["Confocal","STED 10%","STED 20%","STED 30%","Confocal","STED 10%","STED 
 
 filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
 filenamemixed=f3
-#keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
+keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','STED_594 {2}']
 #keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}']
-keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}',  'STED 561 {11}']
+#keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}',  'STED 561 {11}']
 #keys = [ 'Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}','Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}']
 msrfiles = []
 #plt.style.use('dark_background')
@@ -579,7 +579,7 @@ for m,mixedimage in enumerate(mixedimages):
     filenameout = os.path.join(savefolder,
                                 os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_MixedIntensity.tiff")
     print(filenameout)
-    imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="Red Hot", pixelsize=(20E-3, 20E-3))
+    imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="gray", pixelsize=(20E-3, 20E-3))
 
     filenameout = os.path.join(savefolder,
                                 os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_f1f2f3.tiff")
