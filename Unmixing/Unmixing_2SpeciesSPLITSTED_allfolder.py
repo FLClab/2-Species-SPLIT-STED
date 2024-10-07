@@ -573,13 +573,13 @@ for m,mixedimage in enumerate(mixedimages):
     imagecomp = numpy.moveaxis(imagecomp, 2, 0)
     filenameout = os.path.join(savefolder, os.path.basename(mixedimage).split(".msr")[
         0] + "_STED3species_LineControls_UnmixedComposite.tiff")
-    imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("magenta", "cyan"),
+    imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("Magenta Hot", "Cyan Hot"),
             pixelsize=(20E-3, 20E-3))
 
     filenameout = os.path.join(savefolder,
                                 os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_MixedIntensity.tiff")
     print(filenameout)
-    imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="gray", pixelsize=(20E-3, 20E-3))
+    imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="Red Hot", pixelsize=(20E-3, 20E-3))
 
     filenameout = os.path.join(savefolder,
                                 os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_f1f2f3.tiff")
