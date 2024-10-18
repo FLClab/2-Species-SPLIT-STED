@@ -21,13 +21,13 @@ import easygui
 from specpy import File
 #from convertmsr_bioformatsAB import MSRReader
 
-rows= (0,1,2,0,1,2)
-columns= (0,0,0,1,1,1)
-plotcolors = ( 'gray','blue','gold','gray','blue','gold')
-labels=["2 species phasor-FLIM - Confocal","2 species phasor-FLIM - STED","2 species SPLIT-STED","2 species phasor-FLIM - Confocal","2 species phasor-FLIM - STED","2 species SPLIT-STED"]
+rows= (0,1,0,1,2,0,1,2)
+columns= (2,2,0,0,0,1,1,1)
+plotcolors = ('black','black', 'gray','blue','gold','gray','blue','gold')
+labels=["Mix Confocal","Mix STED","2 species phasor-FLIM - Confocal","2 species phasor-FLIM - STED","2 species SPLIT-STED","2 species phasor-FLIM - Confocal","2 species phasor-FLIM - STED","2 species SPLIT-STED"]
 luts=("Cyan Hot", "Magenta Hot")
 rangelut=((0, 100), (0, 100))
-dispchannel=[2,5]
+dispchannel=[4,7]
 Width=5
 pixelsize=20
 
@@ -136,6 +136,7 @@ for imagei in images:
 # 
     
     nchannels=imagecomp.shape[2]
+    print(int((nchannels-2)/2))
     print('nchannels',nchannels)
     if len(dispchannel)==1:
         img=imagecomp[:,:,dispchannel[0]]
@@ -161,7 +162,7 @@ for imagei in images:
         for line in linelist:
             writerlines.writerow(line)
     for i, line in enumerate(linelist):
-        fig, axes = pyplot.subplots(nrows=int(nchannels/2)+1, ncols=2, sharex=True,figsize=(6,12))
+        fig, axes = pyplot.subplots(nrows=int((nchannels-2)/2)+1, ncols=3, sharex=True,figsize=(8,12))
         axesim.plot(line[0], line[1],label='Line{}'.format(i))
 
         xcouple = (line[1][1], line[1][0])
@@ -183,19 +184,21 @@ for imagei in images:
             traces.append(trace)
         traces=numpy.array(traces)
         print(traces.shape)
-        traces=traces/numpy.max(traces)
+        #traces=traces/numpy.max(traces)
         xvalues=numpy.linspace(0,trace.shape[0], num=trace.shape[0])*pixelsize
         print(xvalues.shape)
         for n,trace in enumerate(traces):
-            axes[int(nchannels/2),columns[n]].plot(xvalues,(trace/numpy.max(trace)),c=plotcolors[n], label='Line{} {}'.format(i,labels[n]))
-            axes[rows[n],columns[n]].plot(xvalues,(trace/numpy.max(trace)),c=plotcolors[n], label='Line{}'.format(i))
+            #axes[int((nchannels-2)/2),columns[n]].plot(xvalues,(trace/numpy.max(trace)),c=plotcolors[n], label='Line{} {}'.format(i,labels[n]))
+            #axes[rows[n],columns[n]].plot(xvalues,(trace/numpy.max(trace)),c=plotcolors[n], label='Line{}'.format(i))
+            axes[int((nchannels-2)/2),columns[n]].plot(xvalues,trace,c=plotcolors[n], label='Line{} {}'.format(i,labels[n]))
+            axes[rows[n],columns[n]].plot(xvalues,trace,c=plotcolors[n], label='Line{}'.format(i))
             axes[rows[n],columns[n]].set_title(labels[n])
-            axes[rows[n],columns[n]].set_xlim([0, 500])
-            axes[rows[n],columns[n]].set_ylim([0, 1])
-        axes[int(nchannels/2),0].set_xlim([0, 500])
-        axes[int(nchannels/2),0].set_ylim([0, 1])
-        axes[int(nchannels/2),1].set_xlim([0, 500])
-        axes[int(nchannels/2),1].set_ylim([0, 1])
+            #axes[rows[n],columns[n]].set_xlim([0, 500])
+            #axes[rows[n],columns[n]].set_ylim([0, 1])
+        #axes[int(nchannels/2),0].set_xlim([0, 500])
+        #axes[int((nchannels-2)/2),0].set_ylim([0, 1])
+        #axes[int(nchannels/2),1].set_xlim([0, 500])
+        #axes[int((nchannels-2)/2),1].set_ylim([0, 1])
         axesim.legend()
         figim.savefig(os.path.join(outpath,os.path.basename(imagei)+'Image_Lines.pdf'.format(i)),transparent=True, bbox_inches='tight')
         fig.savefig(os.path.join(outpath,os.path.basename(imagei)+'Line{}_IntensityProfile.pdf'.format(i)),transparent=True, bbox_inches='tight')
