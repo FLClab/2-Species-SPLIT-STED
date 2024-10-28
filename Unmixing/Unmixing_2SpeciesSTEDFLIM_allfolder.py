@@ -93,9 +93,9 @@ f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF
 #f2= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_STEDPowerBleach_MediumAcq_MoreReps_1")
 # f3= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_rabBassoon_CF594_STEDPowerBleach_MediumAcq_MoreReps_1")
 #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","PSD95_STOrange_rabBassoon_CF594")
-#f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-#f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
-#f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
+f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
+f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
+f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
         
 
 #mapcomp = { 'Conf FLIM' : 'Confocal_561 {11}',
@@ -110,12 +110,12 @@ labels = ['Bassoon CF594', 'PSD95 STOrange', 'Mixture']
 #labels = ['Tubulin_LIVE610','Actin_SiR ', 'Mixture']
 filenamescontrol = [f1, f2]
 filenamemixed=f3
-keys = ['STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
-#keys = ['STED 561 {11}', 'STED 561 {11}','STED 561 {11}']
+#keys = ['STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
+keys = ['STED 561 {11}', 'STED 561 {11}','STED 561 {11}']
 #keys=['STED640 {10}', 'STED640 {10}', 'STED640 {10}']
 #plt.style.use('dark_background')
-#powers=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
-powers=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
+powers=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
+#powers=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
 savefolder=str(input("Name of Output folder: "))
 
 savefoldermain = os.path.join(os.path.expanduser("~/Desktop"), "Unmixing_"+savefolder+"_2Species")

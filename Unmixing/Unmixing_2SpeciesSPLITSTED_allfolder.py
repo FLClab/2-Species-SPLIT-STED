@@ -118,9 +118,9 @@ if None in [f1,f2,f3,savefolder]:
     #f3= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_rabBassoon_CF594_STEDPowerBleach_MediumAcq_MoreReps_1")
     #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","PSD95_STOrange_rabBassoon_CF594")
 
-   # f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-    #f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
-    #f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
+    f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
+    f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
+    f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
     
     #f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","MediumAcq")
     #f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","MediumAcq")
@@ -137,10 +137,10 @@ if None in [f1,f2,f3,savefolder]:
     #numimlist=[6,6,1,4,5,5,3,1]
     #numimlist=[1,1,5,4,17,17,7,0] # PSD-Bassoon Cy5
     #numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
-    numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
+    #numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
     #numimlist=[7,7,1,0,0,0,1,19] # PSD Bassoon Cy3
     #numimlist = [1,1,0,8,8,8,9,7] #Actin Bassoon CY3
-    #numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
+    numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
     #numimlist=[0,0,6,2,5,5,6,0] # Homer Bassoon Cy3 MediumAcq
     #numimlist=[0,0,5,1,4,4,3,2] # Homer Bassoon Cy3 ShortAcq
     #numimlist=[2,2,0,3,7,7,6,0] # Homer Bassoon Cy3 LongAcq
@@ -155,7 +155,7 @@ filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
 filenamemixed=f3
 keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','STED_594 {2}']
-#keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
+keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}']
 #keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}',  'STED 561 {11}']
 #keys = [ 'Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}','Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}']

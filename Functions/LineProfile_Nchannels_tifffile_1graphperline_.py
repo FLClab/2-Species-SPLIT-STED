@@ -28,7 +28,8 @@ labels=["Mix Confocal","Mix STED","2 species phasor-FLIM - Confocal","2 species 
 luts=("Cyan Hot", "Magenta Hot")
 rangelut=((0, 100), (0, 100))
 dispchannel=[4,7]
-Width=5
+normch={0:[0],1:[1],2:[2,5],3:[3,6],4:[4,7],5:[2,5],6:[3,6],7:[4,7]}
+Width=2
 pixelsize=20
 
 
@@ -184,6 +185,11 @@ for imagei in images:
             traces.append(trace)
         traces=numpy.array(traces)
         print(traces.shape)
+        for chnorm in normch.keys():
+            chlist=normch[chnorm]
+            print(chlist)
+            print(traces[chlist].shape)
+            traces[chnorm]=traces[chnorm]/numpy.max(traces[chlist])
         #traces=traces/numpy.max(traces)
         xvalues=numpy.linspace(0,trace.shape[0], num=trace.shape[0])*pixelsize
         print(xvalues.shape)
@@ -194,11 +200,11 @@ for imagei in images:
             axes[rows[n],columns[n]].plot(xvalues,trace,c=plotcolors[n], label='Line{}'.format(i))
             axes[rows[n],columns[n]].set_title(labels[n])
             #axes[rows[n],columns[n]].set_xlim([0, 500])
-            #axes[rows[n],columns[n]].set_ylim([0, 1])
+            axes[rows[n],columns[n]].set_ylim([0, 1])
         #axes[int(nchannels/2),0].set_xlim([0, 500])
-        #axes[int((nchannels-2)/2),0].set_ylim([0, 1])
+        axes[int((nchannels-2)/2),0].set_ylim([0, 1])
         #axes[int(nchannels/2),1].set_xlim([0, 500])
-        #axes[int((nchannels-2)/2),1].set_ylim([0, 1])
+        axes[int((nchannels-2)/2),1].set_ylim([0, 1])
         axesim.legend()
         figim.savefig(os.path.join(outpath,os.path.basename(imagei)+'Image_Lines.pdf'.format(i)),transparent=True, bbox_inches='tight')
         fig.savefig(os.path.join(outpath,os.path.basename(imagei)+'Line{}_IntensityProfile.pdf'.format(i)),transparent=True, bbox_inches='tight')

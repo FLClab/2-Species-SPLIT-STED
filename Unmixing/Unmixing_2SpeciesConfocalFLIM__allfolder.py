@@ -93,9 +93,9 @@ f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_A
 #f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 #f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
-# f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_Bassoon_STAR635P_STEDPowerBleach_5to20_1")
-# f2=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5','rab_Bassoon_STAR635P_STEDPowerBleach_5to30_1')
-# f1=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_STEDPowerBleach_5to20_1")
+#f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_Bassoon_STAR635P_STEDPowerBleach_5to20_1")
+#f2=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5','rab_Bassoon_STAR635P_STEDPowerBleach_5to30_1')
+#f1=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_STEDPowerBleach_5to20_1")
 
 mapcomp = { 'Conf FLIM' : 'Confocal_561 {11}',
             'STED FLIM' :'STED 561 {11}' }
