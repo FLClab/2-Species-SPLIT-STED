@@ -7,12 +7,9 @@ import glob
 import numpy
 import easygui
 import pandas as pd
-import scipy
 import time
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 import matplotlib.patches as mpatches
-import skimage
 import easygui
 import seaborn
 import tifffile

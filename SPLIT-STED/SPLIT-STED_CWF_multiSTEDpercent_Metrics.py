@@ -15,25 +15,21 @@ Outputs:
 
 """
 
-from skimage import io
+
 import os
 import glob
 import numpy
 import time
 import tifffile
 import easygui
-import skimage.io as skio
 import scipy 
 from scipy.optimize import curve_fit
 import sklearn
-from pandas.plotting import table
 import pandas as pd
 import matplotlib
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 import easygui
-from plotly.offline import plot
 from sklearn.cluster import KMeans
 from sys import path as syspath; 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")

@@ -12,8 +12,6 @@ import scipy
 import time
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-import matplotlib.patches as mpatches
 import skimage
 import tifffile
 from sklearn.cluster import KMeans

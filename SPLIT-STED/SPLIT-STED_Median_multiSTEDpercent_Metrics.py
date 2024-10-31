@@ -17,24 +17,19 @@ Outputs:
 
 
 
-from skimage import io
 import os
 import glob
 import numpy
 import time
 import tifffile
 import easygui
-import skimage.io as skio
-import numpy as np
-import scipy 
+
 from scipy.optimize import curve_fit
-from pandas.plotting import table
 import pandas as pd
 import matplotlib
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import easygui
-
 from sklearn.cluster import KMeans
 from sys import path as syspath; 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
@@ -43,7 +38,6 @@ import decorr
 from objectives import (Squirrel, Bleach)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
 from Phasor_functions import DTCWT_Phasor,Median_Phasor,SPLIT_STED
-from matplotlib.gridspec import GridSpec
 from tiffwrapper import imsave,LifetimeOverlayer
 
 
@@ -58,7 +52,7 @@ params_dict = {
     "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": np.inf,  # % 'Tau_exc'
+    "tau_exc": numpy.inf,  # % 'Tau_exc'
     "intercept_at_origin": False,  # % 'Fix Intercept at origin'
 
     # Parameters that are calculated in th matlab code but that could be modified manually
@@ -148,11 +142,11 @@ ax4.set_xlabel('g')
 ax4.set_ylabel('s')
 # Create universal semi-circle for phasor space and add it to the plot
 
-edge = np.linspace(start=0, stop=15, num=200)
-theta = np.linspace(0, np.pi, 100)
+edge = numpy.linspace(start=0, stop=15, num=200)
+theta = numpy.linspace(0, numpy.pi, 100)
 r = 0.5
-x1 = r * np.cos(theta) + 0.5
-x2 = r * np.sin(theta)
+x1 = r * numpy.cos(theta) + 0.5
+x2 = r * numpy.sin(theta)
 ax4.plot(x1, x2, color="black", ls="--",linewidth=0.8)
 ax5.plot(x1, x2, color="black", ls="--", linewidth=0.8)
 # Loop through images in the folder
@@ -254,7 +248,7 @@ for i,im in enumerate(images) :
             Pn_x = 0.5 + (r * (CoM_x[0] - 0.5) / norm)
             Pn_y = 0 + r * (CoM_y[0] - 0) / norm
 
-            xaxis = np.linspace(0, 1, 100)
+            xaxis = numpy.linspace(0, 1, 100)
 
             #Line between P_n and (1,0)
             x2, y2 = numpy.asarray([Pn_x, 1.0], dtype = 'float64'), numpy.asarray([Pn_y, 0.0], dtype = 'float64')
@@ -335,18 +329,18 @@ for i,im in enumerate(images) :
         lineplot=ax4.plot([P_n[0],p2[0]],[P_n[1],p2[1]],linewidth=3,c='deepskyblue')
     # Fit ellipse on the 70th percentile of the phasor distribution of the STED-FLIM image and plot it
     
-        cov = np.cov(g, s)
-        val, vec = np.linalg.eig(cov)
+        cov = numpy.cov(g, s)
+        val, vec = numpy.linalg.eig(cov)
         order = val.argsort()[::-1]
 
         eigen_val=val[order]
         norm_eigen_vec = vec[:,order]
-        eigen_val = np.sort(np.sqrt(eigen_val))
+        eigen_val = numpy.sort(numpy.sqrt(eigen_val))
         ppfs=[0.3]
         for ppf in ppfs:
-            width = 2 * eigen_val[0] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-            height = 2 * eigen_val[1] * np.sqrt(scipy.stats.chi2.ppf(ppf, 2))
-            angle = np.rad2deg(np.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
+            width = 2 * eigen_val[0] * numpy.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+            height = 2 * eigen_val[1] * numpy.sqrt(scipy.stats.chi2.ppf(ppf, 2))
+            angle = numpy.rad2deg(numpy.arctan2(norm_eigen_vec[1, eigen_val.argmax()],
                                         norm_eigen_vec[0, eigen_val.argmax()]))
             ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
             ax4.add_patch(ell)
@@ -500,8 +494,8 @@ def STEDRes(x, a, b):
     float: The calculated resolution.
 
     """
-    return a/np.sqrt(1+(a**2*b**2*x))
-xs = np.linspace(np.min(x), np.max(x),(np.max(x)-np.min(x)).astype(int))
+    return a/numpy.sqrt(1+(a**2*b**2*x))
+xs = numpy.linspace(numpy.min(x), numpy.max(x),(numpy.max(x)-numpy.min(x)).astype(int))
 # Fit the resolution vs STED power graph
 try:
     params, cv = curve_fit(STEDRes,x,y,p0=(dfmeanoverall['Res conf stack']*20,3.4E-3),maxfev = 10000)
@@ -525,11 +519,11 @@ def monoExp(x, m, t, b):
     Returns:
     float: The value of the monotonically decreasing exponential function at the given point.
     """
-    return m * np.exp(-t * x) + b
+    return m * numpy.exp(-t * x) + b
 
 # params, cv = curve_fit(monoExp,dfmeanoverall['STEDpercent']*0.extend(dfmean['STEDpercent']),dfmean['Res sted stack']*20)
 # m, t, b = params
-xs = np.linspace(np.min(pp), np.max(pp),(np.max(pp)-np.min(pp)).astype(int))
+xs = numpy.linspace(numpy.min(pp), numpy.max(pp),(numpy.max(pp)-numpy.min(pp)).astype(int))
 # Ax.plot( xs, monoExp(xs,m,t,b), '-',c='deepskyblue')
 # Fit the SPLIT-STED resolution vs STED power graph with an exponential function
 try:
