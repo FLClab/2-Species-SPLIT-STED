@@ -20,10 +20,8 @@ import pandas as pd
 import scipy
 import time
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 import matplotlib
 import matplotlib.patches as mpatches
-import skimage
 import os
 import easygui
 import seaborn
@@ -36,8 +34,6 @@ path1.append(dossier)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
 from Phasor_functions import Median_Phasor,unmix3species,unmix3species_norescale
 from tiffwrapper import make_composite,imsave,LifetimeOverlayer
-
-
 from skspatial.objects import Circle
 from skspatial.objects import Line
 from skspatial.plotting import plot_2d

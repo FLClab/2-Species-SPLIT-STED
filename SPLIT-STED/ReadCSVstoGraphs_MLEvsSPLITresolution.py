@@ -24,14 +24,8 @@ import numpy
 import glob
 import itertools
 import tifffile
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.gridspec import GridSpec
-import matplotlib.patches as mpatches
 import seaborn
 import pandas as pd
-import scipy
-from sklearn.linear_model import LinearRegression
-import skimage
 import matplotlib
 matplotlib.rcParams['axes.linewidth'] = 0.8
 # Labels for the different samples

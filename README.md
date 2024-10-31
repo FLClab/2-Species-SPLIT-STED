@@ -2,7 +2,9 @@
 
 All the codes used to produce figures and analyze data for:  
 Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluorophore Discrimination and Resolution Improvement of Stimulated Emission Depletion Microscopy Images Using Fluorescence Lifetime
-## Installation and requirements
+## Installation 
+### Requirements
+[TiffWrapper](https://github.com/FLClab/TiffWrapper) 
 
 ## Folder contents
 ### Acquisition
@@ -19,7 +21,7 @@ Functions called in other folders
 <img src="images/Calibration_Phasor.png" width="320"/>
 
 * **Phasor_functions**: Contains code to calculate both median and [CWF](https://doi.org/10.1364/BOE.420953) filtered phasor distributions, codes to perform unmixing and SPLIT-STED. 
-* **convertmsr_bioformatsAB**: Contains MSRReader class which allows to read msr files (raw data files saved by Abberior microscope)
+* **LineProfile_Nchannels_tifffile_1graphperline_**: Script to plot intensity profiles (with interactive window to select lines)
 * **objectives** : Contains photobleaching and [SQUIRREL metric](https://doi.org/10.1038/nmeth.4605) calculation functions
 * **decorr** : Function to calculate image resolution based on [Decorrelation analysis](https://doi.org/10.1038/s41592-019-0515-7). Script originally made for [this paper](https://doi.org/10.1101/2024.03.25.586697) and available [here](https://github.com/FLClab/bandit-optimization)
 * **lifetime** : Function to create images colorcoded by lifetime overlayed on the intensity values.

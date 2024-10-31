@@ -15,21 +15,15 @@ from sys import path as path1;
 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-import functools
 from statistics_functions import get_significance
 import matplotlib.pyplot as plt
 import numpy
 import glob
 import itertools
 import tifffile
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.gridspec import GridSpec
-import matplotlib.patches as mpatches
 import seaborn
 import pandas as pd
 import scipy
-from sklearn.linear_model import LinearRegression
-import skimage
 import matplotlib
 import easygui
 matplotlib.rcParams['axes.linewidth'] = 0.8
