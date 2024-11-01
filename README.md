@@ -2,9 +2,17 @@
 
 All the codes used to produce figures and analyze data for:  
 Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluorophore Discrimination and Resolution Improvement of Stimulated Emission Depletion Microscopy Images Using Fluorescence Lifetime
-## Installation 
-### Requirements
-[TiffWrapper](https://github.com/FLClab/TiffWrapper) 
+## Installation and Requirements
+```bash
+conda create -n FLIM python=3.11.4
+
+conda activate FLIM
+
+pip install -r requirements.txt
+```
+
+Install the specpy package provided with the Imspector software for your specific python version. If you want to use these scripts with other data formats, simply change the load_msr function.
+ **Unmixing/Unmixing_2SpeciesSPLITSTED.ipynb** is a Jupyter Notebook implementation of 2 Species SPLIT-STED which is independent of the specpy library. Takes tiff images as input. Example data can be downloaded from  _______ into **Example_data** subfolder
 
 ## Folder contents
 ### Acquisition
