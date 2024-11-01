@@ -15,6 +15,8 @@ Outputs:
 
 """
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
 import glob
@@ -39,9 +41,6 @@ from objectives import (Squirrel, Bleach)
 from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import DTCWT_Phasor,Median_Phasor,SPLIT_STED
 from tiffwrapper import imsave,LifetimeOverlayer
-
-
-
 
 matplotlib.rcParams['axes.linewidth'] = 0.8
 # -----------------------------------------------------------
@@ -397,7 +396,9 @@ for i,im in enumerate(images) :
         p3minscat.remove()
         p3maxscat.remove()
         p2pnscat.remove()
-        ax4.lines.pop(-1)
+        
+        ax4.lines[-1].remove()
+
         mixphasor.remove()
         ell.remove()
 
@@ -480,12 +481,12 @@ data_objectifs.STEDpercent= data_objectifs.STEDpercent.astype(float)
 data_objectifs=data_objectifs.sort_values(by=['STEDpercent'])
 data_objectifs.to_csv(os.path.join(savefolder,"data_objectifs.csv"))
 print(data_objectifs)
-dfmeanoverall=data_objectifs.mean()
-dfstdoverall=data_objectifs.std()
-dfmean=data_objectifs.groupby('STEDpercent', as_index=False).mean()
+dfmeanoverall=data_objectifs.mean(numeric_only=True)
+dfstdoverall=data_objectifs.std(numeric_only=True)
+dfmean=data_objectifs.groupby('STEDpercent', as_index=False).mean(numeric_only=True)
 dfmean=dfmean.sort_values(by=['STEDpercent'])
 print(dfmean[['Bleach']])
-dfstd=data_objectifs.groupby('STEDpercent', as_index=False).std()
+dfstd=data_objectifs.groupby('STEDpercent', as_index=False).std(numeric_only=True)
 #print(dfstd)
 dfstd=dfstd.sort_values(by=['STEDpercent'])
 print(dfstd[['Bleach']])

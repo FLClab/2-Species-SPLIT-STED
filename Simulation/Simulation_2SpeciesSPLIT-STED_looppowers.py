@@ -9,9 +9,12 @@ The program then calculates the fraction of each species in the mixture and comp
 # -*- coding: utf-8 -*-
 import os.path
 from sys import path as path1;
-
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
+from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
+from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix3species
+from tiffwrapper import imsave,LifetimeOverlayer
+
 import math
 import matplotlib.pyplot as plt
 
@@ -19,20 +22,18 @@ import numpy
 import glob
 import itertools
 import tifffile
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.gridspec import GridSpec
 import matplotlib.patches as mpatches
 import seaborn
 import pandas as pd
-from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
-from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix3species
+
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 import skimage
-from lifetime import LifetimeOverlayer
+
 from skimage import filters
 import scipy
-from tiffwrapper import imsave
+
 import decorr
 from objectives import (Squirrel, Bleach)
 from skspatial.objects import Circle
@@ -87,53 +88,30 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         - A legend file containing the paths to the control images and to the files that are mixed together for each pairID
     """
 
-    #f1 = os.path.join('U:', os.sep,'adeschenes','2023-12-04_FLIM_SynapticProteins_MediumAcquisition','Bassoon_CF594_STEDPowerBleach_MediumAcq_1')
-    f1 = os.path.join('U:', os.sep, 'adeschenes', "2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon",
-                      "Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-    f2 = os.path.join('U:', os.sep,'adeschenes','2023-12-04_FLIM_SynapticProteins_MediumAcquisition','Homer_STOrange_STEDPowerBleach_MediumAcq_1')
+
     f1 = os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"rabBassoon_CF594_STEDPowerBleach_MediumAcq_MoreReps_1")
     f2= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_STEDPowerBleach_MediumAcq_MoreReps_1")
-
-    f2=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5','rab_Bassoon_STAR635P_STEDPowerBleach_5to30_1')
-    f1= os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_STEDPowerBleach_5to30_1")
-    #f1=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_STEDPowerBleach_5to20_1")
-
-
-
     filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
     
-    f1 = os.path.join('U:', os.sep, 'adeschenes', "2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon",
-                      "Bassoon_CF594_STEDPowerBleach_MediumAcq_1","*_{}percentSTED.msr".format(STEDPOWER))
-    f2 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','Homer_STORANGE',"MediumAcq","*_{}percentSTED.msr".format(STEDPOWER))
-    
-    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","*_{}percentSTED.msr".format(STEDPOWER))
-    f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594","*_{}percentSTED.msr".format(STEDPOWER))
-    #f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','alphaTubulin_Alexa647',"*_{}percentSTED.msr".format(STEDPOWER))
-    f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','B2Spectrin Alexa647',"*_{}percentSTED.msr".format(STEDPOWER))
-    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P',"*_{}percentSTED.msr".format(STEDPOWER))
-    #f1 = os.path.join('U:', os.sep,'adeschenes','2023-12-04_FLIM_SynapticProteins_MediumAcquisition','Bassoon_CF594_STEDPowerBleach_MediumAcq_1',"*_{}percentSTED.msr".format(STEDPOWER))
-    #f2 = os.path.join('U:', os.sep,'adeschenes','2023-12-04_FLIM_SynapticProteins_MediumAcquisition','Homer_STOrange_STEDPowerBleach_MediumAcq_1',"*_{}percentSTED.msr".format(STEDPOWER))
+    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","Mini","*_{}percentSTED.msr".format(STEDPOWER))
+    f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594","Mini","*_{}percentSTED.msr".format(STEDPOWER))
     filenames = [f1,f2]
 
     #keys=['CONF640 {10}','CONF640 {0}']
     labels = ['Bassoon_CF594 Confocal','Bassoon_CF594 STED 10%','Bassoon_CF594 STED 20%','Bassoon_CF594 STED 30%','Homer_STORANGE Confocal','Homer_STORANGE STED 10%','Homer_STORANGE STED 20%','Homer_STORANGE STED 30%', 'Mixture']
     keysmixed = ['STED 561 {11}','STED 561 {11}']
-    keysmixed = ['STED_635P {2}','STED_635P {2}']
+    #keysmixed = ['STED_635P {2}','STED_635P {2}']
     
-    #keyscontrols = [ 'Conf_635P {2}','Conf_635P {2}']
-    #keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
+
     keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
-    keys= ['Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}']
+    #keys= ['Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}']
     #keys = [ 'Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}','Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}']
     msrfiles = []
    # plt.style.use('dark_background')
     colors=['lightsteelblue', 'deepskyblue', 'royalblue','midnightblue','lightsalmon','lightcoral','crimson','darkred','springgreen']
-    #colors=['magenta']
 
 
-
-    #savefolder=str(input("Name of Output folder: "))
-    savefolder = "Simulation_Cy5_{}Percent_3Species_LineControls_SpectrinBassoon".format(STEDPOWER)
+    savefolder = "Simulation_Cy3_{}Percent_3Species_LineControls_PSD95Bassoon".format(STEDPOWER)
     savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefolder)
     os.makedirs(savefolder,exist_ok=True)
 
@@ -818,10 +796,10 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
 #Powerslist=[[30,[2,2,0,3,13,13,10,11]],[10,[2,2,0,3,13,13,10,11]],[20,[2,2,0,3,13,13,10,11]],[40,[2,2,0,3,13,13,10,11]]]
 Powerslist=[[10,[1,1,6,2,5,5,6,7]],[20,[1,1,6,2,5,5,6,7]],[30,[1,1,6,2,5,5,6,7]],[40,[1,1,6,2,5,5,6,7]]]
 Powerslist=[[10,[8,8,9,7,5,5,6,7]],[20,[8,8,9,7,5,5,6,7]],[30,[8,8,9,7,5,5,6,7]],[40,[8,8,9,7,5,5,6,7]]]
-Powerslist=[[10,[7,7,1,0,0,0,1,19]],[20,[7,7,1,0,0,0,1,19]],[30,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]]
+Powerslist=[[10,[7,7,1,0,0,0,1,19]],[20,[7,7,1,0,0,0,1,19]],[30,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
 #Powerslist=[[20,[7,7,1,0,0,0,1,19]]]
 #Powerslist=[[40,[1,1,6,2,5,5,6,7]]]
-Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]
+#Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]
 #numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
 #numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
 

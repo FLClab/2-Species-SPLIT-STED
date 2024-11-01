@@ -16,6 +16,8 @@ Outputs:
 """
 
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
 import glob
@@ -23,7 +25,7 @@ import numpy
 import time
 import tifffile
 import easygui
-
+import scipy
 from scipy.optimize import curve_fit
 import pandas as pd
 import matplotlib
@@ -75,19 +77,20 @@ params_dict = {
 filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Bassoon_CF594',"MediumAcq")
 
 filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq")
+filename= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"AlphaTubulin_AF647_1to500_STEDPowerBleach_1")
 
 ## Dictionary of the images to be used (keys in the .msr files)
-#mapcomp = { 'Conf pre'  :  'Conf_Pre {13}',
-#               'Conf FLIM' :  'Conf640 {10}',
-#             'STED FLIM' :'STED640 {10}',
-#             'Conf post' : 'Conf_Post {14}',
-#            'STED High' : 'STED_635P_HighP {8}'}
-
-mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
-             'Conf FLIM' : 'Confocal_561 {11}',
-             'STED FLIM' :'STED 561 {11}',
-             'Conf post' : 'Confocal_Post {15}',
+mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
+             'Conf FLIM' : 'Conf_635P {2}', 
+             'STED FLIM' :'STED_635P {2}',
+             'Conf post' :  'Conf_post {7}',
             'STED High' : 'STED 561_HighP {16}'}
+
+# mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
+#              'Conf FLIM' : 'Confocal_561 {11}',
+#              'STED FLIM' :'STED 561 {11}',
+#              'Conf post' : 'Confocal_Post {15}',
+#             'STED High' : 'STED 561_HighP {16}'}
 
 
 colors=["springgreen",'orangered','gold','deepskyblue']
@@ -360,7 +363,7 @@ for i,im in enumerate(images) :
         p3minscat.remove()
         p3maxscat.remove()
         p2pnscat.remove()
-        ax4.lines.pop(-1)
+        ax4.lines[-1].remove()
         mixphasor.remove()
         ell.remove()
 
@@ -449,12 +452,12 @@ data_objectifs.STEDpercent= data_objectifs.STEDpercent.astype(float)
 data_objectifs=data_objectifs.sort_values(by=['STEDpercent'])
 data_objectifs.to_csv(os.path.join(savefolder,"data_objectifs.csv"))
 print(data_objectifs)
-dfmeanoverall=data_objectifs.mean()
-dfstdoverall=data_objectifs.std()
-dfmean=data_objectifs.groupby('STEDpercent', as_index=False).mean()
+dfmeanoverall=data_objectifs.mean(numeric_only=True)
+dfstdoverall=data_objectifs.std(numeric_only=True)
+dfmean=data_objectifs.groupby('STEDpercent', as_index=False).mean(numeric_only=True)
 dfmean=dfmean.sort_values(by=['STEDpercent'])
 print(dfmean[['Bleach']])
-dfstd=data_objectifs.groupby('STEDpercent', as_index=False).std()
+dfstd=data_objectifs.groupby('STEDpercent', as_index=False).std(numeric_only=True)
 #print(dfstd)
 dfstd=dfstd.sort_values(by=['STEDpercent'])
 print(dfstd[['Bleach']])

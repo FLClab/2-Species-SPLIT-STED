@@ -10,7 +10,7 @@ import itertools
 import warnings
 from scipy.ndimage import gaussian_filter
 from scipy import optimize
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import root_mean_squared_error
 import decorr
 
 
@@ -117,7 +117,7 @@ class Squirrel(Objective):
         """
         # Optimize
         if not numpy.any(sted_stack[0]):
-            return mean_squared_error(confocal_init[confocal_fg], sted_stack[0][confocal_fg], squared=True)
+            return numpy.square(root_mean_squared_error(confocal_init[confocal_fg], sted_stack[0][confocal_fg]))
         
         # Optimize
 
@@ -138,7 +138,7 @@ class Squirrel(Objective):
             reference = (reference - reference.min()) / (reference.max() - reference.min() + 1e-9)
             convolved = (convolved - convolved.min()) / (convolved.max() - convolved.min() + 1e-9)
         
-        error = mean_squared_error(reference, convolved, squared=True)
+        error = numpy.square(root_mean_squared_error(reference, convolved))
         
 
         return error

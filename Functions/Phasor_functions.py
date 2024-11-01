@@ -1,11 +1,12 @@
 import numpy
+
+numpy.seterr(divide='ignore', invalid='ignore')
 import scipy
 
 from sklearn.cluster import KMeans
 import skimage.io as skio
 import skimage
-import plotly.express as px
-from plotly.offline import plot
+
 import dtcwt
 import matplotlib.pyplot as plt
 params_dict = {

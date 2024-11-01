@@ -4,28 +4,25 @@ from sys import path as path1;
 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
+from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
+from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix2species
+from tiffwrapper import imsave,LifetimeOverlayer
+from objectives import (Squirrel, Bleach)
 import math
 import matplotlib.pyplot as plt
-
 import numpy
 import glob
 import itertools
 import seaborn
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib
 import matplotlib.patches as mpatches
 import pandas as pd
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
-from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix2species
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 import skimage
-from tiffwrapper import imsave
-from lifetime import LifetimeOverlayer
 from skimage import filters
 import scipy
 import decorr
-from objectives import (Squirrel, Bleach)
 import tifffile
 matplotlib.rcParams['axes.linewidth'] = 0.8
 # ------------------ Default Input variables ----------------
@@ -51,39 +48,20 @@ params_dict = {
 }
 # -----------------------------------------------------------
 def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
-    #f1 = os.path.join('U:', os.sep,'mlafontaine','2022-08-24-FLIM_Power_Bleach','Bassoon_STARORANGE_5-to-40percentSTED_2conf-1')
-    #f2 = os.path.join('U:', os.sep,'mlafontaine','2022-08-24-FLIM_Power_Bleach','MAP2_CF594_5-to-40percentSTED_2conf-1')
-    #f2 = os.path.join('U:', os.sep,'mlafontaine','22-07-06_MIXEDFLIM','Bassoon_ALEXA594-3')
-    
-    #f1= os.path.join('U:', os.sep,'adeschenes','2022-09-14-SiR_Actin_FLIM','FLIM')
-    #dict_keys(['Overview 640 {2}', 'Focus 640 {7}', 'STED640 {10}', 'CONF640 {10}'])
-    
-    #f2 = os.path.join('U:', os.sep,'adeschenes','2022-11-21_FLIM_Actin_SNAP_SiR')
-    #f1 = os.path.join('U:', os.sep,'adeschenes','2022-12-09_STEDFLIM_BassoonHomer','cy3','STEDPower_Bleach_DifferentRegiona','Bassoon_CF594_GluGly_STEDPower_Bleach_1_','*_40percentSTED.msr')
-    #f2 = os.path.join('U:', os.sep,'adeschenes','2022-12-09_STEDFLIM_BassoonHomer','cy3','STEDPower_Bleach_DifferentRegiona','Homer_STARORANGE_KCl_STEDPower_Bleach_1_','*_40percentSTED.msr')
-    #f1 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','Bassoon_CF594',"LongAcq",'*_{}percentSTED.msr'.format(STEDPOWER))
-    #f2 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','Homer_STORANGE',"LongAcq",'*_{}percentSTED.msr'.format(STEDPOWER))
-    f1 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','Bassoon_CF594',"MediumAcq","*_{}percentSTED.msr".format(STEDPOWER))
-    f1 = os.path.join('U:', os.sep, 'adeschenes', "2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon",
-                      "Bassoon_CF594_STEDPowerBleach_MediumAcq_1","*_{}percentSTED.msr".format(STEDPOWER))
-    f2 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','Homer_STORANGE',"MediumAcq","*_{}percentSTED.msr".format(STEDPOWER))
-    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","*_{}percentSTED.msr".format(STEDPOWER))
-    f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594","*_{}percentSTED.msr".format(STEDPOWER))
-    #f1 = os.path.join('U:', os.sep,'adeschenes','2022-12-09_STEDFLIM_BassoonHomer','Cy5','STEDPower_Bleach_SameRegion','Bassoon_STAR635P_GAM_STEDPower_Bleach_1','Region_3')
-    #f2 = os.path.join('U:', os.sep,'adeschenes','2022-12-09_STEDFLIM_BassoonHomer','Cy5','STEDPower_Bleach_SameRegion','Homer_Atto647N_STEDPower_Bleach_1','Region_3')
-    #f1 = os.path.join('U:', os.sep, 'adeschenes', '2023-12-04_FLIM_SynapticProteins_MediumAcquisition', 'Bassoon_CF594_STEDPowerBleach_MediumAcq_1', "*_{}percentSTED.msr".format(STEDPOWER))
-    #f2 = os.path.join('U:', os.sep, 'adeschenes', '2023-12-04_FLIM_SynapticProteins_MediumAcquisition','Homer_STOrange_STEDPowerBleach_MediumAcq_1', "*_{}percentSTED.msr".format(STEDPOWER))
-    f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','B2Spectrin Alexa647',"*_{}percentSTED.msr".format(STEDPOWER))
-    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P',"*_{}percentSTED.msr".format(STEDPOWER))
+
+    f1 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','rabBassoon_CF594',"Mini","*_{}percentSTED.msr".format(STEDPOWER))
+
+    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","Mini","*_{}percentSTED.msr".format(STEDPOWER))
+ 
     filenames = [f1,f2]
     filenamescontrol = [f1,f2]
     labels=["Bassoon_CF594",'PSD95_STORANGE',"Mixture"]
-    #keys=['CONF640 {10}','CONF640 {0}']
+  
     keyscontrols = ['STED 561 {11}','STED 561 {11}']
     keysmixed = ['STED 561 {11}','STED 561 {11}']
-    #keyscontrols = [ 'Conf_635P {2}','Conf_635P {2}']
-    keyscontrols = ['STED_635P {2}', 'STED_635P {2}']
-    keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
+
+    #keyscontrols = ['STED_635P {2}', 'STED_635P {2}']
+    #keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
     
     msrfiles = []
     #plt.style.use('dark_background')
@@ -96,7 +74,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
     
     
     #savefolder=str(input("Name of Output folder: "))
-    savefolder = "Simulation_Cy5_{}Percent_2Species_SpectrinBassoon".format(STEDPOWER)
+    savefolder = "Simulation_Cy3_{}Percent_2Species_PSD95Bassoon".format(STEDPOWER)
     savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
     os.makedirs(savefolder,exist_ok=True)
 
@@ -637,7 +615,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
 #[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
 Powerslist=[[20,[0,0]]]
 Powerslist=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
-Powerslist=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
+#Powerslist=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
 globalcumstats=[]
 globalcumstatsmean=[]
 globalcumstatsstd=[]

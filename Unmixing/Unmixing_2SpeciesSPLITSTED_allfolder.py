@@ -17,7 +17,6 @@ import glob
 import numpy
 import easygui
 import pandas as pd
-import scipy
 import time
 import matplotlib.pyplot as plt
 import matplotlib
