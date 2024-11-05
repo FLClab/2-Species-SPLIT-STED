@@ -29,26 +29,27 @@ import easygui
 matplotlib.rcParams['axes.linewidth'] = 0.8
 
 # Labels for the different samples
-#labelsSPLIT=["Bassoon","PSD95"]
-labelsSPLIT=["B2Spectrin","Bassoon"]
+labelsSPLIT=["Bassoon","PSD95"]
+#labelsSPLIT=["B2Spectrin","Bassoon"]
 #labelsSPLIT=["AlphaTubulin","Bassoon"]
 
 # Folders containing the SPLIT-STED metrics for the 2 different samples
-folder1=os.path.join("D:",os.sep,"FLIM_MediumAcq","PSD-Bassoon_Cy3","SPLIT-STED","rabBassoon_CF594_MediumPlus_SPLIT")
-folder2=os.path.join("D:",os.sep,"FLIM_MediumAcq","PSD-Bassoon_Cy3","SPLIT-STED","PSD95_Orange_MediumPlus_SPLIT")
+folder1=os.path.join(os.path.expanduser("Desktop"),"rabBassoon_CF594_SPLIT")
+folder2=os.path.join(os.path.expanduser("Desktop"),"PSD95_STOrange_SPLIT")
 #folder1 =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
-folder2=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","rabBassoon STAR635P_SPLIT")
-folder1=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","B2Spectrin Alexa647_SPLIT")
 foldersSPLIT=[folder1,folder2]
 
 # Folders containing the lifetime measurements for the 2 different samples
-folder1=os.path.join("D:",os.sep,"FLIM_MediumAcq","PSD-Bassoon_Cy3","MLEForeground_rabBassoon_CF594_MonoExp")
-folder2=os.path.join("D:",os.sep,"FLIM_MediumAcq","PSD-Bassoon_Cy3","MLEForeground_PSD95_STORANGE_MonoExp")
-folder1=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","MLEForeground_B2Spectrin Alexa647")
-folder2=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","MLEForeground_rabBassoon STAR635P")
-
+folder1=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_rabBassoon_CF594")
+folder2=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_PSD95_STORANGE")
 foldersMLE=[folder1,folder2]
+
+# Path of the folder where the results will be saved
+savefolder=str(input("Name of Output folder: "))
+savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
+os.makedirs(savefolder, exist_ok=True)
+
 # Create the plots
 Fig, Ax = plt.subplots(nrows=2,ncols=2,figsize=(6, 6))
 Fig0, Ax0 = plt.subplots(nrows=1,ncols=2,figsize=(8, 4),sharey=True)
@@ -72,7 +73,8 @@ Ax0[0].set_xticklabels(mwpowers)
 Ax0[1].set_xticklabels(mwpowers)
 cumdf=[]
 csvfull=[]
-colors=[["#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff"],["#55d0ffff","#00acdfff","#0080bfff","#00456bff"]]
+colors=[["#fcbcd7ff","#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff"],["#7ce8ffff","#55d0ffff","#00acdfff","#0080bfff","#00456bff"]]
+#colors=[["#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff"],["#55d0ffff","#00acdfff","#0080bfff","#00456bff"]]
 # Read the csv files containing the SPLIT-STED metrics and combine them into a single dataframe
 for i,folder in enumerate(foldersSPLIT):
 
@@ -166,8 +168,10 @@ tau=table_deltatau_median[table_deltatau_median[:,0]==0][0,1]
 Fig4, Ax4 = plt.subplots(nrows=2,ncols=3,figsize=(12,8))
 Fig2, Ax2 = plt.subplots(figsize=(4,3))
 Fig5, Ax5 = plt.subplots(figsize=(3,2))
+Fig6, Ax6 = plt.subplots(figsize=(4,3))
+
 powers=[10,20,30,40]
-powers=[5,10,15,20]
+#powers=[5,10,15,20]
 
 # Calculate the mean and standard deviation of the resolution metrics for the SPLIT-STED images as a function of STED power for each sample
 
@@ -185,7 +189,7 @@ seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labels
 seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["lifetime"],ax=Ax5, size=2,color="deepskyblue")
 for i,id in enumerate(labelsSPLIT):
     Mean_Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"]).mean(numeric_only=True).reset_index()
-    STD_Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"]).std().reset_index()
+    STD_Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"]).std(numeric_only=True).reset_index()
     Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"])
 
     Mean_Power_SPLIT_list.append(Mean_Power_SPLIT)
@@ -222,8 +226,21 @@ Ax2.scatter(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,
                       y=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,
                      c=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],edgecolor="k",
                     s=100,vmin=0.75,vmax=tau,cmap="jet",label="pSTED={}%".format(0),zorder=100) 
+Ax6.errorbar(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,xerr=STD_Power_SPLIT_list[0]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==0][0,1],c=colors[0][0],ecolor=colors[0][0],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+Ax6.errorbar(x=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,xerr=STD_Power_SPLIT_list[1]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==0][0,1],c=colors[1][0],ecolor=colors[1][0],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+Ax6.scatter(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[0][0],edgecolor="k",s=250)
+Ax6.scatter(x=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[1][0],edgecolor="k",s=250)
+    
+Ax6.plot([Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20],[table_deltatau_median[table_deltatau_median[:,0]==0][0,1],table_deltatau_median[table_deltatau_median[:,0]==0][0,1]],c="k",zorder=0)
+   
 # Plot the STED resolution of the 2 samples with the color of the circle indicating the lifetime difference between the 2 samples
 for p,power in enumerate(powers):
+    Ax6.errorbar(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,xerr=STD_Power_SPLIT_list[0].loc[STD_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==power][0,1],c=colors[0][p+1],ecolor=colors[0][p+1],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+    Ax6.errorbar(x=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,xerr=STD_Power_SPLIT_list[1].loc[STD_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==power][0,1],c=colors[1][p+1],ecolor=colors[1][p+1],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+    Ax6.scatter(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[0][p+1],edgecolor="k",s=250)
+    Ax6.scatter(x=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[1][p+1],edgecolor="k",s=250)
+    
+    Ax6.plot([Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20],[table_deltatau_median[table_deltatau_median[:,0]==power][0,1],table_deltatau_median[table_deltatau_median[:,0]==power][0,1]],c="k",zorder=0)
     Ax2.errorbar(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,xerr=STD_Power_SPLIT_list[0].loc[STD_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,
                       y=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,yerr=STD_Power_SPLIT_list[1].loc[STD_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,
                       fmt="o",capsize=3.5, elinewidth=0.8,ecolor="k",markeredgecolor="k",c="w",zorder=0)        
@@ -233,11 +250,12 @@ for p,power in enumerate(powers):
                     s=100,vmin=0.75,vmax=tau,cmap="jet",label="pSTED={}%".format(power),zorder=100) 
 Fig2.colorbar(scat, ax=Ax2, location='right')
 Ax2.legend()
-Fig0.savefig('Bleach_vs_STEDPOWER.pdf', transparent='True', bbox_inches="tight")
-Fig2.savefig('Resolution_vs_MLEmonoexp.pdf', transparent='True', bbox_inches="tight")
-Fig3.savefig('MLEmonoexp_DeltaTau.pdf', transparent='True', bbox_inches="tight")
-Fig5.savefig('MLEmonoexp_TauBoxplot.pdf', transparent='True', bbox_inches="tight")
-
+Ax6.legend()
+Fig0.savefig(os.path.join(savefolder,'Bleach_vs_STEDPOWER.pdf'), transparent='True', bbox_inches="tight")
+Fig2.savefig(os.path.join(savefolder,'Resolution_vs_MLEmonoexp.pdf'), transparent='True', bbox_inches="tight")
+Fig3.savefig(os.path.join(savefolder,'MLEmonoexp_DeltaTau.pdf'), transparent='True', bbox_inches="tight")
+Fig5.savefig(os.path.join(savefolder,'MLEmonoexp_TauBoxplot.pdf'), transparent='True', bbox_inches="tight")
+Fig6.savefig(os.path.join(savefolder,'MLEmonoexp_DeltaTau_simple.pdf'), transparent='True', bbox_inches="tight")
 # Plot the lifetime values as a function of STED power for each sample
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"deepskyblue"},medianprops={"color": "k"})

@@ -82,11 +82,8 @@ filename= os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spec
 #
 filename= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"AlphaTubulin_AF647_1to500_STEDPowerBleach_1")
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
-#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
-#filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq")
-#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','alphaTubulin_Alexa647')
-#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','B2Spectrin Alexa647')
-#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P')
+filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
+
 ## Dictionary of the images to be used (keys in the .msr files)
 
 # mapcomp = { 'Conf pre'  :  'Conf_Pre {13}',
@@ -95,17 +92,17 @@ filename= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3
 #             'Conf post' : 'Conf_Post {14}',
 #            'STED High' : 'STED_635P_HighP {8}'}
 
-# mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
-#              'Conf FLIM' : 'Confocal_561 {11}',
-#              'STED FLIM' :'STED 561 {11}',
-#              'Conf post' : 'Confocal_Post {15}',
-#             'STED High' : 'STED 561_HighP {16}'}
-
-mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
-             'Conf FLIM' : 'Conf_635P {2}', 
-             'STED FLIM' :'STED_635P {2}',
-             'Conf post' :  'Conf_post {7}',
+mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
+             'Conf FLIM' : 'Confocal_561 {11}',
+             'STED FLIM' :'STED 561 {11}',
+             'Conf post' : 'Confocal_Post {15}',
             'STED High' : 'STED 561_HighP {16}'}
+
+# mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
+#              'Conf FLIM' : 'Conf_635P {2}', 
+#              'STED FLIM' :'STED_635P {2}',
+#              'Conf post' :  'Conf_post {7}',
+#             'STED High' : 'STED 561_HighP {16}'}
 
 
 colors=["springgreen",'orangered','gold','deepskyblue']

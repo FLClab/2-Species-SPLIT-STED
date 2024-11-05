@@ -22,7 +22,7 @@ path1.append(dossier)
 from Mono_fit import ExpFunMono_MLE
 from Main_functions import get_foreground,load_msr
 from specpy import File
-from lifetime import LifetimeOverlayer
+from tiffwrapper import LifetimeOverlayer
 import seaborn
 # -----------------------------------------------------------
 
@@ -36,12 +36,12 @@ graphcolor="deepskyblue"
 
 filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
 filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
-filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','alphaTubulin_Alexa647')
+#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','alphaTubulin_Alexa647')
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','B2Spectrin Alexa647')
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P')
 #filename=  os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
 #filename= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
-filename=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","HighP")
+#filename=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","HighP")
 #filename=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","HighP")
 # Dictionary of the image identifiers (Channel names) to be included
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
@@ -136,10 +136,10 @@ print(list(Overall_data.columns))
 # -----------------------------------------------------------
 #    Plot the lifetime values as a function of STED power
 dfmeanconf=Overall_data.mean(numeric_only=True)
-dfstdconf=Overall_data.std()
+dfstdconf=Overall_data.std(numeric_only=True)
 
 dfmean=Overall_data.groupby("Power", as_index=False).mean(numeric_only=True)
-dfstd=Overall_data.groupby("Power", as_index=False).std()
+dfstd=Overall_data.groupby("Power", as_index=False).std(numeric_only=True)
 
 print(dfmean.shape)
 print(list(dfmean.columns))
