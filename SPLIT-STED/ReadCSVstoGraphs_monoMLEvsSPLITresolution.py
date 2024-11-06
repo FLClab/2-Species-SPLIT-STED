@@ -141,6 +141,7 @@ powers = numpy.unique(Overall_data_MLE.loc[Overall_data_MLE["identity"] == label
 table_deltatau=[]
 table_deltatau_median=[]
 table_deltatau_std=[]
+table_deltatau_sem=[]
 table_deltatau_temp=[]
 # Calculate the difference in lifetime values between all possible combinations of images of the 2 samples for each STED power. 
 #Calculate the median and standard deviation of these differences
@@ -155,10 +156,12 @@ for power in powers:
     table_deltatau.extend(table_deltatau_temp)
     table_deltatau_median.append(numpy.median(table_deltatau_temp,axis=0))
     table_deltatau_std.append(numpy.std(table_deltatau_temp,axis=0))
+    table_deltatau_sem.append(scipy.stats.sem(table_deltatau_temp,axis=0))
 
 table_deltatau=numpy.array(table_deltatau)
 table_deltatau_median=numpy.array(table_deltatau_median)
 table_deltatau_std=numpy.array(table_deltatau_std)
+table_deltatau_sem=numpy.array(table_deltatau_sem)
 print(table_deltatau_median)
 print(table_deltatau_std)
 # Plot the difference in lifetime values between the 2 samples as a function of STED power
@@ -168,8 +171,8 @@ tau=table_deltatau_median[table_deltatau_median[:,0]==0][0,1]
 Fig4, Ax4 = plt.subplots(nrows=2,ncols=3,figsize=(12,8))
 Fig2, Ax2 = plt.subplots(figsize=(4,3))
 Fig5, Ax5 = plt.subplots(figsize=(3,2))
-Fig6, Ax6 = plt.subplots(figsize=(4,3))
-
+Fig6, Ax6 = plt.subplots(figsize=(12,8))
+Fig7, Ax7 = plt.subplots(figsize=(7,2.5))
 powers=[10,20,30,40]
 #powers=[5,10,15,20]
 
@@ -177,7 +180,7 @@ powers=[10,20,30,40]
 
 Mean_Power_SPLIT_list=[]
 STD_Power_SPLIT_list=[]
-
+SEM_Power_SPLIT_list=[]
 temp=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]
 print(temp["lifetime"])
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
@@ -190,10 +193,12 @@ seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labels
 for i,id in enumerate(labelsSPLIT):
     Mean_Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"]).mean(numeric_only=True).reset_index()
     STD_Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"]).std(numeric_only=True).reset_index()
+    SEM_Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"]).sem(numeric_only=True).reset_index()
     Power_SPLIT=Overall_data_SPLIT.loc[Overall_data_SPLIT["identity"] == id].groupby(by=["STEDpercent"])
 
     Mean_Power_SPLIT_list.append(Mean_Power_SPLIT)
     STD_Power_SPLIT_list.append(STD_Power_SPLIT)
+    SEM_Power_SPLIT_list.append(SEM_Power_SPLIT)
 
 
     for p,power in enumerate(powers):
@@ -228,19 +233,32 @@ Ax2.scatter(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,
                     s=100,vmin=0.75,vmax=tau,cmap="jet",label="pSTED={}%".format(0),zorder=100) 
 Ax6.errorbar(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,xerr=STD_Power_SPLIT_list[0]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==0][0,1],c=colors[0][0],ecolor=colors[0][0],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
 Ax6.errorbar(x=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,xerr=STD_Power_SPLIT_list[1]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==0][0,1],c=colors[1][0],ecolor=colors[1][0],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
-Ax6.scatter(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[0][0],edgecolor="k",s=250)
-Ax6.scatter(x=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[1][0],edgecolor="k",s=250)
+Ax6.scatter(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[0][0],edgecolor="k",s=150)
+Ax6.scatter(x=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[1][0],edgecolor="k",s=150)
     
 Ax6.plot([Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20],[table_deltatau_median[table_deltatau_median[:,0]==0][0,1],table_deltatau_median[table_deltatau_median[:,0]==0][0,1]],c="k",zorder=0)
-   
+Ax7.errorbar(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,xerr=SEM_Power_SPLIT_list[0]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],yerr=table_deltatau_sem[table_deltatau_median[:,0]==0][0,1],c=colors[0][0],ecolor=colors[0][0],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+Ax7.errorbar(x=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,xerr=SEM_Power_SPLIT_list[1]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],yerr=table_deltatau_sem[table_deltatau_median[:,0]==0][0,1],c=colors[1][0],ecolor=colors[1][0],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+Ax7.scatter(x=Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[0][0],edgecolor="k",s=75)
+Ax7.scatter(x=Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20,y=table_deltatau_median[table_deltatau_median[:,0]==0][0,1],label="pSTED={}%".format(0),c=colors[1][0],edgecolor="k",s=75)
+    
+Ax7.plot([Mean_Power_SPLIT_list[0]['Res conf stack'].mean()*20,Mean_Power_SPLIT_list[1]['Res conf stack'].mean()*20],[table_deltatau_median[table_deltatau_median[:,0]==0][0,1],table_deltatau_median[table_deltatau_median[:,0]==0][0,1]],c="k",zorder=0)
+  
 # Plot the STED resolution of the 2 samples with the color of the circle indicating the lifetime difference between the 2 samples
 for p,power in enumerate(powers):
     Ax6.errorbar(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,xerr=STD_Power_SPLIT_list[0].loc[STD_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==power][0,1],c=colors[0][p+1],ecolor=colors[0][p+1],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
     Ax6.errorbar(x=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,xerr=STD_Power_SPLIT_list[1].loc[STD_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],yerr=table_deltatau_std[table_deltatau_median[:,0]==power][0,1],c=colors[1][p+1],ecolor=colors[1][p+1],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
-    Ax6.scatter(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[0][p+1],edgecolor="k",s=250)
-    Ax6.scatter(x=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[1][p+1],edgecolor="k",s=250)
+    Ax6.scatter(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[0][p+1],edgecolor="k",s=150)
+    Ax6.scatter(x=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[1][p+1],edgecolor="k",s=150)
     
     Ax6.plot([Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20],[table_deltatau_median[table_deltatau_median[:,0]==power][0,1],table_deltatau_median[table_deltatau_median[:,0]==power][0,1]],c="k",zorder=0)
+    Ax7.errorbar(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,xerr=SEM_Power_SPLIT_list[0].loc[SEM_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],yerr=table_deltatau_sem[table_deltatau_median[:,0]==power][0,1],c=colors[0][p+1],ecolor=colors[0][p+1],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+    Ax7.errorbar(x=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,xerr=SEM_Power_SPLIT_list[1].loc[SEM_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],yerr=table_deltatau_sem[table_deltatau_median[:,0]==power][0,1],c=colors[1][p+1],ecolor=colors[1][p+1],markeredgecolor="k",fmt="o",capsize=3.5, elinewidth=0.8,zorder=0)
+    Ax7.scatter(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[0][p+1],edgecolor="k",s=75)
+    Ax7.scatter(x=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,y=table_deltatau_median[table_deltatau_median[:,0]==power][0,1],label="pSTED={}%".format(power),c=colors[1][p+1],edgecolor="k",s=75)
+    
+    Ax7.plot([Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20],[table_deltatau_median[table_deltatau_median[:,0]==power][0,1],table_deltatau_median[table_deltatau_median[:,0]==power][0,1]],c="k",zorder=0)
+    
     Ax2.errorbar(x=Mean_Power_SPLIT_list[0].loc[Mean_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,xerr=STD_Power_SPLIT_list[0].loc[STD_Power_SPLIT_list[0]["STEDpercent"]==power]['Res sted stack']*20,
                       y=Mean_Power_SPLIT_list[1].loc[Mean_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,yerr=STD_Power_SPLIT_list[1].loc[STD_Power_SPLIT_list[1]["STEDpercent"]==power]['Res sted stack']*20,
                       fmt="o",capsize=3.5, elinewidth=0.8,ecolor="k",markeredgecolor="k",c="w",zorder=0)        
@@ -251,11 +269,15 @@ for p,power in enumerate(powers):
 Fig2.colorbar(scat, ax=Ax2, location='right')
 Ax2.legend()
 Ax6.legend()
+#Ax7.legend()
+Ax7.set_xlim([80,260])
+Ax7.set_ylim([0.75,0.94])
 Fig0.savefig(os.path.join(savefolder,'Bleach_vs_STEDPOWER.pdf'), transparent='True', bbox_inches="tight")
 Fig2.savefig(os.path.join(savefolder,'Resolution_vs_MLEmonoexp.pdf'), transparent='True', bbox_inches="tight")
 Fig3.savefig(os.path.join(savefolder,'MLEmonoexp_DeltaTau.pdf'), transparent='True', bbox_inches="tight")
 Fig5.savefig(os.path.join(savefolder,'MLEmonoexp_TauBoxplot.pdf'), transparent='True', bbox_inches="tight")
 Fig6.savefig(os.path.join(savefolder,'MLEmonoexp_DeltaTau_simple.pdf'), transparent='True', bbox_inches="tight")
+Fig7.savefig(os.path.join(savefolder,'MLEmonoexp_DeltaTau_simple_sem.pdf'), transparent='True', bbox_inches="tight")
 # Plot the lifetime values as a function of STED power for each sample
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"deepskyblue"},medianprops={"color": "k"})
