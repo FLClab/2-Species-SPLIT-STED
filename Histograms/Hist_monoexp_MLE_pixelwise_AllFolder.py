@@ -86,7 +86,7 @@ for imagei in images:
     #    Lifetime matrix
 
         #seuil = get_foreground(image1)
-        seuil= 5
+        seuil= 10
         mlifetime = numpy.empty((imsum.shape))
 
         for iy, ix in tqdm(numpy.ndindex(imsum.shape)):
