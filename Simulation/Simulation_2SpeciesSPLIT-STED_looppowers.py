@@ -11,7 +11,7 @@ import os.path
 from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
+from Main_functions import (load_image,select_channel,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix3species
 from tiffwrapper import imsave,LifetimeOverlayer
 
@@ -155,9 +155,16 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
 # Use the control images to build the triangle in phasor space that will be used to unmix the mixed images
     for k,filename in enumerate(filenamescontrol) :
         print(labels[k])
-        path = os.path.join(filename, '*.msr' )
+        # Make list of all the images in the folder
+        extension = ".msr"
+        path=os.path.join(filename,"*.msr")
         images = glob.glob(path)
-        print('There are ',len(images), 'Images in this folder')
+        print('There are ',len(images), ' msr files in this folder')
+        if len(images) == 0:
+            path=os.path.join(filename,"*.tiff")
+            images = glob.glob(path)
+            print('There are ',len(images), ' tiff files in this folder')
+            extension = ".tiff"
         for imagei in images:
             print(os.path.basename(imagei)) 
         #numim = int(input('Fichier msr a extraire (1er=0): '))
@@ -188,9 +195,9 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         
         with open(os.path.join(savefolder,'legend.txt'),'a') as data: 
             data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
-        imagemsr=load_msr(msr)
-
-        image1 = imagemsr[keys[i]]
+        imagemsr=load_image(msr)
+        image1 = select_channel(imagemsr, keys[i])
+        #image1 = imagemsr[keys[i]]
         imsum = image1.sum(axis=2)
         imsum = imsum.astype('int16')
         
@@ -342,9 +349,10 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         # For each image in the pair, calculate the resolution and the foreground mask
         for i, msr in enumerate(msrfiles):
 
-            imagemsr=load_msr(msr)
-            print(imagemsr.keys())
-            image1 = imagemsr[keysmixed[i]]
+            imagemsr=load_image(msr)
+            #print(imagemsr.keys())
+            image1 = select_channel(imagemsr, keysmixed[i])
+            #image1 = imagemsr[keysmixed[i]]
             res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):
                 res_mix=10

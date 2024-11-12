@@ -19,7 +19,7 @@ from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 from Mono_fit import ExpFunMono_MLE
-from Main_functions import load_msr, get_foreground
+from Main_functions import load_image, get_foreground, select_channel
 from tiffwrapper import LifetimeOverlayer
 # -----------------------------------------------------------
 
@@ -27,10 +27,18 @@ filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 print(filename)
 
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
+mapcomp = {'CONF561': 0, 'STED561' : 1}
 
+# Make list of all the images in the folder
+extension = ".msr"
 path=os.path.join(filename,"*.msr")
 images = glob.glob(path)
-print('There are ',len(images), 'Images in this folder')
+print('There are ',len(images), ' msr files in this folder')
+if len(images) == 0:
+    path=os.path.join(filename,"*.tiff")
+    images = glob.glob(path)
+    print('There are ',len(images), ' tiff files in this folder')
+    extension = ".tiff"
 
 # -----------------------------------------------------------
 #     Choose msr file in folder
@@ -41,8 +49,8 @@ for imagei in images:
 numim = int(input('Fichier msr a extraire (1er=0): '))
 images = images[numim]
 # Read the selected image file
-imagemsr = load_msr(images)
-print(imagemsr.keys())
+imagemsr = load_image(images)
+
 
 
 # -----------------------------------------------------------
@@ -50,7 +58,8 @@ print(imagemsr.keys())
 
 for key in mapcomp:
     print(mapcomp[key])
-    image1=imagemsr[mapcomp[key]]
+    image1=select_channel(imagemsr, mapcomp[key])
+    #image1=imagemsr[mapcomp[key]]
     dim = image1.shape
     print(dim)
     centerx=int(dim[0]/2)
@@ -126,12 +135,12 @@ for key in mapcomp:
     img = ax2.imshow(lifetime_rgb)
     cbar = fig2.colorbar(cmap, ax=ax2)
     cbar.set_label("temps de vie [ns]")
-    filenameout = os.path.basename(images).split(".msr")[0] + "_MLE_Lifetime_{}.tiff".format(key)
+    filenameout = os.path.basename(images).split(extension)[0] + "_MLE_Lifetime_{}.tiff".format(key)
     tifffile.imwrite(filenameout, mlifetime.astype(numpy.uint16))
-    filenameout = os.path.basename(images).split(".msr")[0] + "_Intensity_{}.tiff".format(key)
+    filenameout = os.path.basename(images).split(extension)[0] + "_Intensity_{}.tiff".format(key)
     tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
-    fig2.savefig(os.path.basename(images).split(".msr")[0] +'MLELifetime_IntensityComposite_{}.png'.format(key), transparent='True', bbox_inches="tight")
-    fig2.savefig(os.path.basename(images).split(".msr")[0] +'MLELifetime_IntensityComposite_{}.pdf'.format(key), transparent='True', bbox_inches="tight")
+    fig2.savefig(os.path.basename(images).split(extension)[0] +'MLELifetime_IntensityComposite_{}.png'.format(key), transparent='True', bbox_inches="tight")
+    fig2.savefig(os.path.basename(images).split(extension)[0] +'MLELifetime_IntensityComposite_{}.pdf'.format(key), transparent='True', bbox_inches="tight")
 
     plt.show()
 

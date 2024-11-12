@@ -20,7 +20,7 @@ from sklearn.cluster import KMeans
 from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
+from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_image,select_channel, get_foreground)
 from Phasor_functions import Median_Phasor,unmix2species
 from tiffwrapper import imsave,LifetimeOverlayer
 
@@ -87,16 +87,15 @@ f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF
 f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
 f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
 f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-#f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
 #f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_Bassoon_STAR635P_STEDPowerBleach_5to20_1")
 #f2=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5','rab_Bassoon_STAR635P_STEDPowerBleach_5to30_1')
 #f1=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_STEDPowerBleach_5to20_1")
 
-mapcomp = { 'Conf FLIM' : 'Confocal_561 {11}',
-            'STED FLIM' :'STED 561 {11}' }
+
 
 
 colors=['magenta',  'c' ,'lightgreen']
@@ -105,6 +104,7 @@ labels = ['Bassoon CF594', 'PSD95 STAR Orange', 'Mélange']
 filenamescontrol = [f1, f2]
 filenamemixed=f3
 keys = ['Confocal_561 {11}', 'Confocal_561 {11}','Confocal_561 {11}']
+keys = [0,0,0]
 #keys = [ 'Conf_635P {2}','Conf_635P {2}','Conf_635P {2}' ]
 msrfiles = []
 
@@ -115,9 +115,16 @@ savefolder = os.path.join(os.path.expanduser("~/Desktop"), "Unmixing_"+savefolde
 os.makedirs(savefolder, exist_ok=True)
 
 for filename in filenamescontrol :
-    path = os.path.join(filename, '*.msr' )
+    # Make list of all the images in the folder
+    extension = ".msr"
+    path=os.path.join(filename,"*.msr")
     images = glob.glob(path)
-    print('There are ',len(images), 'Images in this folder')
+    print('There are ',len(images), ' msr files in this folder')
+    if len(images) == 0:
+        path=os.path.join(filename,"*.tiff")
+        images = glob.glob(path)
+        print('There are ',len(images), ' tiff files in this folder')
+        extension = ".tiff"
     for imagei in images:
         print(os.path.basename(imagei)) 
     numim = int(input('Fichier msr a extraire (1er=0): '))
@@ -125,7 +132,7 @@ for filename in filenamescontrol :
     msrfiles.append(image)
 print(msrfiles)
 
-path = os.path.join(filenamemixed, '*.msr')
+path = os.path.join(filenamemixed, '*'+extension)
 mixedimages = glob.glob(path)
 
 #plt.style.use('dark_background')
@@ -154,8 +161,9 @@ for i, msr in enumerate(msrfiles) :
     dg = pd.DataFrame(columns=['g', 's'])
     with open(os.path.join(savefolder,'legend.txt'),'a') as data:
         data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
-    imagemsr=load_msr(msr)
-    image1 = imagemsr[keys[i]]
+    imagemsr=load_image(msr)
+    image1=select_channel(imagemsr,keys[i])
+    #image1 = imagemsr[keys[i]]
     print(image1.shape)
     #image1 =image1[10: -10, 10: -10,:]
     print(image1.shape)
@@ -224,8 +232,9 @@ for m,mixedimage in enumerate(mixedimages):
     d_melange = pd.DataFrame(columns=['g', 's'])
     df = pd.DataFrame(columns=['x', 'y'])
     dg = pd.DataFrame(columns=['g', 's'])
-    imagemsr = load_msr(mixedimage)
-    image1 = imagemsr[keys[2]]
+    imagemsr = load_image(mixedimage)
+    image1 = select_channel(imagemsr, keys[2])
+    #image1 = imagemsr[keys[2]]
     print(image1.shape)
 
     imsum = image1.sum(axis=2)
@@ -291,9 +300,9 @@ for m,mixedimage in enumerate(mixedimages):
     plt.imshow(lifetime_rgb)
     plt.axis('off')
 
-    plt.savefig(os.path.join(savefolder, os.path.basename(mixedimage).split(".msr")[0] + "_STED2species_lifetimergb.pdf"), transparent='True', bbox_inches="tight")
+    plt.savefig(os.path.join(savefolder, os.path.basename(mixedimage).split(extension)[0] + "_STED2species_lifetimergb.pdf"), transparent='True', bbox_inches="tight")
     filenameout = os.path.join(savefolder,
-                                os.path.basename(mixedimage).split(".msr")[0] + "_Conf2species_LineControls_lifetimergb.tiff")
+                                os.path.basename(mixedimage).split(extension)[0] + "_Conf2species_LineControls_lifetimergb.tiff")
 
     tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))
 
@@ -324,28 +333,28 @@ for m,mixedimage in enumerate(mixedimages):
 
     imagecomp=numpy.dstack((imsum_flat_lin2,imsum_flat_lin1))
     imagecomp=numpy.moveaxis(imagecomp,2,0)
-    filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(".msr")[0] + "_ConfCentroidsCircle_UnmixedComposite.tiff")
+    filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(extension)[0] + "_ConfCentroidsCircle_UnmixedComposite.tiff")
     imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("Cyan Hot","Magenta Hot"), pixelsize=(20E-3,20E-3))
 
-    filenameout = os.path.join(savefolder,os.path.basename(mixedimage).split(".msr")[0] + "_ConfCentroidsCircle_MixedIntensity.tiff")
+    filenameout = os.path.join(savefolder,os.path.basename(mixedimage).split(extension)[0] + "_ConfCentroidsCircle_MixedIntensity.tiff")
     print(filenameout)
     imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="Red Hot", pixelsize=(20E-3,20E-3))
 
 
-    filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(".msr")[0] + "_ConfCentroidsCircle_f1f2.tiff")
+    filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(extension)[0] + "_ConfCentroidsCircle_f1f2.tiff")
     imagecomp=numpy.dstack((fraction2,fraction1))
     imagecomp=numpy.moveaxis(imagecomp,2,0)
     tifffile.imwrite(filenameout, imagecomp)
 
     filenameout = os.path.join(savefolder,
-                                os.path.basename(mixedimage).split(".msr")[0] + "_Conf2species_LineControls_F1Overlay.tiff")
+                                os.path.basename(mixedimage).split(extension)[0] + "_Conf2species_LineControls_F1Overlay.tiff")
 
     tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))
 
 
 
 
-    fig_im3.savefig(os.path.join(savefolder,'Images__SeparateConf_CentroidsCircle'+os.path.basename(mixedimage).split(".msr")[0] +'.pdf'),transparent='True', bbox_inches="tight")
+    fig_im3.savefig(os.path.join(savefolder,'Images__SeparateConf_CentroidsCircle'+os.path.basename(mixedimage).split(extension)[0] +'.pdf'),transparent='True', bbox_inches="tight")
 
 #plt.show()
 

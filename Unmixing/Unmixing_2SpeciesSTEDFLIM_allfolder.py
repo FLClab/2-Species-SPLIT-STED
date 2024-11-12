@@ -18,7 +18,7 @@ import matplotlib
 from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
+from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_image,select_channel, get_foreground)
 from Phasor_functions import Median_Phasor,unmix2species
 from tiffwrapper import imsave,LifetimeOverlayer
 
@@ -93,7 +93,7 @@ f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF
 f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
 f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
 f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-        
+   
 
 #mapcomp = { 'Conf FLIM' : 'Confocal_561 {11}',
 #            'STED FLIM' :'STED 561 {11}' }
@@ -109,10 +109,11 @@ filenamescontrol = [f1, f2]
 filenamemixed=f3
 #keys = ['STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 keys = ['STED 561 {11}', 'STED 561 {11}','STED 561 {11}']
+#keys=[1,1,1]
 #keys=['STED640 {10}', 'STED640 {10}', 'STED640 {10}']
 #plt.style.use('dark_background')
 powers=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
-#powers=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
+powers=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
 savefolder=str(input("Name of Output folder: "))
 
 savefoldermain = os.path.join(os.path.expanduser("~/Desktop"), "Unmixing_"+savefolder+"_2Species")
@@ -141,9 +142,16 @@ for power in powers:
 
     msrfiles = []
     for k,filename in enumerate(filenamescontrol) :
+        # Make list of all the images in the folder
+        extension = ".msr"
         path = os.path.join(filename, '*_{}PercentSTED.msr'.format(STEDPOWER) )
         images = glob.glob(path)
-        print('There are ',len(images), 'Images in this folder')
+        print('There are ',len(images), ' msr files in this folder')
+        if len(images) == 0:
+            path = os.path.join(filename, '*_{}PercentSTED.tiff'.format(STEDPOWER) )
+            images = glob.glob(path)
+            print('There are ',len(images), ' tiff files in this folder')
+            extension = ".tiff"
         for imagei in images:
             print(os.path.basename(imagei))
         numim = power[1][k]
@@ -151,7 +159,7 @@ for power in powers:
         msrfiles.append(image)
     print(msrfiles)
 
-    path = os.path.join(filenamemixed, '*_{}PercentSTED.msr'.format(STEDPOWER))
+    path = os.path.join(filenamemixed, '*_{}PercentSTED{}'.format(STEDPOWER,extension))
     mixedimages = glob.glob(path)
 
 
@@ -180,9 +188,10 @@ for power in powers:
         dg = pd.DataFrame(columns=['g', 's'])
         with open(os.path.join(savefolder,'legend.txt'),'a') as data:
             data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
-        imagemsr=load_msr(msr)
+        imagemsr=load_image(msr)
+        image1=select_channel(imagemsr,keys[i])
 
-        image1 = imagemsr[keys[i]]
+        #image1 = imagemsr[keys[i]]
         print(image1.shape)
         #image1 =image1[10: -10, 10: -10,:]
         print(image1.shape)
@@ -250,8 +259,9 @@ for power in powers:
         d_melange = pd.DataFrame(columns=['g', 's'])
         df = pd.DataFrame(columns=['x', 'y'])
         dg = pd.DataFrame(columns=['g', 's'])
-        imagemsr = load_msr(mixedimage)
-        image1 = imagemsr[keys[2]]
+        imagemsr = load_image(mixedimage)
+        image1 = select_channel(imagemsr, keys[2])
+        #image1 = imagemsr[keys[2]]
         print(image1.shape)
         imsum = image1[:,:,10:111].sum(axis=2)
         imsum = imsum.astype('int16')
@@ -291,7 +301,7 @@ for power in powers:
         p2pnline = ax_scatter.plot([Pn_x, P2_x], [Pn_y, P2_y], c='dodgerblue')
         pnscatter = ax_scatter.scatter(Pn_x, Pn_y, s=50, c='gold')
         p2scatter = ax_scatter.scatter(P2_x, P2_y, s=50, c='gold')
-        fig4.savefig(os.path.join(savefolder, "Phasor_2species_{}.pdf".format(os.path.basename(mixedimage).split(".msr")[0])), transparent='True',
+        fig4.savefig(os.path.join(savefolder, "Phasor_2species_{}.pdf".format(os.path.basename(mixedimage).split(extension)[0])), transparent='True',
                         bbox_inches="tight",dpi=900)
         #ax_scatter.get_legend().remove()
         pnscatter.remove()
@@ -321,7 +331,7 @@ for power in powers:
         imsum_flat5 =ax_im3[3].imshow(lifetime_rgb)
         cbar =fig_im3.colorbar(cmap, ax=ax_im3[3],fraction=0.05, pad=0.01)
         filenameout = os.path.join(savefolder,
-                                    os.path.basename(mixedimage).split(".msr")[0] + "_STED2species_F1Overlay.tiff")
+                                    os.path.basename(mixedimage).split(extension)[0] + "_STED2species_F1Overlay.tiff")
 
         tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))
     
@@ -343,7 +353,7 @@ for power in powers:
         plt.imshow(lifetime_rgb)
         plt.axis('off')
 
-        plt.savefig(os.path.join(savefolder, os.path.basename(mixedimage).split(".msr")[0] + "_STED2species_lifetimergb.pdf"), transparent='True', bbox_inches="tight")
+        plt.savefig(os.path.join(savefolder, os.path.basename(mixedimage).split(extension)[0] + "_STED2species_lifetimergb.pdf"), transparent='True', bbox_inches="tight")
         
 
 
@@ -351,24 +361,24 @@ for power in powers:
 
         imagecomp=numpy.moveaxis(imagecomp,2,0)
 
-        filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(".msr")[0] + "_STED2species_UnmixedComposite.tiff")
+        filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(extension)[0] + "_STED2species_UnmixedComposite.tiff")
         imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("magenta","cyan"), pixelsize=(20E-3,20E-3))
 
-        filenameout = os.path.join(savefolder,os.path.basename(mixedimage).split(".msr")[0] + "_STED2species_MixedIntensity.tiff")
+        filenameout = os.path.join(savefolder,os.path.basename(mixedimage).split(extension)[0] + "_STED2species_MixedIntensity.tiff")
         print(filenameout)
         imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="gray", pixelsize=(20E-3,20E-3))
         filenameout = os.path.join(savefolder,
-                                    os.path.basename(mixedimage).split(".msr")[0] + "_STED2species_lifetimergb.tiff")
+                                    os.path.basename(mixedimage).split(extension)[0] + "_STED2species_lifetimergb.tiff")
 
         tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))
 
-        filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(".msr")[0] + "_STED2species_f1f2.tiff")
+        filenameout =  os.path.join(savefolder,os.path.basename(mixedimage).split(extension)[0] + "_STED2species_f1f2.tiff")
         imagecomp=numpy.dstack((fraction2,fraction1))
         imagecomp=numpy.moveaxis(imagecomp,2,0)
         tifffile.imwrite(filenameout, imagecomp)
 
         fig_im3.savefig(os.path.join(savefolder, 'Images_SeparateSTED_2species_' +
-                                        os.path.basename(mixedimage).split(".msr")[0] + '.pdf'), transparent='True',
+                                        os.path.basename(mixedimage).split(extension)[0] + '.pdf'), transparent='True',
                         bbox_inches="tight")
     fig4.savefig(os.path.join(savefolder, 'Phasor_SeparateSTED_2species.pdf'), transparent='True',
                     bbox_inches="tight")

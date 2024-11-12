@@ -30,7 +30,7 @@ import argparse
 from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
+from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_image,select_channel, get_foreground)
 from Phasor_functions import Median_Phasor,unmix3species,unmix3species_norescale
 from tiffwrapper import make_composite,imsave,LifetimeOverlayer
 from skspatial.objects import Circle
@@ -73,7 +73,7 @@ matplotlib.colormaps.register(cmap=cmap.reversed(), force=True)
 def list_of_ints(arg):
     return list(map(int, arg.split(',')))
 
-parser = argparse.ArgumentParser(description='Outputs phasor distribution properties for 2 folders of images')
+parser = argparse.ArgumentParser(description='Perform 2 species SPLIT-STED phasor analysis on a set of images')
 parser.add_argument("-f1","--f1",help='Path to first folder', type=str )
 
 parser.add_argument("-f2","--f2",help='Path to second folder',  type=str )
@@ -95,9 +95,7 @@ if None in [f1,f2,f3,savefolder]:
 
     #    Sélection des images dans un même fichier avec easygui
 
-    #f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-    #f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-    #f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+
 
 
     f1 = os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"PSD95_AF647_STEDPowerBleach_5to30_1")
@@ -124,6 +122,9 @@ if None in [f1,f2,f3,savefolder]:
     #f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","LongAcq")
     #f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","LongAcq")
     #f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","LongAcq")  
+    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+    f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
     savefolder=str(input("Name of Output folder: "))
     #numimlist=[3,3,5,2,16,16,1,4]
@@ -131,11 +132,11 @@ if None in [f1,f2,f3,savefolder]:
     #numimlist=[34,34,37,51,51,51,48,45]
     #numimlist=[6,6,1,4,5,5,3,1]
     #numimlist=[1,1,5,4,17,17,7,0] # PSD-Bassoon Cy5
-    #numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
+    numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
     #numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
     #numimlist=[7,7,1,0,0,0,1,19] # PSD Bassoon Cy3
     #numimlist = [1,1,0,8,8,8,9,7] #Actin Bassoon CY3
-    numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
+    #numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
     #numimlist=[0,0,6,2,5,5,6,0] # Homer Bassoon Cy3 MediumAcq
     #numimlist=[0,0,5,1,4,4,3,2] # Homer Bassoon Cy3 ShortAcq
     #numimlist=[2,2,0,3,7,7,6,0] # Homer Bassoon Cy3 LongAcq
@@ -150,7 +151,8 @@ filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
 filenamemixed=f3
 keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','STED_594 {2}']
-keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
+#keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
+keys=[0,1,1,1,0,1,1,1,1]
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}','STED_594 {2}','STED_594 {2}']
 #keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}',  'STED 561 {11}']
 #keys = [ 'Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}','Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}']
@@ -216,10 +218,17 @@ plot_legend()
 
 for k,filename in enumerate(filenamescontrol) :
     print(labels[k])
-    #path = os.path.join(filename, '*rep0*.msr' )
-    path = os.path.join(filename, '*.msr')
+    # Make list of all the images in the folder
+    extension = ".msr"
+    path=os.path.join(filename,"*.msr")
     images = glob.glob(path)
-    print('There are ',len(images), 'Images in this folder')
+    print('There are ',len(images), ' msr files in this folder')
+    if len(images) == 0:
+        path=os.path.join(filename,"*.tiff")
+        images = glob.glob(path)
+        print('There are ',len(images), ' tiff files in this folder')
+        extension = ".tiff"
+
     for imagei in images:
         print(os.path.basename(imagei)) 
     if numimlist is None:
@@ -230,7 +239,7 @@ for k,filename in enumerate(filenamescontrol) :
     msrfiles.append(image)
 print(msrfiles)
 
-path = os.path.join(filenamemixed, '*.msr')
+path = os.path.join(filenamemixed, '*'+extension)
 #path = os.path.join(filenamemixed, '*rep0*.msr')
 mixedimages = glob.glob(path)
 
@@ -258,12 +267,14 @@ barsylist = []
 for i, msr in enumerate(msrfiles) : 
     df = pd.DataFrame(columns=['x','y'])
     dg = pd.DataFrame(columns=['g', 's'])
-    imagemsr=load_msr(msr)
+    imagemsr=load_image(msr)
+    image1=select_channel(imagemsr,keys[i])
+    #image1 = imagemsr[keys[i]]
+    print(image1.shape)
     with open(os.path.join(savefolder,'legend.txt'),'a') as data:
         data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
-    print(imagemsr.keys())
-    image1 = imagemsr[keys[i]]
-    print(image1.shape)
+   # print(imagemsr.keys())
+
     #image1 =image1[10: -10, 10: -10,:]
     print(image1.shape)
     imsum = image1[:,:,10:111].sum(axis=2)
@@ -332,8 +343,9 @@ y = (coeffs2[0] * coeffs1[1] - coeffs1[0] * coeffs2[1]) / det
 
 p0 = numpy.array([x, y])
 print('p0', p0)
-circ = Circle((0.5, 0), radius=0.5)
+circ = Circle([0.5, 0], 0.5)
 check = circ.contains_point([x, y])
+
 if check == False:  # If intersection point is outside the circle, find intersection with circle
     print("I'm outside the circle, coming in!")
     circle = Circle([0.5, 0], 0.5)
@@ -399,10 +411,11 @@ for m,mixedimage in enumerate(mixedimages):
     print("***********************************************************")
     print("Working on image number ",m," out of ",len(mixedimages))
     print("***********************************************************")
-    imagemsr = load_msr(mixedimage)
+    imagemsr = load_image(mixedimage)
     print(mixedimage)
 
-    image1 = imagemsr[keys[-1]]
+    #image1 = imagemsr[keys[-1]]
+    image1= select_channel(imagemsr,keys[-1])
     print(image1.shape)
     # image1 =image1[10: -10, 10: -10,:]
     print(image1.shape)
@@ -444,7 +457,7 @@ for m,mixedimage in enumerate(mixedimages):
     print("colours",numpy.min(colours),numpy.max(colours))
     mixphasor = ax_scatter.scatter(p3[:,0],p3[:,1],s=1,c=colours,rasterized=True)
 
-    fig4.savefig(os.path.join(savefolder, "Phasor_3species_LinesControls_{}.png".format(os.path.basename(mixedimage).split(".msr")[0])), transparent='True',
+    fig4.savefig(os.path.join(savefolder, "Phasor_3species_LinesControls_{}.png".format(os.path.basename(mixedimage).split(extension)[0])), transparent='True',
                     bbox_inches="tight",dpi=900)
 
     #lines = [mpatches.Patch(color=colors[i], label=labels[i]) for i in range(len(labels))]
@@ -456,7 +469,7 @@ for m,mixedimage in enumerate(mixedimages):
     p2pnline = ax_scatter.plot([Pn_x, P2_x], [Pn_y, P2_y], c='dodgerblue')
     p0p2line = ax_scatter.plot([P2_x, p0[0]], [P2_y, p0[1]], c='dodgerblue')
     
-    fig4.savefig(os.path.join(savefolder, "Phasor_3species_LinesControls_{}.pdf".format(os.path.basename(mixedimage).split(".msr")[0])), transparent='True',
+    fig4.savefig(os.path.join(savefolder, "Phasor_3species_LinesControls_{}.pdf".format(os.path.basename(mixedimage).split(extension)[0])), transparent='True',
                     bbox_inches="tight",dpi=900)
     mixphasor.remove()
     #ax_scatter.get_legend().remove()
@@ -547,11 +560,11 @@ for m,mixedimage in enumerate(mixedimages):
     plt.figure()
     plt.imshow(lifetime_rgb)
     plt.axis('off')
-    plt.savefig(os.path.join(savefolder, os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_lifetimergb.pdf"), transparent='True', bbox_inches="tight")
+    plt.savefig(os.path.join(savefolder, os.path.basename(mixedimage).split(extension)[0] + "_STED3species_LineControls_lifetimergb.pdf"), transparent='True', bbox_inches="tight")
 
     lifetime_rgb=numpy.moveaxis(lifetime_rgb, 2, 0)
     print(lifetime_rgb.shape)
-    filenameout = os.path.join(savefolder, os.path.basename(mixedimage).split(".msr")[
+    filenameout = os.path.join(savefolder, os.path.basename(mixedimage).split(extension)[
         0] + "_STED3species_LineControls_lifetimergb.tiff")
     tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32), photometric='rgb')
 
@@ -566,28 +579,28 @@ for m,mixedimage in enumerate(mixedimages):
 
     imagecomp = numpy.dstack((fraction1,fraction2))
     imagecomp = numpy.moveaxis(imagecomp, 2, 0)
-    filenameout = os.path.join(savefolder, os.path.basename(mixedimage).split(".msr")[
+    filenameout = os.path.join(savefolder, os.path.basename(mixedimage).split(extension)[
         0] + "_STED3species_LineControls_UnmixedComposite.tiff")
     imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("Magenta Hot", "Cyan Hot"),
             pixelsize=(20E-3, 20E-3))
 
     filenameout = os.path.join(savefolder,
-                                os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_MixedIntensity.tiff")
+                                os.path.basename(mixedimage).split(extension)[0] + "_STED3species_LineControls_MixedIntensity.tiff")
     print(filenameout)
     imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="Red Hot", pixelsize=(20E-3, 20E-3))
 
     filenameout = os.path.join(savefolder,
-                                os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_f1f2f3.tiff")
+                                os.path.basename(mixedimage).split(extension)[0] + "_STED3species_LineControls_f1f2f3.tiff")
     imagecomp = numpy.dstack((imsum_flat_bi, imsum_flat_bi1,imsum_flat_lin3))
     imagecomp = numpy.moveaxis(imagecomp, 2, 0)
     tifffile.imwrite(filenameout, imagecomp)
     filenameout = os.path.join(savefolder,
-                                os.path.basename(mixedimage).split(".msr")[0] + "_STED3species_LineControls_F1Overlay.tiff")
+                                os.path.basename(mixedimage).split(extension)[0] + "_STED3species_LineControls_F1Overlay.tiff")
 
     tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))
 
     fig_im3.savefig(os.path.join(savefolder, 'Images_SeparateSTED3species_LineControls_' +
-                                    os.path.basename(mixedimage).split(".msr")[0] + '.pdf'), transparent='True',
+                                    os.path.basename(mixedimage).split(extension)[0] + '.pdf'), transparent='True',
                     bbox_inches="tight")
 
 

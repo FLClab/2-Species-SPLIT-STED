@@ -4,7 +4,7 @@ from sys import path as path1;
 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
+from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_image,select_channel, get_foreground)
 from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix2species
 from tiffwrapper import imsave,LifetimeOverlayer
 from objectives import (Squirrel, Bleach)
@@ -112,9 +112,9 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         
         with open(os.path.join(savefolder,'legend.txt'),'a') as data: 
             data.write("{}\t{}\t{}\n".format(labels[i],keyscontrols[i],msr))
-        imagemsr = load_msr(msr)
-    
-        image1 = imagemsr[keyscontrols[i]]
+        imagemsr = load_image(msr)
+        image1= select_channel(imagemsr, keyscontrols[i])
+        #image1 = imagemsr[keyscontrols[i]]
         imsum = image1[:,:,10:111].sum(axis=2)
         imsum = imsum.astype('int16')
     
@@ -206,10 +206,12 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         seuils = []
         for i, msr in enumerate(msrfiles):
             print("i",i)
-            imagemsr=load_msr(msr)
-            print(imagemsr.keys())
-            image1 = imagemsr[keysmixed[i]]
-            imagec1 = imagemsr[keyscontrols[i]]
+            imagemsr=load_image(msr)
+            #print(imagemsr.keys())
+            image1 = select_channel(imagemsr, keysmixed[i])
+            imagec1 = select_channel(imagemsr, keyscontrols[i])
+            #image1 = imagemsr[keysmixed[i]]
+            #imagec1 = imagemsr[keyscontrols[i]]
             #res_control = decorr.calculate(numpy.sum(imagec1[:,:,10:],axis=2))
             res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):

@@ -20,16 +20,12 @@ import glob
 import numpy as np
 import pandas as pd
 import matplotlib
-#from matplotlib_scalebar.scalebar import ScaleBar
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.gridspec import GridSpec
 import seaborn
 import os
 import itertools
 import easygui
-from plotly.offline import plot
 import math
 import os.path
 from sys import path as path1; 
@@ -39,7 +35,7 @@ path1.append(dossier)
 
 from statistics_functions import get_significance
 
-from Main_functions import (load_msr,to_polar_coord, polar_to_cart, get_foreground)
+from Main_functions import (load_image,select_channel,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor
 import scipy
 from shapely.geometry.point import Point
@@ -156,8 +152,7 @@ f2=args["f2"]
 savefoldername=args["savefolder"]
 
 if None in args.values():
-    #f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-    #f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+
 
     savefoldername =str(input("Name of folder: "))
 
@@ -165,6 +160,8 @@ if None in args.values():
     f1= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"AlphaTubulin_AF647_1to250_STEDPowerBleach_1")
     f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
     f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
+    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
   
 
 filenames = [f1,f2]
@@ -172,12 +169,12 @@ filenames = [f1,f2]
 # List of powers to use for the phasor calculation
 powers=["_*","_5","_10","_15","_20"]
 #powers=["_5","_5","_10","_15","_20","_30","_40"]
-powers=["_*","_10","_20","_30","_40"]
+#powers=["_*","_10","_20","_30","_40"]
 #powersnum=[0,5,10,15,20,30,40]
 #powersnum=[0,10,20,30,40]
 #powers=["_10","_20","_30","_40"]#
 powersnum=[0,10,20,30,40]
-#powersnum=[0,5,10,15,20]
+powersnum=[0,5,10,15,20]
 ticklabels=["0","22","44","66","88"]
 mwpowers=["","0","44","88"]
 
@@ -188,7 +185,7 @@ keys=['Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_
 keys=['Confocal_561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
 #keys=['Conf_635P {2}','Conf_635P {2}','Conf_635P {2}','Conf_635P {2}']
 #keys=['STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
-
+keys=[0,1,1,1,1]
 colors=['magenta','cyan','lawngreen','mediumpurple']
 #colors_centroids=[['lightskyblue', 'deepskyblue','blue','mediumblue','darkblue',"cyan"],["pink","lightpink",'lightcoral','indianred','mediumvioletred',"magenta"]]
 colors=[['deepskyblue', 'deepskyblue','deepskyblue','deepskyblue','deepskyblue','deepskyblue'],["hotpink","hotpink","hotpink","hotpink","hotpink","hotpink"]]
@@ -213,8 +210,7 @@ os.makedirs(savefolder,exist_ok=True)
 fig,ax_scatter= plt.subplots(figsize=(3,3))
 ax_scatter.set_xlim(0, 1)
 ax_scatter.set_ylim(0, 1)
-#axcentroids.set_box_aspect(aspect=0.6)
-# gs = GridSpec(4, 4)
+
 
 # ax_scatter = fig.add_subplot(gs[0:4, 0:4])
 # Create the universal semi-circle and plot it
@@ -237,9 +233,15 @@ for k,filename in enumerate(filenames) :
     for a,power in enumerate(powers):
         ## For each power in the list of powers find all the images in the folder that have the power in their name
         
+        extension = ".msr"
         path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
         images = glob.glob(path)
-        print("there are {} images in this folder".format(len(images)))
+        print('There are ',len(images), ' msr files in this folder')
+        if len(images) == 0:
+            path = os.path.join(filename, '*{}PercentSTED.tiff'.format(power) )
+            images = glob.glob(path)
+            print('There are ',len(images), ' tiff files in this folder')
+            extension = ".tiff"
         
         msrfiles=images
         Positions[k][powersnum[a]]=np.zeros((2,len(msrfiles)))
@@ -247,15 +249,16 @@ for k,filename in enumerate(filenames) :
         Filenames[k][powersnum[a]]=[]
         for i, msr in enumerate(msrfiles) :
         # Read the image and calculate its phasor distribution with median filtering
-            imagemsr = load_msr(msr)
+            imagemsr = load_image(msr)
             print(os.path.basename(msr))
-            print(imagemsr.keys())
+            #print(imagemsr.keys())
             Filenames[k][powersnum[a]].append(os.path.basename(msr))
 
 
             df = pd.DataFrame(columns=['x','y'])
             dg = pd.DataFrame(columns=['g', 's'])
-            image1=imagemsr[keys[a]]
+            image1=select_channel(imagemsr, keys[a])
+            #image1=imagemsr[keys[a]]
             print("Caclulation for an image of shape", image1.shape, "...")
             #params_dict["foreground_threshold"] = get_foreground(image1)
             params_dict["foreground_threshold"]=10
@@ -274,7 +277,7 @@ for k,filename in enumerate(filenames) :
             
             CoM_x=kmeans.cluster_centers_[:, 0][:]
             CoM_y=kmeans.cluster_centers_[:, 1][:]
-            #print(CoM_x,CoM_y)
+           
             #print(a)
         # Calculate the ellipse that best fits the phasor distribution's 70th percentile
             cov = np.cov(g, s)
@@ -292,10 +295,9 @@ for k,filename in enumerate(filenames) :
                                             norm_eigen_vec[0, eigen_val.argmax()]))
                 ell = mpatches.Ellipse(dg.mean(axis=0),width=width,height=height,angle=angle)
 
+            Positions[k][powersnum[a]][0,i]=CoM_x[0]
 
-
-            Positions[k][powersnum[a]][0,i]=CoM_x
-            Positions[k][powersnum[a]][1, i] =CoM_y
+            Positions[k][powersnum[a]][1, i] =CoM_y[0]
 
             Ellipsedims[k][powersnum[a]][0, i] =width
             Ellipsedims[k][powersnum[a]][1, i] =height

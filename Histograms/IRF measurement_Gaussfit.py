@@ -8,14 +8,14 @@ import glob
 import numpy
 import easygui
 from scipy.optimize import curve_fit
-from scipy import asarray as ar,exp
-from specpy import File
+
+
 
 import os.path
 from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import get_foreground,load_msr
+from Main_functions import get_foreground,load_image,select_channel
 
 
 # -----------------------------------------------------------
@@ -24,10 +24,19 @@ filename=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
 #filename = '/Users/marielafontaine/valeria-s3/flclab-abberior-sted/mlafontaine/22-06-23_Gold_Bead'
 mapcomp = {'CONF' : 'STAR 635P_CONF {0}'}
+#mapcomp = {'CONF' : 0}
 
+# Make list of all the images in the folder
+extension = ".msr"
 path=os.path.join(filename,"*.msr")
 images = glob.glob(path)
-print('There are ',len(images), 'Images in this folder')
+print('There are ',len(images), ' msr files in this folder')
+if len(images) == 0:
+    path=os.path.join(filename,"*.tiff")
+    images = glob.glob(path)
+    print('There are ',len(images), ' tiff files in this folder')
+    extension = ".tiff"
+
 
 
 # -----------------------------------------------------------
@@ -39,15 +48,16 @@ for imagei in images:
 numim = int(input('Fichier msr a extraire (1er=0): '))
 images = images[numim]
 # Read the selected image file
-imagemsr = load_msr(images)
-print(imagemsr.keys())
+imagemsr = load_image(images)
+#print(imagemsr.keys())
 
 
 
 #plt.style.use('dark_background')
 
 for key in mapcomp :
-    image1 = imagemsr[mapcomp[key]]
+    #image1 = imagemsr[mapcomp[key]]
+    image1=select_channel(imagemsr, mapcomp[key])
 
     dim = image1.shape
     if dim[2] > 250 :

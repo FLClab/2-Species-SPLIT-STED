@@ -25,7 +25,7 @@ from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 
-from Main_functions import (load_msr,to_polar_coord, polar_to_cart, get_foreground)
+from Main_functions import (load_image,select_channel,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor
 import scipy
 from shapely.geometry.point import Point
@@ -129,19 +129,21 @@ params_dict = {
 }
 # -----------------------------------------------------------
 #    Paths to folders containing the images, 1 per dye.
-#f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-f1 = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Bassoon_CF594',"Mini")
-f2  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"Mini")
+f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+#f1 = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Bassoon_CF594',"Mini")
+#f2  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"Mini")
 filenames = [f1,f2]
 
 #    List of depletion powers to be analyzed, string to be identified in the file name
 powers=["_10","_10","_20","_30","_40"]
 powersnum=[0,10,20,30,40]
+powers=["_10","_10","_15","_20","_30"]
+powersnum=[0,10,20,30,40]
 
 #    List of keys to be used to extract the images from the msr files
 keys=['Confocal_561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
-
+keys=[0,1,1,1,1,1]
 
 colors_Centroids=[["#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff"],["#55d0ffff","#00acdfff","#0080bfff","#00456bff"]]
 colors=[['deepskyblue', 'deepskyblue','deepskyblue','deepskyblue','deepskyblue'],["hotpink","hotpink","hotpink","hotpink","hotpink"]]
@@ -187,21 +189,29 @@ for k,filename in enumerate(filenames) :
     
         # For each depletion power, list the images acquired with this power 
     for a,power in enumerate(powers):
+        extension = ".msr"
         path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
         images = glob.glob(path)
+        print('There are ',len(images), ' msr files in this folder')
+        if len(images) == 0:
+            path = os.path.join(filename, '*{}PercentSTED.tiff'.format(power) )
+            images = glob.glob(path)
+            print('There are ',len(images), ' tiff files in this folder')
+            extension = ".tiff"
         msrfiles=images
 
         #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
         for i, msr in enumerate(msrfiles) :
     # Read the msr file
-            imagemsr = load_msr(msr)
+            imagemsr = load_image(msr)
             print(os.path.basename(msr))
-            print(imagemsr.keys())
+            #print(imagemsr.keys())
 
     # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
             df = pd.DataFrame(columns=['x','y'])
             dg = pd.DataFrame(columns=['g', 's'])
-            image1=imagemsr[keys[a]]
+            image1=select_channel(imagemsr, keys[a])
+            #image1=imagemsr[keys[a]]
             print("Caclulation for an image of shape", image1.shape, "...")
             #params_dict["foreground_threshold"] = get_foreground(image1)
             params_dict["foreground_threshold"]=10

@@ -14,7 +14,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib
 import matplotlib.patches as mpatches
 import pandas as pd
-from Main_functions import (load_msr,line_equation, to_polar_coord, polar_to_cart, get_foreground)
+from Main_functions import (load_image,select_channel,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor
 from Mono_fit import ExpFunMono_MLE
 from sklearn.cluster import KMeans
@@ -67,6 +67,8 @@ def Simulate2SpeciesSTED(STEDPOWER):
     #keys=['CONF640 {10}','CONF640 {0}']
     keyscontrols = ['STED 561 {11}','STED 561 {11}']
     keysmixed = ['STED 561 {11}','STED 561 {11}']
+    #keyscontrols=[1,1]
+    #keysmixed=[1,1]
     #keyscontrols = [ 'Conf_635P {2}','Conf_635P {2}']
     #keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
     
@@ -125,10 +127,12 @@ def Simulate2SpeciesSTED(STEDPOWER):
         seuils = []
         for i, msr in enumerate(msrfiles):
             print("i",i)
-            imagemsr=load_msr(msr)
-            print(imagemsr.keys())
-            image1 = imagemsr[keysmixed[i]]
-            imagec1 = imagemsr[keyscontrols[i]]
+            imagemsr=load_image(msr)
+            #print(imagemsr.keys())
+            image1 = select_channel(imagemsr, keysmixed[i])
+            imagec1 = select_channel(imagemsr, keyscontrols[i])
+            #image1 = imagemsr[keysmixed[i]]
+            #imagec1 = imagemsr[keyscontrols[i]]
             #res_control = decorr.calculate(numpy.sum(imagec1[:,:,10:],axis=2))
             res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):

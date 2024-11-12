@@ -38,7 +38,7 @@ dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions"
 syspath.append(dossier)
 import decorr
 from objectives import (Squirrel, Bleach)
-from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_msr, get_foreground)
+from Main_functions import (load_image,select_channel,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import DTCWT_Phasor,Median_Phasor,SPLIT_STED
 from tiffwrapper import imsave,LifetimeOverlayer
 
@@ -78,7 +78,7 @@ filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM'
 
 filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq")
 filename= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"AlphaTubulin_AF647_1to500_STEDPowerBleach_1")
-
+filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 ## Dictionary of the images to be used (keys in the .msr files)
 mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
              'Conf FLIM' : 'Conf_635P {2}', 
@@ -91,7 +91,11 @@ mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
 #              'STED FLIM' :'STED 561 {11}',
 #              'Conf post' : 'Confocal_Post {15}',
 #             'STED High' : 'STED 561_HighP {16}'}
-
+# mapcomp = { 
+#              'Conf FLIM' : 0,
+#              'STED FLIM' :1,
+#              'STED High' :None
+# }
 
 colors=["springgreen",'orangered','gold','deepskyblue']
 labels=["STED Phasor","Phasor centroids","Pure species coordinates","Projection Line"]
@@ -100,12 +104,19 @@ savefolder=str(input("Name of Output folder: "))
 savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
 os.makedirs(savefolder, exist_ok=True)
 
-# List of images in the folder
+# Make list of all the images in the folder
+extension = ".msr"
 path=os.path.join(filename,"*.msr")
 images = glob.glob(path)
-print("path",path)
-numim = len(images)
-print('There are ',len(images), 'Images in this folder')
+numim=len(images)
+print('There are ',numim, ' msr files in this folder')
+if len(images) == 0:
+    path=os.path.join(filename,"*.tiff")
+    images = glob.glob(path)
+    numim=len(images)
+    print('There are ',numim, ' tiff files in this folder')
+    extension = ".tiff"
+
 # Create a dataframe to store the metric measurements
 im_ids = []
 data_objectifs = pd.DataFrame(columns=['Filename',
@@ -158,16 +169,22 @@ for i,im in enumerate(images) :
     print(i,"of",numim, os.path.basename(im))
     print("######################")
     print(i, os.path.basename(im))
-    imagemsr = load_msr(im)
-    print(imagemsr.keys())
+    imagemsr = load_image(im)
+    #print(imagemsr.keys())
     print('image opened with success')
 #Extract the depletion power from the image filename
     image_id=i
     sted_percent = str(os.path.basename(im).split('_')[-1].split('percentSTED')[0])
 
-#Extract the intensity confocal images from the image file
-    Conf_init = imagemsr[mapcomp['Conf pre']]
-    Conf_end = imagemsr[mapcomp['Conf post']]
+    #Extract the intensity confocal images from the image file
+    if extension == ".msr":
+        Conf_init = select_channel(imagemsr,mapcomp['Conf pre'])
+        Conf_end = select_channel(imagemsr,mapcomp['Conf post'])
+    else:
+        print("intensity confocal images not stored in tiffs")
+        Conf_init = numpy.ones((512,512))
+        Conf_end = numpy.zeros((512,512))
+
     objec = []
     objec.append(os.path.basename(im))
     objec.append(sted_percent)
@@ -180,19 +197,25 @@ for i,im in enumerate(images) :
         if key =='Conf post' :
             continue
         if key == 'STED High' :
-            if mapcomp['STED High'] in imagemsr.keys():   
-                image1 = imagemsr[mapcomp[key]]
-                imsumhigh = image1[:,:,10:111].sum(axis=2)
+            if extension == ".msr":
+                if mapcomp['STED High'] in imagemsr.keys():  
+                    image1 = select_channel(imagemsr, mapcomp[key])
+                    #image1 = imagemsr[mapcomp[key]]
+                    imsumhigh = image1[:,:,10:111].sum(axis=2)
 
-                filenameout = os.path.join(savefolder,
-                                        os.path.basename(im).split(".msr")[0] + "_HighP_STED.tiff")
-                imsave(filenameout, imsumhigh.astype(numpy.uint16), luts="Red Hot")
-                res_HighSTED = decorr.calculate(imsumhigh)
-                objec.append(res_HighSTED)
-                fg_highpSTED=get_foreground(imsumhigh)   
-                squirrel_highp_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([imsumhigh], conf_stack, conf_stack,imsumhigh > fg_highpSTED, conf_stack >fg_conf_stack )
-                squirrel_sted_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([im_splitsted], sted_stack, conf_stack,im_splitsted > fg_splitsted, sted_stack >fg_sted_stack )
-                objec.extend([squirrel_highp_vs_conf,squirrel_sted_vs_conf])
+                    filenameout = os.path.join(savefolder,
+                                            os.path.basename(im).split(extension)[0] + "_HighP_STED.tiff")
+                    imsave(filenameout, imsumhigh.astype(numpy.uint16), luts="Red Hot")
+                    res_HighSTED = decorr.calculate(imsumhigh)
+                    objec.append(res_HighSTED)
+                    fg_highpSTED=get_foreground(imsumhigh)   
+                    squirrel_highp_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([imsumhigh], conf_stack, conf_stack,imsumhigh > fg_highpSTED, conf_stack >fg_conf_stack )
+                    squirrel_sted_vs_conf = Squirrel(method="L-BFGS-B", normalize=True).evaluate([im_splitsted], sted_stack, conf_stack,im_splitsted > fg_splitsted, sted_stack >fg_sted_stack )
+                    objec.extend([squirrel_highp_vs_conf,squirrel_sted_vs_conf])
+                else:
+                    print("No high power images taken")
+                    objec.extend([numpy.nan,numpy.nan,numpy.nan])
+                
             else:
                 print("No high power images taken")
                 objec.extend([numpy.nan,numpy.nan,numpy.nan])
@@ -205,7 +228,7 @@ for i,im in enumerate(images) :
         dg1 = pd.DataFrame(columns=['g', 's'])
 
 
-        image1 = imagemsr[mapcomp[key]]
+        image1 = select_channel(imagemsr, mapcomp[key])
         imsum = image1[:,:,10:111].sum(axis=2)
 # Measure the foreground threshold of the image
         seuil = get_foreground(image1)
@@ -235,7 +258,7 @@ for i,im in enumerate(images) :
         
             conf_stack = imsum
             filenameout = os.path.join(savefolder,
-                                        os.path.basename(im).split(".msr")[0] + "_Confocal.tiff")
+                                        os.path.basename(im).split(extension)[0] + "_Confocal.tiff")
             imsave(filenameout, imsum.astype(numpy.uint16), luts="Red Hot")
             #tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
             res_conf = decorr.calculate(imsum)
@@ -353,10 +376,10 @@ for i,im in enumerate(images) :
             ell.set_linewidth(1.0)
 
 # Save the SPLIT-STED Phasor graph
-        fig4.savefig(os.path.join(savefolder,"Phasor_SPLITSTED_Median_{}.pdf".format(os.path.basename(im).split(".msr")[0])),transparent='True', bbox_inches="tight",dpi=900)
+        fig4.savefig(os.path.join(savefolder,"Phasor_SPLITSTED_Median_{}.pdf".format(os.path.basename(im).split(extension)[0])),transparent='True', bbox_inches="tight",dpi=900)
 # Save the Confocal-FLIM and STED-FLIM Phasor graph and clean the plot for the next image      
         fig5.savefig(
-            os.path.join(savefolder, "Phasor_raw_Median_{}.pdf".format(os.path.basename(im).split(".msr")[0])),
+            os.path.join(savefolder, "Phasor_raw_Median_{}.pdf".format(os.path.basename(im).split(extension)[0])),
             transparent='True', bbox_inches="tight", dpi=900)
         stedphasor.remove()
         confphasor.remove()
@@ -379,7 +402,7 @@ for i,im in enumerate(images) :
         ax.imshow(lifetime_rgb)
 
         cbar = fig.colorbar(cmap, ax=ax)
-        fig.savefig(os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_F1Overlay.pdf"),transparent='True', bbox_inches="tight")
+        fig.savefig(os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_F1Overlay.pdf"),transparent='True', bbox_inches="tight")
         plt.close(fig)
 
 
@@ -390,7 +413,7 @@ for i,im in enumerate(images) :
         ax.axis('off')
         ims=ax.imshow(im_fractnan,cmap=phasorcolor)
         fig.colorbar(ims, ax=ax)
-        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_Median_{}.pdf".format(params_dict["smooth_factor"]))
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_SPLIT_STED_fractmap_Median_{}.pdf".format(params_dict["smooth_factor"]))
         #imsave(filenameout, im_fractnan, luts=phasorcolor)
         fig.savefig(filenameout,transparent='True', bbox_inches="tight")
         plt.close(fig)
@@ -402,28 +425,30 @@ for i,im in enumerate(images) :
         ax.axis('off')
         ims=ax.imshow(reversefract,cmap=phasorcolor)
         fig.colorbar(ims,ax=ax)
-        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_reversed_Median_{}.pdf".format(params_dict["smooth_factor"]))
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_SPLIT_STED_fractmap_reversed_Median_{}.pdf".format(params_dict["smooth_factor"]))
         #imsave(filenameout, reversefract, luts=phasorcolor)
         fig.savefig(filenameout,transparent='True', bbox_inches="tight")
         plt.close(fig)
 
-        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_fractmap_Median_{}.tiff".format(params_dict["smooth_factor"]))
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_SPLIT_STED_fractmap_Median_{}.tiff".format(params_dict["smooth_factor"]))
         imsave(filenameout, im_fract, luts="Red Hot")
 
 
 
 
 
-        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_SPLIT_STED_Median_{}.tiff".format(params_dict["smooth_factor"]))
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_SPLIT_STED_Median_{}.tiff".format(params_dict["smooth_factor"]))
         imsave(filenameout, im_splitsted.astype(numpy.uint16), luts="Red Hot")
 
         #tifffile.imwrite(filenameout, im_splitsted.astype(numpy.uint16))
-        filenameout = os.path.join(savefolder,os.path.basename(im).split(".msr")[0] + "_STED.tiff")
+        filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_STED.tiff")
         imsave(filenameout,image1[:,:,10:111].sum(axis=2).astype(numpy.uint16), luts="Red Hot")
         #tifffile.imwrite(filenameout, image1[:,:,10:].sum(axis=2).astype(numpy.uint16))
         
 # Measure the resolution of the SPLIT-STED image
         res_splitsted = decorr.calculate(im_splitsted)
+        if numpy.isinf(res_splitsted):
+            res_splitsted = 0
         objec.append(res_splitsted)
 
         fg_splitsted = get_foreground(im_splitsted)
@@ -529,6 +554,8 @@ def monoExp(x, m, t, b):
 xs = numpy.linspace(numpy.min(pp), numpy.max(pp),(numpy.max(pp)-numpy.min(pp)).astype(int))
 # Ax.plot( xs, monoExp(xs,m,t,b), '-',c='deepskyblue')
 # Fit the SPLIT-STED resolution vs STED power graph with an exponential function
+print("dfmean['STEDpercent']",dfmean['STEDpercent'])
+print("dfmean['Res splitsted']*20",dfmean['Res splitsted']*20)
 try:
     params, cv = curve_fit(monoExp,dfmean['STEDpercent'],dfmean['Res splitsted']*20,maxfev = 10000)
     m, t, b = params

@@ -19,28 +19,37 @@ import os.path
 from sys import path as path1; 
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
-from Main_functions import get_foreground,load_msr
+from Main_functions import get_foreground,load_msr,load_image,select_channel
 from Mono_fit import ExpFunMono_MLE
-from specpy import File
 from tiffwrapper import LifetimeOverlayer
+
+
 # -----------------------------------------------------------
 
 # Path to the folder containing the images
 
-#filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "PSD95_STORANGE")
-filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "rabBassoon_CF594")
-filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq","prefs")
+filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+#filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "PSD95_STORANGE")
+#filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "rabBassoon_CF594")
+#filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq","prefs")
 print(filename)
 
 # Dictionary of the image identifiers (Channel names) to be included
 
-#mapcomp = {'STED635': 'STED_635P {2}','Conf635': 'Conf_635P {2}'}
-mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
+mapcomp = {'STED635': 'STED_635P {2}','Conf635': 'Conf_635P {2}'}
+#mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
+mapcomp = {'CONF': 0, 'STED' : 1}
 
+# Make list of all the images in the folder
+extension = ".msr"
 path=os.path.join(filename,"*.msr")
 images = glob.glob(path)
-print('There are ',len(images), 'Images in this folder')
+print('There are ',len(images), ' msr files in this folder')
+if len(images) == 0:
+    path=os.path.join(filename,"*.tiff")
+    images = glob.glob(path)
+    print('There are ',len(images), ' tiff files in this folder')
+    extension = ".tiff"
 
 # Ask the user for a name for the output folder and create it
 savefolder=str(input("Name of Output folder: "))
@@ -52,14 +61,15 @@ os.makedirs(savefolder, exist_ok=True)
 # Loop over the images in the folder
 for imagei in images:
     print(os.path.basename(imagei))
-    imagemsr = load_msr(imagei)
+    imagemsr = load_image(imagei)
     
 # -----------------------------------------------------------
 #  # Loop over the channels in the dictionary
 
     for key in mapcomp:
         print(mapcomp[key])
-        image1=imagemsr[mapcomp[key]]
+        #image1=imagemsr[mapcomp[key]]
+        image1 = select_channel(imagemsr, mapcomp[key])
         dim = image1.shape
         print(dim)
         centerx=int(dim[0]/2)
@@ -137,12 +147,12 @@ for imagei in images:
         img = ax2.imshow(lifetime_rgb)
         cbar = fig2.colorbar(cmap, ax=ax2)
         cbar.set_label("temps de vie [ns]")
-        filenameout = os.path.join(savefolder,os.path.basename(imagei).split(".msr")[0] + "_MLE_Lifetime_{}.tiff".format(key))
+        filenameout = os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] + "_MLE_Lifetime_{}.tiff".format(key))
         tifffile.imwrite(filenameout, mlifetime)
-        filenameout =os.path.join(savefolder, os.path.basename(imagei).split(".msr")[0] + "_Intensity_{}.tiff".format(key))
+        filenameout =os.path.join(savefolder, os.path.basename(imagei).split(extension)[0] + "_Intensity_{}.tiff".format(key))
         tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
-        fig1.savefig(os.path.join(savefolder,os.path.basename(imagei).split(".msr")[0] +'MLELifetime_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
-        fig2.savefig(os.path.join(savefolder,os.path.basename(imagei).split(".msr")[0] +'MLELifetime_IntensityComposite_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
+        fig1.savefig(os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] +'MLELifetime_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
+        fig2.savefig(os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] +'MLELifetime_IntensityComposite_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
         plt.close('all')
 # plt.show()
 

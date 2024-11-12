@@ -26,7 +26,7 @@ from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 
-from Main_functions import (load_msr,to_polar_coord, polar_to_cart, get_foreground)
+from Main_functions import (load_image,select_channel,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor, DTCWT_Phasor
 import scipy
 from shapely.geometry.point import Point
@@ -131,8 +131,8 @@ params_dict = {
 # -----------------------------------------------------------
 #    Paths to folders containing the images, 1 per dye.
 #f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","Mini")
+f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+#f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","Mini")
 f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594","Mini")
 filenames = [f2]
 
@@ -142,7 +142,7 @@ powersnum=[0]
 
 #    List of keys to be used to extract the images from the msr files
 keys=['Confocal_561 {11}']
-
+keys=[0]
 
 colors_Centroids=["k","k","k"]
 colors=[ "blue",  "blue", "blue"]
@@ -164,21 +164,32 @@ for k,filename in enumerate(filenames) :
     
         # For each depletion power, list the images acquired with this power 
     for a,power in enumerate(powers):
+        # Make list of all the images acquired with a certain depletion power in the folder
+        extension = ".msr"
         path = os.path.join(filename, '*{}PercentSTED.msr'.format(power) )
         images = glob.glob(path)
+        print('There are ',len(images), ' msr files in this folder')
+        if len(images) == 0:
+            path = os.path.join(filename, '*{}PercentSTED.tiff'.format(power) )
+            images = glob.glob(path)
+            print('There are ',len(images), ' tiff files in this folder')
+            extension = ".tiff"
+
+
         msrfiles=images
 
         #For each image, calculate the phasor distribution and plot the scatter plot of the phasor distribution
         for i, msr in enumerate(msrfiles) :
     # Read the msr file
-            imagemsr = load_msr(msr)
+            imagemsr = load_image(msr)
             print(os.path.basename(msr))
-            print(imagemsr.keys())
+            #print(imagemsr.keys())
 
     # Calculate the phasor distribution for all pixels in the image that are above the foreground threshold
             df = pd.DataFrame(columns=['x','y'])
             dg = pd.DataFrame(columns=['g', 's'])
-            image1=imagemsr[keys[a]]
+            image1=select_channel(imagemsr, keys[a])
+            #image1=imagemsr[keys[a]]
             imsum = np.sum(image1, axis=2)
             print("Caclulation for an image of shape", image1.shape, "...")
             #params_dict["foreground_threshold"] = get_foreground(image1)

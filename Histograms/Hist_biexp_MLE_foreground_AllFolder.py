@@ -20,8 +20,8 @@ from sys import path as path1;
 dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
 path1.append(dossier)
 from Multi_fit import ExpFun_bi_MLE_tau_and_alpha
-from Main_functions import get_foreground,load_msr
-from lifetime import LifetimeOverlayer
+from Main_functions import get_foreground,load_image,select_channel
+from tiffwrapper import LifetimeOverlayer
 import seaborn
 
 
@@ -29,20 +29,28 @@ import seaborn
 
 # Path to the folder containing the images
 
-#filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
+filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
 
 # Dictionary of the image identifiers (Channel names) to be included
 
 #mapcomp = {'Conf635': 'Conf_635P {2}','STED635': 'STED_635P {2}'}
 mapcomp = {'Confocal':'Confocal_561 {11}', 'STED':'STED 561 {11}'}
-
+mapcomp = {'Confocal':0, 'STED':1}
 # Make list of all the images in the folder
 print(filename)
+
+# Make list of all the images in the folder
+extension = ".msr"
 path=os.path.join(filename,"*.msr")
 images = glob.glob(path)
-print('There are ',len(images), 'Images in this folder')
+print('There are ',len(images), ' msr files in this folder')
+if len(images) == 0:
+    path=os.path.join(filename,"*.tiff")
+    images = glob.glob(path)
+    print('There are ',len(images), ' tiff files in this folder')
+    extension = ".tiff"
 
 # Ask the user for a name for the output folder and create it
 savefoldername=str(input("Name of Output folder: "))
@@ -74,14 +82,15 @@ for image_id,imagei in enumerate(images):
     sted_percent = str(os.path.basename(imagei).split('_')[-1].split('percentSTED')[0])
     conf_percent=0
     print(os.path.basename(imagei))
-    imagemsr = load_msr(imagei)
+    imagemsr = load_image(imagei)
 
 # -----------------------------------------------------------
 #     Open mapcomp's images
 
     for k,key in enumerate(mapcomp):
         print(mapcomp[key])
-        image1=imagemsr[mapcomp[key]]
+        image1 = select_channel(imagemsr, mapcomp[key])
+        #image1=imagemsr[mapcomp[key]]
         dim = image1.shape
         if k==0:
             ov_data = [int(conf_percent), os.path.basename(imagei)]
@@ -139,10 +148,10 @@ print(list(Overall_data.columns))
 # -----------------------------------------------------------
 #    Plot the lifetime values as a function of STED power
 dfmeanconf=Overall_data.mean(numeric_only=True)
-dfstdconf=Overall_data.std()
+dfstdconf=Overall_data.std(numeric_only=True)
 
 dfmean=Overall_data.groupby("Power", as_index=False).mean(numeric_only=True)
-dfstd=Overall_data.groupby("Power", as_index=False).std()
+dfstd=Overall_data.groupby("Power", as_index=False).std(numeric_only=True)
 
 print(dfmean.shape)
 print(list(dfmean.columns))

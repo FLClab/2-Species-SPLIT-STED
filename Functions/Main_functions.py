@@ -1,6 +1,27 @@
 import numpy
 import os
-from specpy import File
+import tifffile
+
+try:
+    from specpy import File
+except:
+    print("specpy not found, will use tifffile instead")
+    pass
+
+
+def select_channel(file,channel):
+    if type(file)==dict:
+        return file[channel]
+    else:
+        file=file[:,channel,:,:]  
+        print(file.shape)
+        return numpy.moveaxis(file, 0, -1)
+def load_image(file):
+    if ".msr" in file:
+        image=load_msr(file)
+    else:
+        image = tifffile.imread(file)
+    return image
 
 def load_msr(msrPATH):
     """Loads the msr data from the msr file. The data is in a numpy array.
