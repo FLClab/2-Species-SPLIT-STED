@@ -35,7 +35,7 @@ graphcolor="deepskyblue"
 #filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
 filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
-filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
+#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','alphaTubulin_Alexa647')
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','B2Spectrin Alexa647')
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy5','rabBassoon STAR635P')
@@ -45,9 +45,9 @@ filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','C
 #filename=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","HighP")
 # Dictionary of the image identifiers (Channel names) to be included
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
-mapcomp = {'CONF561': 0, 'STED561' : 1}
+#mapcomp = {'CONF561': 0, 'STED561' : 1}
 #mapcomp = {'Conf635': 'Conf_635P {2}','STED635': 'STED_635P {2}'}
-filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+#filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
 # Make list of all the images in the folder
 extension = ".msr"
@@ -112,8 +112,9 @@ for image_id,imagei in enumerate(images):
     # Sum of all the histograms of the foreground pixels
         y=numpy.sum(image1[imsum>seuil, :],axis=0)
     # Cut histogram to start at max value
-        maxy = numpy.max(y)
-        indice = numpy.argmax(y)
+        #maxy = numpy.max(y)
+        #indice = numpy.argmax(y)
+        indice=20
         y = y[indice:]
         y= y / y.sum()
         absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08

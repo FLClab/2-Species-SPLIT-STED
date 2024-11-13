@@ -29,15 +29,15 @@ import seaborn
 
 # Path to the folder containing the images
 
-filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+#filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 #filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
-#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
+filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
 
 # Dictionary of the image identifiers (Channel names) to be included
 
 #mapcomp = {'Conf635': 'Conf_635P {2}','STED635': 'STED_635P {2}'}
 mapcomp = {'Confocal':'Confocal_561 {11}', 'STED':'STED 561 {11}'}
-mapcomp = {'Confocal':0, 'STED':1}
+#mapcomp = {'Confocal':0, 'STED':1}
 # Make list of all the images in the folder
 print(filename)
 
@@ -73,7 +73,7 @@ graphcolor="hotpink"
 
 
 
-
+indices=[]
 for image_id,imagei in enumerate(images):
     print("##################")
     print("Image {} of {}".format(image_id,len(images)))
@@ -86,7 +86,7 @@ for image_id,imagei in enumerate(images):
 
 # -----------------------------------------------------------
 #     Open mapcomp's images
-
+    
     for k,key in enumerate(mapcomp):
         print(mapcomp[key])
         image1 = select_channel(imagemsr, mapcomp[key])
@@ -115,6 +115,7 @@ for image_id,imagei in enumerate(images):
         # Cut histogram to start at max value
         maxy = numpy.max(y)
         indice = numpy.argmax(y)
+        indices.append(indice)
         y = y[indice:]
         y= y / y.sum()
         absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
@@ -144,7 +145,7 @@ Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_Biexp_{}.csv".forma
 
 print(Overall_data.shape)
 print(list(Overall_data.columns))
-
+print("indices",numpy.min(indices),numpy.mean(indices),numpy.max(indices))
 # -----------------------------------------------------------
 #    Plot the lifetime values as a function of STED power
 dfmeanconf=Overall_data.mean(numeric_only=True)

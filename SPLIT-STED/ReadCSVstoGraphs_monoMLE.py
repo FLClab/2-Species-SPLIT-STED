@@ -112,15 +112,18 @@ tauerror=table_deltatau_std[table_deltatau_mean[:,0]==0][0,1]
 tau=table_deltatau_mean[table_deltatau_mean[:,0]==0][0,1]
 Fig4, Ax4 = plt.subplots(nrows=2,ncols=3,figsize=(12,8))
 Fig2, Ax2 = plt.subplots(figsize=(4,3))
-Fig5, Ax5 = plt.subplots(figsize=(3,2))
+Fig5, Ax5 = plt.subplots(figsize=(4,3))
 powers=[10,20,30,40]
 
 Fig3.savefig('MLEmonoexp_DeltaTau.pdf', transparent='True', bbox_inches="tight")
-Fig5.savefig('MLEmonoexp_TauBoxplot.pdf', transparent='True', bbox_inches="tight")
+
 
 # Plot the lifetime values as a function of STED power for each sample
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"deepskyblue"},medianprops={"color": "k"})
-
+seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5, size=2,color="hotpink")
+seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["lifetime"],ax=Ax5,  size=2,color="deepskyblue")
+Ax5.set_ylim([0.5, 3.5])
+Fig5.savefig('MLEmonoexp_TauBoxplot.pdf', transparent='True', bbox_inches="tight")
 
 plt.show()

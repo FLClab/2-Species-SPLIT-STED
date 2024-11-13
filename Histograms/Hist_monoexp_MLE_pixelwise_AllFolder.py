@@ -28,17 +28,17 @@ from tiffwrapper import LifetimeOverlayer
 
 # Path to the folder containing the images
 
-filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+#filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 #filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "PSD95_STORANGE")
 #filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "rabBassoon_CF594")
-#filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq","prefs")
+filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq","prefs")
 print(filename)
 
 # Dictionary of the image identifiers (Channel names) to be included
 
 mapcomp = {'STED635': 'STED_635P {2}','Conf635': 'Conf_635P {2}'}
-#mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
-mapcomp = {'CONF': 0, 'STED' : 1}
+mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
+#mapcomp = {'CONF': 0, 'STED' : 1}
 
 # Make list of all the images in the folder
 extension = ".msr"
@@ -96,16 +96,17 @@ for imagei in images:
     #    Lifetime matrix
 
         #seuil = get_foreground(image1)
-        seuil= 10
+        seuil= 5
         mlifetime = numpy.empty((imsum.shape))
+        indice=20
 
         for iy, ix in tqdm(numpy.ndindex(imsum.shape)):
             y = image1[iy, ix]
             if y.sum() < seuil :
                 mlifetime[iy, ix] = 0
             else :
-                maxy = numpy.max(y) 
-                indice = numpy.argmax(y)
+                #maxy = numpy.max(y) 
+                #indice = numpy.argmax(y)
                 y = y[indice:]
                 y= y / y.sum()
                 absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08

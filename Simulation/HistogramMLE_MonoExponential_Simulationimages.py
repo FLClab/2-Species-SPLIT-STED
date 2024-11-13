@@ -20,7 +20,7 @@ from Mono_fit import ExpFunMono_MLE
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 import skimage
-from lifetime import LifetimeOverlayer
+from tiffwrapper import LifetimeOverlayer
 from skimage import filters
 import scipy
 import decorr
@@ -201,7 +201,7 @@ def Simulate2SpeciesSTED(STEDPOWER):
     
             #seuil = get_foreground(imsum)
             #seuil=min(seuils)
-            seuil=10
+            seuil=5
             print("Caclulation for an image of shape", image1.shape, "...")
     
             params_dict["foreground_threshold"] = seuil
@@ -228,16 +228,17 @@ def Simulate2SpeciesSTED(STEDPOWER):
             mixphasor.remove()
 
 
-            seuil= 10
+            seuil= 5
             mlifetime = numpy.empty((imsum.shape))
+            indice=20
 
             for iy, ix in tqdm(numpy.ndindex(imsum.shape)):
                 y = image1[iy, ix]
                 if y.sum() < seuil :
                     mlifetime[iy, ix] = 0
                 else :
-                    maxy = numpy.max(y) 
-                    indice = numpy.argmax(y)
+                    #maxy = numpy.max(y) 
+                    #indice = numpy.argmax(y)
                     y = y[indice:]
                     y= y / y.sum()
                     absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
