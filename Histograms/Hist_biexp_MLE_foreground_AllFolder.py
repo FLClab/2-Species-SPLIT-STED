@@ -109,13 +109,14 @@ for image_id,imagei in enumerate(images):
     # -----------------------------------------------------------
         #seuil = get_foreground(image1)
         seuil= 3
+        indice=20
         # Sum of all the histograms of the foreground pixels
         y=numpy.sum(image1[imsum>seuil, :],axis=0)
 
-        # Cut histogram to start at max value
-        maxy = numpy.max(y)
-        indice = numpy.argmax(y)
-        indices.append(indice)
+        # Cut histogram to start at 21st bin
+        #maxy = numpy.max(y)
+        #indice = numpy.argmax(y)
+        #indices.append(indice)
         y = y[indice:]
         y= y / y.sum()
         absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
@@ -145,7 +146,7 @@ Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_Biexp_{}.csv".forma
 
 print(Overall_data.shape)
 print(list(Overall_data.columns))
-print("indices",numpy.min(indices),numpy.mean(indices),numpy.max(indices))
+#print("indices",numpy.min(indices),numpy.mean(indices),numpy.max(indices))
 # -----------------------------------------------------------
 #    Plot the lifetime values as a function of STED power
 dfmeanconf=Overall_data.mean(numeric_only=True)

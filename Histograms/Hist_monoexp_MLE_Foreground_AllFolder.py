@@ -111,7 +111,7 @@ for image_id,imagei in enumerate(images):
         seuil= 3
     # Sum of all the histograms of the foreground pixels
         y=numpy.sum(image1[imsum>seuil, :],axis=0)
-    # Cut histogram to start at max value
+    # Cut histogram to start at 21st bin
         #maxy = numpy.max(y)
         #indice = numpy.argmax(y)
         indice=20

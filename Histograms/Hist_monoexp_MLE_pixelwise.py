@@ -87,6 +87,7 @@ for key in mapcomp:
 
     #seuil = get_foreground(image1)
     seuil= 5
+    indice=20
     mlifetime = numpy.empty((imsum.shape))
 
     for iy, ix in tqdm(numpy.ndindex(imsum.shape)):
@@ -94,8 +95,8 @@ for key in mapcomp:
         if y.sum() < seuil :
             mlifetime[iy, ix] = 0
         else :
-            maxy = numpy.max(y) 
-            indice = numpy.argmax(y)
+            #maxy = numpy.max(y) 
+            #indice = numpy.argmax(y)
             y = y[indice:]
             y= y / y.sum()
             absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
