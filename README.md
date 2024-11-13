@@ -2,6 +2,7 @@
 
 All the codes used to produce figures and analyze data for:  
 Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluorophore Discrimination and Resolution Improvement of Stimulated Emission Depletion Microscopy Images Using Fluorescence Lifetime
+Dataset is available to downlad from the paper[website](https://s3.valeria.science/flclab-2-species-split-sted/index.html) 
 ## Installation and Requirements
 ```bash
 conda create -n FLIM python=3.11.4
@@ -11,8 +12,7 @@ conda activate FLIM
 pip install -r requirements.txt
 ```
 
-Install the specpy package provided with the Imspector software for your specific python version. If you want to use these scripts with other data formats, simply change the load_msr function.
- **Unmixing/Unmixing_2SpeciesSPLITSTED.ipynb** is a Jupyter Notebook implementation of 2 Species SPLIT-STED which is independent of the specpy library. Takes tiff images as input. Example data can be downloaded from  _______ into **Example_data** subfolder
+If available, install the specpy package provided with the Imspector software for your specific python version. All data is provided as tiff images and the scripts can read both .tiff and msr files.If you want to use these scripts with other data formats, simply change the load_image and select_channel functions.
 
 ## Folder contents
 ### Acquisition
@@ -102,7 +102,7 @@ Display and analysis of phasor distributions of STED-FLIM images
 
 ### Unmixing
 Algorithms to separate dyes of different lifetimes in Confocal-FLIM and STED-FLIM images using [linear systems of equations in phasor space](https://doi.org/10.1088/2050-6120/ab8570)
-* **Unmixing_2SpeciesSPLITSTED.ipynb**: Jupyter Notebook implementation of 2 Species SPLIT-STED. Takes tiff images as input. Example data will be downloaded from  _______ into **Example_data** subfolder
+* **Unmixing_2SpeciesSPLITSTED.ipynb** is a Jupyter Notebook implementation of 2 Species SPLIT-STED. A small set of example data is downloaded by the script from  [the paper website](https://s3.valeria.science/flclab-2-species-split-sted/index.html)into an **Example_data** subfolder 
 * **Unmixing_2SpeciesConfocalFLIM__allfolder** : Separate phasors of Confocal-FLIM images of double-stained samples into two fractional components. Uses the same pair of control images for the entire folder of mixed images
 * **Unmixing_2SpeciesSTEDFLIM_allfolder**: Separate phasors of STED-FLIM images of double-stained samples into two fractional components. Uses the same control images for all mixture images acquired with the same depletion power (1 pair of controls per depletion power)
 * **Unmixing_2SpeciesSPLITSTED_allfolder** :  Separate phasors of STED-FLIM images of double-stained samples into three fractional components. Uses the same control images (4 per dye, confocal and 3 depletion powers) for all mixture images.
