@@ -1,12 +1,12 @@
 # 2 Species SPLIT-STED
 
 All the codes used to produce figures and analyze data for:  
-Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluorophore Discrimination and Resolution Improvement of Stimulated Emission Depletion Microscopy Images Using Fluorescence Lifetime
+Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluorophore Discrimination and Resolution Improvement of Stimulated Emission Depletion Microscopy Images Using Fluorescence Lifetime.
+
 Dataset is available to downlad from the [website](https://s3.valeria.science/flclab-2-species-split-sted/index.html) 
 ## Installation and Requirements
 
 The source code `2 Species SPLIT-STED` relies on Python scientific librairies. The source code was tested in a Python 3.11 environnement. We provide a `requirements.txt` file to facilitate the installation of the necessary dependencies.
-
 
 Assuming the users have a working installation of Python on their computer (we recommend using [Anaconda](https://docs.anaconda.com/anaconda/install/)), the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
 
