@@ -33,8 +33,8 @@ labelsSPLIT=["Bassoon","PSD95"]
 
 
 # Folders containing the lifetime measurements for the 2 different samples
-folder1=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","MLEForeground_BassoonCF594")
-folder2=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","MLEForeground_PSD95_Orange")
+folder1=os.path.join("C:",os.sep,"Users","FLC-lab","Desktop","MLEForeground_BassoonCF594_MonoExp")
+folder2=os.path.join("C:",os.sep,"Users","FLC-lab","Desktop","MLEForeground_PSDOrange_MonoExp")
 
 
 foldersMLE=[folder1,folder2]

@@ -36,8 +36,6 @@ labelsSPLIT=["Bassoon","PSD95"]
 # Folders containing the SPLIT-STED metrics for the 2 different samples
 folder1=os.path.join(os.path.expanduser("Desktop"),"rabBassoon_CF594_SPLIT")
 folder2=os.path.join(os.path.expanduser("Desktop"),"PSD95_STOrange_SPLIT")
-#folder1 =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-
 foldersSPLIT=[folder1,folder2]
 
 # Folders containing the lifetime measurements for the 2 different samples
