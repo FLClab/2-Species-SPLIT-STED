@@ -61,13 +61,9 @@ images = glob.glob(path)
 print('There are ',len(images), 'Images in this folder')
 
 # Image identifiers (Channel names) to be included in images. List multiple channels when a composite is wanted
-mapcomp={
-         '': ["Confocal_561 {11}", "STED 561 {11}"]
-         }
-mapcomp={ 
-        '': ['Conf_635P {2}', 'STED_635P {2}']
-        }
-
+mapcomp={ '': ["Confocal_561 {11}", "STED 561 {11}"]}
+#mapcomp={ '': ['Conf_635P {2}', 'STED_635P {2}'] }
+#mapcomp={ '':['Conf640 {10}','STED640 {10}']}
 mapfoldernames={}
 for key in mapcomp:
     outpath=os.path.join(os.path.expanduser("~/Desktop"),os.path.basename(filename))
