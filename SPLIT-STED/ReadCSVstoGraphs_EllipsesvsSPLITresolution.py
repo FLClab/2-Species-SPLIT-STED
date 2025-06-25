@@ -12,8 +12,9 @@ Create plots correlating distance between ellipses and SPLIT-STED resolution met
 
 import os.path
 from sys import path as path1;
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
+import easygui
 import functools
 from statistics_functions import get_significance
 import matplotlib.pyplot as plt
@@ -30,17 +31,13 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 # Labels for the different samples
 labelsSPLIT=["Bassoon","Homer"]
 # Folders containing the SPLIT-STED metrics for the 2 different samples (1 csv file per sample)
-folder1=os.path.join(os.path.expanduser("Desktop"),"SPLIT_Homer_MediumAcq")
-folder2=os.path.join(os.path.expanduser("Desktop"),"SPLIT_Bassoon_MediumAcq")
-folder2=os.path.join(os.path.expanduser("Desktop"),"PSD95_Orange_MediumPlus_SPLIT")
-folder1=os.path.join(os.path.expanduser("Desktop"),"rabBassoon_CF594_MediumPlus_SPLIT")
-#folder1=os.path.join(os.path.expanduser("Desktop"),"Bassoon_ST635P_SPLIT")
-#folder2=os.path.join(os.path.expanduser("Desktop"),"PSD95_AF647_SPLIT")
+folder1=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop")))
+folder2=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop")))
 foldersSPLIT=[folder1,folder2]
 
 # Folder containing the phasor ellipse data (1 csv file for pair of samples)
-folderellipse=os.path.join(os.path.expanduser("Desktop"),"BassoonCF594_HomerOrange_MediumAcq_PhasorDists")
-folderellipse=os.path.join(os.path.expanduser("Desktop"),"rabBassoonCF594_PSD95Orange_PhasorDists")
+folderellipse=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop")))
+folderellipse=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop")))
 
 # Create the figures and axes for the plots
 Fig, Ax = plt.subplots(nrows=2,ncols=2,figsize=(6, 6),sharex=True,sharey='row')

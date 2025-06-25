@@ -23,9 +23,8 @@ import math
 import os.path
 import time
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
-
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Main_functions import (load_image,select_channel,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor, DTCWT_Phasor
 import scipy
@@ -132,8 +131,6 @@ params_dict = {
 #    Paths to folders containing the images, 1 per dye.
 #f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","Mini")
-f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594","Mini")
 filenames = [f2]
 
 #    List of depletion powers to be analyzed, string to be identified in the file name

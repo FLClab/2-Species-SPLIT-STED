@@ -17,8 +17,8 @@ import tifffile
 import os.path
 import pandas as pd
 from sys import path as path1;
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Mono_fit import ExpFunMono_MLE
 from Main_functions import get_foreground,load_image,select_channel
 
@@ -32,8 +32,8 @@ graphcolor="deepskyblue"
 
 
 # Path to the folder containing the images
-filename= os.path.join('D:', os.sep,'SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
-#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
+filename= easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+
 
 # Dictionary of the image identifiers (Channel names) to be included
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}

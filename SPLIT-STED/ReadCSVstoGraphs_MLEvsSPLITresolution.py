@@ -15,10 +15,11 @@ Create plots correlating lifetime values and differences and SPLIT-STED resoluti
 import os.path
 from sys import path as path1;
 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 import functools
 from statistics_functions import get_significance
+import easygui
 import matplotlib.pyplot as plt
 import numpy
 import glob
@@ -32,21 +33,13 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 labelsSPLIT=["PSD95","Bassoon"]
 
 # Folders containing the SPLIT-STED metrics for the 2 different samples
-#folder2=os.path.join(os.path.expanduser("Desktop"),"SPLIT_Homer_MediumAcq")
-#folder1=os.path.join(os.path.expanduser("Desktop"),"SPLIT_Bassoon_MediumAcq")
-
-folder2=os.path.join(os.path.expanduser("Desktop"),"PSD95_Orange_MediumPlus_SPLIT")
-folder1=os.path.join(os.path.expanduser("Desktop"),"rabBassoon_CF594_MediumPlus_SPLIT")
-#folder1=os.path.join("D:",os.sep,"FLIM_MediumAcq","PSD-Bassoon_Cy3","SPLIT-STED","rabBassoon_CF594_MediumPlus_SPLIT")
-#folder2=os.path.join("D:",os.sep,"FLIM_MediumAcq","PSD-Bassoon_Cy3","SPLIT-STED","PSD95_Orange_MediumPlus_SPLIT")
+folder1=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the SPLIT-STED metrics of the first fluorophore"))
+folder2=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the SPLIT-STED metrics of the second fluorophore"))
 foldersSPLIT=[folder1,folder2]
 
 # Folders containing the lifetime measurements for the 2 different samples
-#folder1=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_Bassoon_CF594_BiExp")
-#folder2=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_Homer_Orange_BiExp")
-folder1=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_rabBassoon_CF594_BiExp")
-folder2=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_PSD95_STORANGE_BiExp")
-
+folder1=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the first fluorophore"))
+folder2=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the second fluorophore"))
 foldersMLE=[folder1,folder2]
 
 # Create the figures and axes for the plots

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os.path
 from sys import path as path1;
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 import math
 import matplotlib.pyplot as plt
 
@@ -53,13 +53,11 @@ params_dict = {
 # -----------------------------------------------------------
 def Simulate2SpeciesSTED(STEDPOWER):
 
-    f1 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','Bassoon_CF594',"MediumAcq","*_{}percentSTED.msr".format(STEDPOWER))
-    #f1 = os.path.join('U:', os.sep, 'adeschenes', "2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon", "Bassoon_CF594_STEDPowerBleach_MediumAcq_1","*_{}percentSTED.msr".format(STEDPOWER))
-    f2 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','Homer_STORANGE',"MediumAcq","*_{}percentSTED.msr".format(STEDPOWER))
-    f2 = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "PSD95_STORANGE","Mini20",
-                      "*_{}percentSTED.msr".format(STEDPOWER))
-    f1 = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "rabBassoon_CF594","Mini20",
-                      "*_{}percentSTED.msr".format(STEDPOWER))
+    f1= easygui.diropenbox(default=os.path.expanduser("~/Desktop"))
+    f2= easygui.diropenbox(default=os.path.expanduser("~/Desktop"))
+    f1 = os.path.join(f1,"*_{}percentSTED.msr".format(STEDPOWER))
+    f2 = os.path.join(f2,"*_{}percentSTED.msr".format(STEDPOWER))
+
 
     filenames = [f1,f2]
     filenamescontrol = [f1,f2]

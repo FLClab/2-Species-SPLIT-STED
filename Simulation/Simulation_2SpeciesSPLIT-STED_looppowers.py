@@ -9,15 +9,13 @@ The program then calculates the fraction of each species in the mixture and comp
 # -*- coding: utf-8 -*-
 import os.path
 from sys import path as path1;
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Main_functions import (load_image,select_channel,line_equation, to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix3species
 from tiffwrapper import imsave,LifetimeOverlayer
-
 import math
 import matplotlib.pyplot as plt
-
 import numpy
 import glob
 import itertools
@@ -26,7 +24,7 @@ from matplotlib.gridspec import GridSpec
 import matplotlib.patches as mpatches
 import seaborn
 import pandas as pd
-
+import easygui
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 import skimage
@@ -88,13 +86,14 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         - A legend file containing the paths to the control images and to the files that are mixed together for each pairID
     """
 
+    # Define the folders containing the control images
+    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for First fluorophore")
+    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for Second fluorophore")
 
-    f1 = os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"rabBassoon_CF594_STEDPowerBleach_MediumAcq_MoreReps_1")
-    f2= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_STEDPowerBleach_MediumAcq_MoreReps_1")
     filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
-    
-    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","Mini","*_{}percentSTED.msr".format(STEDPOWER))
-    f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594","Mini","*_{}percentSTED.msr".format(STEDPOWER))
+
+    f2= os.path.join(f2,"*_{}percentSTED.msr".format(STEDPOWER))
+    f1= os.path.join(f1,"*_{}percentSTED.msr".format(STEDPOWER))
     filenames = [f1,f2]
 
     #keys=['CONF640 {10}','CONF640 {0}']

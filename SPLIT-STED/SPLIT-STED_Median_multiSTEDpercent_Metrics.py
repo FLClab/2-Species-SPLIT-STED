@@ -34,8 +34,8 @@ import matplotlib.pyplot as plt
 import easygui
 from sklearn.cluster import KMeans
 from sys import path as syspath; 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-syspath.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+syspath.append(Functionspath)
 import decorr
 from objectives import (Squirrel, Bleach)
 from Main_functions import (load_image,select_channel,line_equation, to_polar_coord, polar_to_cart, get_foreground)
@@ -72,12 +72,7 @@ params_dict = {
 
 
 ## Path of folder containing images
-#filename=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
-filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Bassoon_CF594',"MediumAcq")
-
-filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq")
-filename= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"AlphaTubulin_AF647_1to500_STEDPowerBleach_1")
 filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 ## Dictionary of the images to be used (keys in the .msr files)
 mapcomp = { 'Conf pre'  : 'Conf_pre {6}',

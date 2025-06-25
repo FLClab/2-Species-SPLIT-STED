@@ -29,8 +29,8 @@ import easygui
 import math
 import os.path
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 
 
 from statistics_functions import get_significance
@@ -155,11 +155,6 @@ if None in args.values():
 
 
     savefoldername =str(input("Name of folder: "))
-
-    f2= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"AlphaTubulin_AF647_1to500_STEDPowerBleach_1")
-    f1= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"AlphaTubulin_AF647_1to250_STEDPowerBleach_1")
-    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
-    f1= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
     f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
     f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
   

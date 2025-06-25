@@ -12,9 +12,9 @@ Create plots correlating lifetime values and differences and SPLIT-STED resoluti
 
 import os.path
 from sys import path as path1;
-
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+import easygui
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 import functools
 from statistics_functions import get_significance
 import matplotlib.pyplot as plt
@@ -33,11 +33,10 @@ labelsSPLIT=["Bassoon","PSD95"]
 
 
 # Folders containing the lifetime measurements for the 2 different samples
-folder1=os.path.join("C:",os.sep,"Users","FLC-lab","Desktop","MLEForeground_BassoonCF594_MonoExp")
-folder2=os.path.join("C:",os.sep,"Users","FLC-lab","Desktop","MLEForeground_PSDOrange_MonoExp")
-
-
+folder1=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the first fluorophore"))
+folder2=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the second fluorophore"))
 foldersMLE=[folder1,folder2]
+
 # Create the plots
 Fig, Ax = plt.subplots(nrows=2,ncols=2,figsize=(6, 6))
 Fig3, Ax3 = plt.subplots(figsize=(6,4))

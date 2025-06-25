@@ -17,8 +17,8 @@ import tifffile
 import os.path
 import pandas as pd
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Multi_fit import ExpFun_bi_MLE_tau_and_alpha
 from Main_functions import get_foreground,load_image,select_channel
 from tiffwrapper import LifetimeOverlayer
@@ -29,9 +29,7 @@ import seaborn
 
 # Path to the folder containing the images
 
-#filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE")
-filename= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"rabBassoon_CF594")
+filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 
 # Dictionary of the image identifiers (Channel names) to be included
 

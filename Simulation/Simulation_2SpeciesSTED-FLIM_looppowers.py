@@ -2,8 +2,9 @@
 import os.path
 from sys import path as path1;
 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
+import easygui
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_image,select_channel, get_foreground)
 from Phasor_functions import Median_Phasor,DTCWT_Phasor,unmix2species
 from tiffwrapper import imsave,LifetimeOverlayer
@@ -49,9 +50,11 @@ params_dict = {
 # -----------------------------------------------------------
 def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
 
-    f1 = os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3','rabBassoon_CF594',"Mini","*_{}percentSTED.msr".format(STEDPOWER))
+    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for First fluorophore")
+    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for Second fluorophore")
 
-    f2= os.path.join('T:', os.sep,'adeschenes','SimulationDataset_STEDFLIM','Cy3',"PSD95_STORANGE","Mini","*_{}percentSTED.msr".format(STEDPOWER))
+    f2= os.path.join(f2,"*_{}percentSTED.msr".format(STEDPOWER))
+    f1= os.path.join(f1,"*_{}percentSTED.msr".format(STEDPOWER))
  
     filenames = [f1,f2]
     filenamescontrol = [f1,f2]

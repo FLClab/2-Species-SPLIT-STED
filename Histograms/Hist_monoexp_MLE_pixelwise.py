@@ -16,8 +16,8 @@ from tqdm import tqdm
 import tifffile
 import os.path
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Mono_fit import ExpFunMono_MLE
 from Main_functions import load_image, get_foreground, select_channel
 from tiffwrapper import LifetimeOverlayer

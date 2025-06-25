@@ -12,13 +12,14 @@ containing metrics of unmixed simulation images, such as resolution and SQUIRREL
 import os.path
 from sys import path as path1;
 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 import functools
 from statistics_functions import get_significance
 import matplotlib.pyplot as plt
 import numpy
 import glob
+import easygui
 import itertools
 import tifffile
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -38,9 +39,9 @@ labels=["2species","3species"]
 
 # Paths to the folders containing the CSV files
 
+folder1=easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with 2species STED-FLIM simulation results")
+folder2=easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with 2 species SPLIT-STED simulation results")
 
-folder1=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","Simulation_CY5_SpectrinBassoon","2Species")
-folder2=os.path.join("C:",os.sep,"Users","ANDES399","Desktop","Simulation_CY5_SpectrinBassoon","3Species")
 
 folders=[folder1,folder2]
 print(folders)

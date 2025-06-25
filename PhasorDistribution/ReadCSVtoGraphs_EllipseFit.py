@@ -12,10 +12,11 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn
+import easygui
 import itertools
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from statistics_functions import get_significance
 import scipy
 
@@ -27,7 +28,8 @@ savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefoldername + "_Phaso
 os.makedirs(savefolder,exist_ok=True)
 
 #Path to folder containing the .csv files
-folders=[os.path.join(os.path.expanduser("Desktop"),"PSD95_STORANGE_rabBassoon_CF594_PhasorDists")]
+csvpath = easygui.diropenbox(default=os.path.expanduser("~/Desktop"))
+folders=[csvpath]
 
 
 powers=["_*","_10","_20","_30","_40"]

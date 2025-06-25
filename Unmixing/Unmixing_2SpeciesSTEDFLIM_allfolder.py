@@ -16,8 +16,8 @@ import tifffile
 from sklearn.cluster import KMeans
 import matplotlib
 from sys import path as path1;
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_image,select_channel, get_foreground)
 from Phasor_functions import Median_Phasor,unmix2species
 from tiffwrapper import imsave,LifetimeOverlayer
@@ -56,44 +56,10 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 
 # -----------------------------------------------------------
 
-#    Sélection des images dans un même fichier avec easygui
-
-#f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-
-f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
-f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-
-#f1 = os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"PSD95_AF647_STEDPowerBleach_5to30_1")
-f2=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5','rab_Bassoon_STAR635P_STEDPowerBleach_5to30_1')
-#f1= os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_STEDPowerBleach_5to30_1")
-#f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_rabBassoon_STAR635P_STEDPowerBleach_5to30_1")
-#f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msPSD95_AF647_rabBassoon_STAR635P_STEDPowerBleach_5to20_2")
-f1=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_STEDPowerBleach_5to20_1")
-#f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"msB2Spectrin_AF647_rabBassoon_STAR635P_STEDPowerBleach_5to30_1")
-f3=os.path.join('U:', os.sep,'adeschenes','2024-02-29_FLIM_Cy5',"alphaTubulin_AF647_Bassoon_STAR635P_STEDPowerBleach_5to20_1")
-
-#f1=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Bassoon_CF594","MediumAcq")
-#f2=os.path.join('T:', os.sep,'adeschenes',"SimulationDataset_STEDFLIM","Cy3","Homer_STORANGE","MediumAcq")
-#f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","Homer_STOrange_Bassoon_CF594","MediumAcq")
-
-#f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-#f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Phalloidin_AF594_STEDPowerBleach_MediumAcq_1")
-#f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Phalloidin_AF594_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-
-#f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_CF594_STEDPowerBleach_MediumAcq_1")
-#f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Phalloidin_AF594_STEDPowerBleach_MediumAcq_1")
-#f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Phalloidin_AF594_B2Spectrin_CF594_STEDPowerBleach_MediumAcq_2")
-#f1= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"rabBassoon_CF594_STEDPowerBleach_MediumAcq_MoreReps_1")
-#f2= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_STEDPowerBleach_MediumAcq_MoreReps_1")
-# f3= os.path.join('U:', os.sep,'adeschenes','2024-03-06_FLIM_PSDBassoon_Cy3',"msPSD95_STOrange_rabBassoon_CF594_STEDPowerBleach_MediumAcq_MoreReps_1")
-#f3=os.path.join('T:', os.sep,'adeschenes',"Dataset_Mixed_Images_Cy3","PSD95_STOrange_rabBassoon_CF594")
-f1= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-f2= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","B2Spectrin_STOrange_STEDPowerBleach_MediumAcq_1")
-f3= os.path.join('U:', os.sep,'adeschenes',"2023-12-21_FLIM_MediumAcq_Spectrin_Actin_Bassoon","Spectrin_STOrange_Bassoon_CF594_STEDPowerBleach_MediumAcq_1")
-   
+# Select the folders containing the control images and the mixed images
+f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
+f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
+f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
 
 #mapcomp = { 'Conf FLIM' : 'Confocal_561 {11}',
 #            'STED FLIM' :'STED 561 {11}' }

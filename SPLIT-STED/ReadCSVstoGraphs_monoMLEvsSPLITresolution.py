@@ -13,8 +13,8 @@ Create plots correlating lifetime values and differences and SPLIT-STED resoluti
 import os.path
 from sys import path as path1;
 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from statistics_functions import get_significance
 import matplotlib.pyplot as plt
 import numpy
@@ -34,13 +34,13 @@ labelsSPLIT=["Bassoon","PSD95"]
 #labelsSPLIT=["AlphaTubulin","Bassoon"]
 
 # Folders containing the SPLIT-STED metrics for the 2 different samples
-folder1=os.path.join(os.path.expanduser("Desktop"),"rabBassoon_CF594_SPLIT")
-folder2=os.path.join(os.path.expanduser("Desktop"),"PSD95_STOrange_SPLIT")
+folder1=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the SPLIT-STED metrics of the first fluorophore"))
+folder2=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the SPLIT-STED metrics of the second fluorophore"))
 foldersSPLIT=[folder1,folder2]
 
 # Folders containing the lifetime measurements for the 2 different samples
-folder1=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_rabBassoon_CF594")
-folder2=os.path.join(os.path.expanduser("Desktop"),"MLEForeground_PSD95_STORANGE")
+folder1=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the first fluorophore"))
+folder2=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the second fluorophore"))
 foldersMLE=[folder1,folder2]
 
 # Path of the folder where the results will be saved

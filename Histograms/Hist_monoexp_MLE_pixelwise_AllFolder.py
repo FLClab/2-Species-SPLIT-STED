@@ -10,15 +10,13 @@ import matplotlib.pyplot as plt
 import glob
 import numpy
 import easygui
-#from sys import path as syspath; syspath.append(os.path.expanduser("~/Documents/Github/TCSPC/Analyse/Fit - MLE - TDE/"))
-
 from scipy.optimize import minimize
 from tqdm import tqdm
 import tifffile
 import os.path
 from sys import path as path1; 
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Main_functions import get_foreground,load_msr,load_image,select_channel
 from Mono_fit import ExpFunMono_MLE
 from tiffwrapper import LifetimeOverlayer
@@ -28,10 +26,7 @@ from tiffwrapper import LifetimeOverlayer
 
 # Path to the folder containing the images
 
-#filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-#filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "PSD95_STORANGE")
-#filename = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', "rabBassoon_CF594")
-filename  = os.path.join('T:', os.sep, 'adeschenes', 'SimulationDataset_STEDFLIM', 'Cy3', 'Homer_STORANGE',"MediumAcq","prefs")
+filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 print(filename)
 
 # Dictionary of the image identifiers (Channel names) to be included

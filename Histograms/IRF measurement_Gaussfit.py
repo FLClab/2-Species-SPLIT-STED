@@ -13,16 +13,14 @@ from scipy.optimize import curve_fit
 
 import os.path
 from sys import path as path1;
-dossier = os.path.expanduser("~/Documents/Github/2-Species-SPLIT-STED/Functions")
-path1.append(dossier)
+Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
+path1.append(Functionspath)
 from Main_functions import get_foreground,load_image,select_channel
 
 
 # -----------------------------------------------------------
 #                  Sélectionner les images
 filename=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-
-#filename = '/Users/marielafontaine/valeria-s3/flclab-abberior-sted/mlafontaine/22-06-23_Gold_Bead'
 mapcomp = {'CONF' : 'STAR 635P_CONF {0}'}
 #mapcomp = {'CONF' : 0}
 
