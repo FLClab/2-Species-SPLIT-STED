@@ -3,7 +3,7 @@
 __pycache__
 .DS_Store
 *.tif
-Unmixing/Example_data.zip
+
 Unmixing/Example_data/rab_Bassoon_STAR635P_STEDPowerBleach_5to20_3_5_5percentSTED.tiff
 Unmixing/Example_data/rab_Bassoon_STAR635P_STEDPowerBleach_5to20_3_1_15percentSTED.tiff
 Unmixing/Example_data/rab_Bassoon_STAR635P_STEDPowerBleach_5to20_3_0_10percentSTED.tiff
