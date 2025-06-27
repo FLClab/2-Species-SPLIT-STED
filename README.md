@@ -1,9 +1,9 @@
 # 2 Species SPLIT-STED
 
 All the codes used to produce figures and analyze data for:  
-Three-Component Phasor-Based Linear Unmixing Approach for Simultaneous Fluorophore Discrimination and Resolution Improvement of Stimulated Emission Depletion Microscopy Images Using Fluorescence Lifetime.
+Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED.
 
-Dataset is available to downlad from the [website](https://s3.valeria.science/flclab-2-species-split-sted/index.html) 
+The Confocal- and STED-FLIM images of neuronal proteins dataset is available to downlad from the [Zenodo]([https://s3.valeria.science/flclab-2-species-split-sted/index.html](https://doi.org/10.5281/zenodo.15438494)
 ## Installation and Requirements
 
 The source code `2 Species SPLIT-STED` relies on Python scientific librairies. The source code was tested in a Python 3.11 environnement. We provide a `requirements.txt` file to facilitate the installation of the necessary dependencies.
@@ -60,7 +60,7 @@ Display and analysis of phasor distributions of STED-FLIM images
 
 ### Unmixing
 Algorithms to separate dyes of different lifetimes in Confocal-FLIM and STED-FLIM images using [linear systems of equations in phasor space](https://doi.org/10.1088/2050-6120/ab8570)
-- `Unmixing_2SpeciesSPLITSTED.ipynb`is a Jupyter Notebook implementation of 2 Species SPLIT-STED. A small set of example data is downloaded by the script from  [the paper website](https://s3.valeria.science/flclab-2-species-split-sted/index.html)into an **Example_data** subfolder 
+- `Unmixing_2SpeciesSPLITSTED.ipynb`is a Jupyter Notebook implementation of 2 Species SPLIT-STED. A small set of example data is downloaded by the script from this repository into an **Example_data** subfolder if it is not already present.
 - `Unmixing_2SpeciesConfocalFLIM__allfolder.py` : Separate phasors of Confocal-FLIM images of double-stained samples into two fractional components. Uses the same pair of control images for the entire folder of mixed images
 - `Unmixing_2SpeciesSTEDFLIM_allfolder.py`: Separate phasors of STED-FLIM images of double-stained samples into two fractional components. Uses the same control images for all mixture images acquired with the same depletion power (1 pair of controls per depletion power)
 - `Unmixing_2SpeciesSPLITSTED_allfolder.py` :  Separate phasors of STED-FLIM images of double-stained samples into three fractional components. Uses the same control images (4 per dye, confocal and 3 depletion powers) for all mixture images.
