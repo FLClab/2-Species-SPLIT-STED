@@ -3,7 +3,7 @@
 All the codes used to produce figures and analyze data for:  
 Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED.
 
-The Confocal- and STED-FLIM images of neuronal proteins dataset is available to downlad from the [Zenodo]([https://s3.valeria.science/flclab-2-species-split-sted/index.html](https://doi.org/10.5281/zenodo.15438494)
+The Confocal- and STED-FLIM images of neuronal proteins dataset is available to downlad from the [Zenodo dataset](https://doi.org/10.5281/zenodo.15438494)
 ## Installation and Requirements
 
 The source code `2 Species SPLIT-STED` relies on Python scientific librairies. The source code was tested in a Python 3.11 environnement. We provide a `requirements.txt` file to facilitate the installation of the necessary dependencies.
@@ -15,7 +15,7 @@ conda create -n FLIM python=3.11.4
 conda activate FLIM
 pip install -r requirements.txt
 ```
-If available, install the specpy package provided with the Imspector software for your specific python version. All data is provided as tiff images and the scripts can read both .tiff and msr files. If you want to use these scripts with other data formats, simply change the load_image and select_channel functions.
+If available, install the specpy package provided with the Imspector software for your specific python version. All data is provided as both .tiff and .msr files and the scripts can read both. If you want to use these scripts with other data formats, simply change the load_image and select_channel functions.
 
 ## Folder contents
 ### Acquisition
