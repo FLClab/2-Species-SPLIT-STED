@@ -4,8 +4,8 @@ import numpy
 from matplotlib import pyplot
 from scipy import stats
 import scikit_posthocs
-
 import ANOVA
+
 
 
 def verify_normality(samples, alpha=0.05):

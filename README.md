@@ -8,14 +8,16 @@ The Confocal- and STED-FLIM images of neuronal proteins dataset is available to 
 
 The source code `2 Species SPLIT-STED` relies on Python scientific librairies. The source code was tested in a Python 3.11 environnement. We provide a `requirements.txt` file to facilitate the installation of the necessary dependencies.
 
-Assuming the users have a working installation of Python on their computer (we recommend using [Anaconda](https://docs.anaconda.com/anaconda/install/)), the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
+Assuming the users have a working installation of Python on their computer (we recommend using [Anaconda](https://docs.anaconda.com/anaconda/install/)), and either cloned or downloaded the files in this repository on their computer, the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
 
 ```bash
 conda create -n FLIM python=3.11.4
 conda activate FLIM
 pip install -r requirements.txt
 ```
-If available, install the specpy package provided with the Imspector software for your specific python version. All data is provided as both .tiff and .msr files and the scripts can read both. If you want to use these scripts with other data formats, simply change the load_image and select_channel functions.
+If available, install the specpy package provided with the Imspector software for your specific python version. 
+
+All data is provided as both .tiff and .msr files and the scripts can read both. If you want to use these scripts with other data formats, simply change the load_image and select_channel functions in Functions/Main_Functions.py.
 
 ## Folder contents
 ### Acquisition
@@ -25,9 +27,11 @@ Codes to perform automatic image acquisition with different depletion powers on 
 1) Confocal image
 2) Pair of STED-FLIM and Confocal-FLIM images
 3) Confocal image.
+
 ### Functions
-Functions called in other folders
-- `Main_Functions.py`: Contains phasor calibration codes, foreground detection
+Functions called by scripts in other folders
+- `convert_msr_to_tiff_composite_LUT_Specpy.py`: Script used to convert raw measurement files (.msr) into Tiff files. Tiff files are structured as (x,y,c=2,t=250) c being Confocal and STED, t being the time bins.
+- `Main_Functions.py`: Contains functions to load and read images and phasor calibration codes
 - `Phasor_functions.py`: Contains code to calculate both median and [CWF](https://doi.org/10.1364/BOE.420953) filtered phasor distributions, codes to perform unmixing and SPLIT-STED. 
 - `LineProfile_Nchannels_tifffile_1graphperline_.py`: Script to plot intensity profiles (with interactive window to select lines)
 - `objectives.py` : Contains photobleaching and [SQUIRREL metric](https://doi.org/10.1038/nmeth.4605) calculation functions
@@ -36,7 +40,7 @@ Functions called in other folders
 
 ###  Histograms
 Curve fitting of FLIM histograms
-- `IRF measurement_Gaussfit.py`: Fits a gaussian function onto the histogram of an IRF measruement (imaging a sample of gold nanoparticles)
+- `IRF measurement_Gaussfit_PhasorCentroid.py`: Fits a gaussian function onto the histogram of an IRF measruement (imaging a sample of gold nanoparticles). Also returns the centroid of the IRF's phasor distribution which is used to calibrate the phasors.
 - `Hist_monoexp_MLE_foreground.py`: Sums histograms of all pixels in the foreground of a FLIM image and fits a single exponential function to the data using MLE error estimation
 - `Hist_monoexp_MLE_foreground_AllFolder.py`: Same as **Hist_monoexp_MLE_foreground** but repeats for all the FLIM images in a folder and saves results to a csv file.
 - `Hist_monoexp_MLE_pixelwise.py`: Fits a single exponential function to the histogram of every pixel in an image data using MLE error estimation.

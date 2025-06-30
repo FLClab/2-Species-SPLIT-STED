@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+This script converts .msr files acquired on an Abberior Expert Line STED microscope to .tiff files.
+It supports both single-channel and multi-channel images, allowing for composite images to be created.
+It uses the specpy library to read .msr files 
 
-This is a temporary script file.
 """
 import skimage
 from specpy import File
@@ -64,6 +65,7 @@ print('There are ',len(images), 'Images in this folder')
 mapcomp={ '': ["Confocal_561 {11}", "STED 561 {11}"]}
 #mapcomp={ '': ['Conf_635P {2}', 'STED_635P {2}'] }
 #mapcomp={ '':['Conf640 {10}','STED640 {10}']}
+mapcomp={ '':['STAR 635P_CONF {0}']}
 mapfoldernames={}
 for key in mapcomp:
     outpath=os.path.join(os.path.expanduser("~/Desktop"),os.path.basename(filename))

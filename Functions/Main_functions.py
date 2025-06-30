@@ -13,9 +13,15 @@ def select_channel(file,channel):
     if type(file)==dict:
         return file[channel]
     else:
-        file=file[:,channel,:,:]  
-        print(file.shape)
-        return numpy.moveaxis(file, 0, -1)
+        #Selects a channel from a multi-channel image file.
+        if len(file.shape) == 4:
+            file=file[:,channel,:,:]  
+            print(file.shape)
+            return numpy.moveaxis(file, 0, -1)
+        
+        elif len(file.shape) == 3:
+            print(file.shape)
+            return numpy.moveaxis(file, 0, -1)
 def load_image(file):
     if ".msr" in file:
         image=load_msr(file)
@@ -40,13 +46,15 @@ def load_msr(msrPATH):
 
     return outputDict
 
-def to_polar_coord(g, s):
+def to_polar_coord(g, s, phi_IRF=0.4695955819269703, m_IRF=0.9527011687260826) :
     """
     Converts Cartesian phasor coordinates in the first harmonic to polar coordinates and performs calibration based on IRF measurement
 
     Parameters:
     g (list): List of x-coordinates.
     s (list): List of y-coordinates.
+    phi_IRF (float): Mean angle of the IRF measurement in radians. Default is 0.4695955819269703.
+    m_IRF (float): Mean magnitude of the IRF measurement. Default is 0.9527011687260826.
 
     Returns:
     tuple: A tuple containing two lists - m (magnitude) and phi (angle in radians).
@@ -57,18 +65,20 @@ def to_polar_coord(g, s):
         m.append(numpy.sqrt(g_ij ** 2 + s_ij ** 2))
         phi.append(numpy.arctan2(s_ij , g_ij))
 
-    phi = [numpy.abs(i - 0.4695955819269703) for i in phi] # 0.469595581926970 = numpy.mean(phi) of a gold bead
-    m = [i / 0.9527011687260826 for i in m] # 0.9527011687260826 = nummpy.mean(m) of a gold bead
+    phi = [numpy.abs(i - phi_IRF) for i in phi] 
+    m = [i / m_IRF for i in m]
 
     return m, phi
 
-def to_polar_coord_2ndharm(g, s) :
+def to_polar_coord_2ndharm(g, s, phi_IRF=0.8874357044014783, m_IRF=0.9460309688519306) :
     """
     Converts Cartesian phasor coordinates in the first harmonic to polar coordinates and performs calibration based on IRF measurement
 
     Parameters:
     g (list): List of x-coordinates.
     s (list): List of y-coordinates.
+    phi_IRF (float): Mean angle of the IRF measurement in radians. Default is 0.8874357044014783.
+    m_IRF (float): Mean magnitude of the IRF measurement. Default is 0.9460309688519306.
 
     Returns:
     tuple: A tuple containing two lists - m (magnitude) and phi (angle in radians).
@@ -77,8 +87,8 @@ def to_polar_coord_2ndharm(g, s) :
     for g_ij, s_ij in zip(g, s) :
         m.append(numpy.sqrt(g_ij ** 2 + s_ij ** 2))
         phi.append(numpy.arctan2(s_ij , g_ij))
-    phi = [i - 0.8874357044014783 for i in phi]# 0.8874357044014783= numpy.mean(phi) of a gold bead
-    m = [i / 0.9460309688519306 for i in m] # 0.9460309688519306 = nummpy.mean(m)  of a gold bead
+    phi = [i - phi_IRF for i in phi]
+    m = [i / m_IRF for i in m] 
 
     return m, phi
 
