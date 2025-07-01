@@ -84,18 +84,18 @@ Single-species [SPLIT-STED](https://doi.org/10.1039/C8NR07485B) to improve resol
 <a id="unmixing"></a>
 ### Unmixing
 Algorithms to separate dyes of different lifetimes in Confocal-FLIM and STED-FLIM images using [linear systems of equations in phasor space](https://doi.org/10.1088/2050-6120/ab8570)
-- `Unmixing_2SpeciesSPLITSTED.ipynb`is a Jupyter Notebook implementation of 2 Species SPLIT-STED. A small set of example data is downloaded by the script from this repository into an **Example_data** subfolder if it is not already present.
-- `Unmixing_2SpeciesConfocalFLIM__allfolder.py` : Separate phasors of Confocal-FLIM images of double-stained samples into two fractional components. Uses the same pair of control images for the entire folder of mixed images
-- `Unmixing_2SpeciesSTEDFLIM_allfolder.py`: Separate phasors of two-species STED-FLIM images into two fractional components. Uses the same control images for all mixture images acquired with the same depletion power (1 pair of controls per depletion power)
-- `Unmixing_2SpeciesSPLITSTED_allfolder.py` :  Separate phasors of two-species STED-FLIM images into three fractional components. Uses the same control images (4 per dye, 1 confocal and 3 STED with different depletion powers) for all mixture images.
-- `LineProfile_Nchannels_tifffile_1graphperline_.py`: Script to plot intensity profiles (with interactive window to select lines)
+- `Unmixing_2SpeciesSPLITSTED.ipynb` Jupyter Notebook implementation of two-species SPLIT-STED. A small set of example data is downloaded by the script from this repository into an **Example_data** subfolder if it is not already present.
+- `Unmixing_2SpeciesConfocalFLIM__allfolder.py` : Separates phasors of two-species Confocal-FLIM images into two fractional components. Uses the same pair of control images for the entire folder of mixed images
+- `Unmixing_2SpeciesSTEDFLIM_allfolder.py`: Separates phasors of two-species STED-FLIM images into two fractional components. Uses the same control images for all two-species images acquired with the same depletion power (1 pair of controls per depletion power)
+- `Unmixing_2SpeciesSPLITSTED_allfolder.py` :  Separates phasors of two-species STED-FLIM images into three fractional components. Uses the same control images (4 per dye, 1 confocal and 3 STED with different depletion powers) for all two-species images.
+- `LineProfile_Nchannels_tifffile_1graphperline_.py`: Plots intensity profiles (with interactive window to select lines)
 <a id="simulation"></a>
 ### Simulation
-Creates synthetic double-species images by summing single-species STED-FLIM images and performs different unmixing algorithms to evaluate their performance in a controlled setting.
-- `HistogramMLE_MonoExponential_Simulationimages.py`: Generate simulated images and perform MLE histogram fitting to generate color-coded lifetime images of the ground truth and mixed images
-- `Simulation_2SpeciesSTED-FLIM_looppowers.py` : Generate simulated images and perform two-species STED-FLIM unmixing. Calculate metrics (resolution, SQUIRREL) and save them to a .csv file. Also save input images and unmixing results (color-coded phasor and images) for each simulated combination.
-- `Simulation_2SpeciesSPLIT-STED_looppowers.py`: Generate simulated images and perform two-Species SPLIT-STED unmixing. Calculate metrics (resolution, SQUIRREL) and save input images and unmixing results (color-coded phasor and images)
-- `ReadCSVstoGraphs_Simulation.py` : Read the .csv files produced by **Simulation_2SpeciesSTED-FLIM_looppowers.py** and **Simulation_2SpeciesSPLIT-STED_looppowers.py** and produce comparison graphs of the performance metrics of both unmixing methods as a function of the depletion power.
+Creates synthetic double-species images by summing single-species STED-FLIM images, performs different unmixing algorithms and evaluates their performance.
+- `HistogramMLE_MonoExponential_Simulationimages.py`: Generates synthetic two-species images and performs MLE histogram fitting to generate color-coded lifetime images of the ground truth and synthetic images
+- `Simulation_2SpeciesSTED-FLIM_looppowers.py` : Generates synthetic two-species images and performs two-species STED-FLIM unmixing. Calculates metrics (resolution, SQUIRREL) and saves them to a .csv file. Also saves input images and unmixing results (color-coded phasor and images) for each synthetic image.
+- `Simulation_2SpeciesSPLIT-STED_looppowers.py`: Generates synthetic two-species images and perform two-Species SPLIT-STED unmixing. Calculates metrics (resolution, SQUIRREL) and saves input images and unmixing results (color-coded phasor and images)
+- `ReadCSVstoGraphs_Simulation.py` : Reads the .csv files produced by **Simulation_2SpeciesSTED-FLIM_looppowers.py** and **Simulation_2SpeciesSPLIT-STED_looppowers.py** and produces comparison graphs of the performance metrics of both unmixing methods as a function of the depletion power.
 
 <a id="citation"></a>
 ## Citation
