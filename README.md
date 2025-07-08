@@ -23,14 +23,15 @@ The README is divided into the following sections
 
 The source code `2 Species SPLIT-STED` relies on Python scientific librairies. The source code was tested in a Python 3.11 environnement. We provide a `requirements.txt` file to facilitate the installation of the necessary dependencies.
 
-Assuming the users have a working installation of Python on their computer (we recommend using [Anaconda](https://docs.anaconda.com/anaconda/install/)), and either cloned or downloaded the files in this repository on their computer, the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
+Assuming the users have a working installation of Python on their computer (we recommend using Anaconda. See [installation instructions](https://docs.anaconda.com/anaconda/install/)), and either cloned or downloaded the files in this repository on their computer, the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
 
+In an Anaconda Prompt window, enter the following lines to create a new environnement called FLIM, containing the necessary dependencies. requirements.txt is the path to this file obtained from this repository.
 ```bash
 conda create -n FLIM python=3.11.4
 conda activate FLIM
 pip install -r requirements.txt
 ```
-If available, install the specpy package provided with the Imspector software for your specific python version. 
+ If available, install the specpy package provided with the Imspector software for your specific python version. 
 
 All data is provided as both .tiff and .msr files and the scripts can read both. If you want to use these scripts with other data formats, simply change the *load_image* and *select_channel* functions in **Functions/Main_Functions.py**.
 
@@ -38,13 +39,14 @@ All data is provided as both .tiff and .msr files and the scripts can read both.
 ## Folder contents
 <a id="acquisition"></a>
 ### Acquisition
-Codes to perform automatic image acquisition with different depletion powers on an Abberior Expert Line STED microscope. Based on the [specpy](https://pypi.org/project/specpy/) and [Abberior-STED](https://https://github.com/FLClab/Abberior-STED) libraries
+Code to perform automatic image acquisition with different depletion powers on an Abberior Expert Line STED microscope. Based on the [specpy](https://pypi.org/project/specpy/) and [Abberior-STED](https://https://github.com/FLClab/Abberior-STED) libraries
 
 - `FLIM_AutoAcquire_VaryPower_ConfocalsPrePost.py`: Main program that coordinates the acquisition sequence, randomly selects depletion power values from a list of repeated values and sets the value for acquisition. For each region, it lauches the acquisition a predefined sequence of images :
 1) Confocal image
 2) Pair of STED-FLIM and Confocal-FLIM images
 3) Confocal image.
-
+   
+Codes to pre-process the acquired images.
 - `convert_msr_to_tiff_composite_LUT_Specpy.py`: Script used to convert raw measurement files (.msr) into Tiff files. Tiff files are structured as (x,y,c=2,t=250) c being Confocal and STED, t being the time bins.
 - `IRF measurement_Gaussfit_PhasorCentroid.py`: Fits a gaussian function onto the histogram of an IRF measruement (imaging a sample of gold nanoparticles). Also returns the centroid of the IRF's phasor distribution which is used to calibrate the phasors. An example IRF measurement is in the *IRF_Measurement* subfolder.
 
