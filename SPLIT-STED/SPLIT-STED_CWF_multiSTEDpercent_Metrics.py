@@ -1,11 +1,10 @@
 
 """
-Takes a folder of microscope files containing 4 images (Confocal (intensity only), Confocal-FLIM, STED-FLIM, Confocal (intensity only)))
-Computes :
-    SPLIT-STED image with DTCWT filtering from the STED-FLIM image
+Script to perform single-species SPLIT-STED analysis of STED-FLIM images with Complex Wavelet (DTCWT) filtering.
+This script calculates the following metrics:
     Resolution of Confocal FLIM, STED FLIM ans SPLIT STED images
-    SQUIRREL metrics of SPLIT-STED compared to STED
-    Photobleaching caused by acquisition of STED-FLIM image
+    Squirrel metrics of SPLIT-STED compared to STED
+    Photobleaching caused by acquisition of STED-FLIM image (If confocal pre and post images are available)
 Outputs:
     - Dataframe with all the metrics
     - Plots of the resolution of the images
@@ -56,7 +55,8 @@ neighbours=50
 
 ## Path of folder containing images
 filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-## Dictionary of the images to be used (keys in the .msr files)
+
+## Dictionary of the images to be used (keys in the .msr files, channels in the .tiff files)
 
 # mapcomp = { 'Conf pre'  :  'Conf_Pre {13}',
 #               'Conf FLIM' :  'Conf640 {10}',
@@ -80,7 +80,7 @@ mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
              'Conf FLIM' : 'Conf_635P {2}', 
              'STED FLIM' :'STED_635P {2}',
              'Conf post' :  'Conf_post {7}',
-            'STED High' : 'STED 561_HighP {16}'}
+            'STED High' : None}
 
 
 colors=["springgreen",'orangered','gold','deepskyblue']

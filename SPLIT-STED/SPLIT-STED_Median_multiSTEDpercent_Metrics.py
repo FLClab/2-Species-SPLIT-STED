@@ -1,11 +1,10 @@
 
 """
-Takes 4 images (Confocal (intensity only), Confocal-FLIM, STED-FLIM, Confocal (intensity only)))
-Computes :
-    SPLIT-STED image  with median filtering from the STED-FLIM image
+Script to perform single-species SPLIT-STED analysis of STED-FLIM images with median filtering.
+This script calculates the following metrics:
     Resolution of Confocal FLIM, STED FLIM ans SPLIT STED images
     Squirrel metrics of SPLIT-STED compared to STED
-    Photobleaching caused by acquisition of STED-FLIM image
+    Photobleaching caused by acquisition of STED-FLIM image (If confocal pre and post images are available)
 Outputs:
     - Dataframe with all the metrics
     - Plots of the resolution of the images

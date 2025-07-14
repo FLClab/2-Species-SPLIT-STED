@@ -1,12 +1,10 @@
 import numpy
-
 numpy.seterr(divide='ignore', invalid='ignore')
-import scipy
 
+import scipy
 from sklearn.cluster import KMeans
 import skimage.io as skio
 import skimage
-
 import dtcwt
 import matplotlib.pyplot as plt
 
