@@ -88,6 +88,7 @@ while n > 0:
     n = len(powers)
     print(f"Here is the number of regions that have been imaged: {t}")
 
+# Save the configuration used for the acquisition to a YAML file
     with open(os.path.join(configsavepath, "imspector_config_window_{}".format(t)), "w") as f:
         config = config_Read.parameters("")
         yaml.dump(config, f)

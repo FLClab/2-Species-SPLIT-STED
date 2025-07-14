@@ -29,58 +29,49 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 # ------------------ Default Input variables ----------------
 params_dict = {
     # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 100,  # The Tg infered from this variable override Tg
-    "smooth_factor":0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
+# Define the folders containing the control images
+filename1=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for First fluorophore")
+filename2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for Second fluorophore")
+
+# List of powers to loop through and ID of the images to use as controls
+Powerslist=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
+#Powerslist=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
+
+labels=["Bassoon_CF594",'PSD95_STORANGE',"Mixture"]
+
+
+# Keys to the channels to use. For Tiff files, use channel ID
+keyscontrols = ['STED 561 {11}','STED 561 {11}']
+keysmixed = ['STED 561 {11}','STED 561 {11}']
+
+
+#keyscontrols = ['STED_635P {2}', 'STED_635P {2}']
+#keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
+keyscontrols=[1,1] # For Tiff file, use channel ID
+keysmixed=[1,1] # For Tiff file, use channel ID
 # -----------------------------------------------------------
 def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
 
-    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for First fluorophore")
-    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for Second fluorophore")
-
-    f2= os.path.join(f2,"*_{}percentSTED.msr".format(STEDPOWER))
-    f1= os.path.join(f1,"*_{}percentSTED.msr".format(STEDPOWER))
+    f2= os.path.join(filename2,"*_{}percentSTED.msr".format(STEDPOWER))
+    f1= os.path.join(filename1,"*_{}percentSTED.msr".format(STEDPOWER))
  
     filenames = [f1,f2]
     filenamescontrol = [f1,f2]
-    labels=["Bassoon_CF594",'PSD95_STORANGE',"Mixture"]
-  
-    keyscontrols = ['STED 561 {11}','STED 561 {11}']
-    keysmixed = ['STED 561 {11}','STED 561 {11}']
-
-    #keyscontrols = ['STED_635P {2}', 'STED_635P {2}']
-    #keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
-    
-    msrfiles = []
     #plt.style.use('dark_background')
     
     colors=['royalblue','orangered','springgreen']
     #colors=['magenta']
-    
-    
-    
-    
-    
-    #savefolder=str(input("Name of Output folder: "))
+
     savefolder = "Simulation_Cy3_{}Percent_2Species_PSD95Bassoon".format(STEDPOWER)
     savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
     os.makedirs(savefolder,exist_ok=True)
 
+    msrfiles = []   
     for k, filename in enumerate(filenamescontrol):
         print(labels[k])
         #path = os.path.join(filename, '*.msr')
@@ -117,7 +108,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
             data.write("{}\t{}\t{}\n".format(labels[i],keyscontrols[i],msr))
         imagemsr = load_image(msr)
         image1= select_channel(imagemsr, keyscontrols[i])
-        #image1 = imagemsr[keyscontrols[i]]
+        
         imsum = image1[:,:,10:111].sum(axis=2)
         imsum = imsum.astype('int16')
     
@@ -127,8 +118,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         params_dict["Nb_to_sum"] = image1.shape[2]
         print("foreground_threshold=", params_dict["foreground_threshold"])
     
-        x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict,
-                                                                     show_plots=False)
+        x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
         df['x'] = x.flatten()
         df['y'] = y.flatten()
         m, phi = to_polar_coord(df['x'], df['y'])
@@ -140,8 +130,6 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
         a=ax_scatter.scatter(g, s, s=1, c=colors[i], alpha=0.10)
         scatterlist.append(a)
-        #print('DENSITY ESTIMATION IS HARD WORK, BE PATIENT PLEASE')
-        #seaborn.kdeplot(x=g,y=s,ax=ax_scatter,color=colorsc[i],levels=[0.2,0.4,0.6,0.8,1.0],linewidths= 1.5,label=labels[i])
 
 
     ax_scatter.set_xlim(0, 1)
@@ -149,7 +137,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
 
     ax_scatter.set_xlabel('g')
     ax_scatter.set_ylabel('s')
-    #fig4.savefig(os.path.join(savefolder, "Phasor_2species_ControlsOnly.png"), transparent='True', bbox_inches="tight")
+   
     xaxis = numpy.linspace(0, 1, 100)
 
     
@@ -163,22 +151,17 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
     m2, c2 = line_equation(x2, y2)
     y2 = m2 * xaxis + c2
     
-
-    #lines = [mpatches.Patch(color=colors[j], label=labels[j]) for j in range(len(labels))]
-    #ax_scatter.legend(handles=lines, prop={'size': 20})
     t = [scatter.remove() for scatter in scatterlist]
     pnscatter = ax_scatter.scatter(Pn_x, Pn_y, s=50, c='gold')
     p2scatter = ax_scatter.scatter(P2_x, P2_y, s=50, c='gold')
     p2pnline = ax_scatter.plot([Pn_x, P2_x], [Pn_y, P2_y], c='dodgerblue')
 
     fig4.savefig(os.path.join(savefolder, "Phasor_2species_ControlsOnly.pdf"), transparent='True', bbox_inches="tight")
-    #ax_scatter.get_legend().remove()
+
     pnscatter.remove()
     p2scatter.remove()
     ax_scatter.lines[-1].remove()
 
-
-    #fig4.savefig(os.path.join(savefolder, "Phasor_2species_ControlsOnly.png"), transparent='True', bbox_inches="tight")
     msrfiles=[]
     images=[glob.glob(filename)for filename in filenames]
     number = [len(glob.glob(filename)) for filename in filenames]
@@ -210,22 +193,20 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         for i, msr in enumerate(msrfiles):
             print("i",i)
             imagemsr=load_image(msr)
-            #print(imagemsr.keys())
+       
             image1 = select_channel(imagemsr, keysmixed[i])
             imagec1 = select_channel(imagemsr, keyscontrols[i])
-            #image1 = imagemsr[keysmixed[i]]
-            #imagec1 = imagemsr[keyscontrols[i]]
-            #res_control = decorr.calculate(numpy.sum(imagec1[:,:,10:],axis=2))
+
             res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):
                 res_mix=10
-            #print("res_control",res_control*20,"res_mix ",res_mix*20 )
+      
             ov_data.append(res_mix * 20)
-            #ControlImagesList.append(imagec1)
+       
             Imagelist.append(image1)
             print(image1.shape)
             imsum=numpy.sum(image1[:,:,10:111],axis=2)
-            #seuil = get_foreground(image1)
+
             seuil=3
             seuils.append(seuil)
             mask=imsum>seuil
@@ -248,8 +229,6 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         maxy=Imagelist[0].shape[1]
         print(minx, miny, maxx, maxy)
     
-    
-        #CropImageList.append(numpy.sum(Imagelist[0][bbox[0]:bbox[2],bbox[1]:bbox[3], :]*slice3d,axis=2))
         Combo[minx:maxx,miny:maxy ,:]+=Imagelist[0][:,:, :]
         Combomask1[minx:maxx,miny:maxy]+=Masklist[0]
     
@@ -267,7 +246,6 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         ComboMasklist = [Combomask1, Combomask2]
         ComboSinglelist=[Combosingle1,Combosingle2]
     
-        #Combo = filters.gaussian(Combo, sigma)
         Imagelist.append(Combo)
         ControlImagesList.append(Combo)
     
@@ -290,7 +268,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
             params_dict["Nb_to_sum"] = image1.shape[2]
             print("foreground_threshold=", params_dict["foreground_threshold"])
             #x,y, original_idxes,Images,Images_Filtered=DTCWT_Phasor(image1, 0, nlevels=10, neighborhood=50)
-            x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+            x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
             #x = x[imsum > params_dict["foreground_threshold"]]
             #y = y[imsum > params_dict["foreground_threshold"]]
             df['x'] = x.flatten()
@@ -315,20 +293,18 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
         GroundTruth_Fraction=[(Combosingle1/(Combosingle2+Combosingle1)),(Combosingle2 / (Combosingle2 + Combosingle1))]
         Predicted_Fraction=[fraction2.copy(),fraction1.copy()]
 
-        #lines = [mpatches.Patch(color=colors[j], label=labels[j]) for j in range(len(labels))]
-        #ax_scatter.legend(handles=lines, prop={'size': 20})
+
 
         mixphasor = ax_scatter.scatter(g, s, s=2,c=Solve[1,:],cmap="cool",rasterized=True,label="Mixture")
         lineplot=ax_scatter.plot(xaxis, y2, 'dodgerblue')
         pnplot=ax_scatter.scatter(Pn_x, Pn_y, s=50,c='gold')
         p2plot=ax_scatter.scatter(P2_x, P2_y, s=50,c='gold')
         fig4.savefig(os.path.join(savefolder,"Phasor_2species_{}.pdf".format(Pair_id)),transparent='True', bbox_inches="tight",dpi=900)
-        #ax_scatter.get_legend().remove()
+
         pnplot.remove()
         p2plot.remove()
         ax_scatter.lines[-1].remove()
-        #fig4.savefig(os.path.join(savefolder, "Phasor_2species_{}.png".format(Pair_id)), transparent='True',
-        #                bbox_inches="tight",dpi=900)
+
         mixphasor.remove()
     
         FilteredMaskList=[]
@@ -343,20 +319,20 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
             mask = numpy.zeros(Combo.shape[0:2], dtype=bool)
             print(ComboSinglelist[p].shape,numpy.min(maski*ComboSinglelist[p]),numpy.max(maski*ComboSinglelist[p]))
             for j, region in enumerate(props):
-                #if (region.area > 10) and (0 not in region.bbox) and (Imagelist[p].shape[0] not in region.bbox) and (Imagelist[p].shape[1] not in region.bbox):
+              
                 if (region.area > 10) :
                     data.loc[data.shape[0] + 1] = {'area': region.area, 'bbox': region.bbox,
                                                'mean_intensity': region.mean_intensity, 'coords': region.image,
                                                'centroid': region.centroid, 'channel': p}
-                    # print(region.image)
+                   
                     croplist.append(region.intensity_image)
                     mask[region.bbox[0]:region.bbox[2], region.bbox[1]:region.bbox[3]] += region.image
                     truefraction=GroundTruth_Fraction[p][region.bbox[0]:region.bbox[2], region.bbox[1]:region.bbox[3]]*region.image
                     predfraction = Predicted_Fraction[p][region.bbox[0]:region.bbox[2],
                                    region.bbox[1]:region.bbox[3]] * region.image
-                    #print(numpy.count_nonzero(numpy.isnan(truefraction)))
+                
                     TruefractionPixels.extend( truefraction[numpy.isfinite(truefraction) ].flatten())
-                    #print(numpy.nanmean(truefraction))
+  
                     Truefraction.append(numpy.nanmean(truefraction))
     
                     Predfraction.append(numpy.mean(predfraction))
@@ -512,13 +488,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
          )
         filenameout = os.path.join(savefolder,"{}_OverlayF1.tiff".format(Pair_id))
         tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))    
-        # overlayer = LifetimeOverlayer(fraction1, imsum/imsum.max(), cname='CET-D11')
-        # lifetime_rgb, cmap = overlayer.get_overlay(
-        #     lifetime_minmax=(0., 1),
-        #     intensity_minmax=(0, 1) # inTensity saturated to get more bright regions
-        #             )
-        # imsum_flat5 =ax_im[1,4].imshow(lifetime_rgb)
-        # cbar6 =fig_im.colorbar(cmap, ax=ax_im[1,4],fraction=0.05, pad=0.01)
+
     
     TrueFractionPixels=numpy.concatenate(Overall_data["TrueFraction1"].to_numpy())
     PredfractionPixels = numpy.concatenate(Overall_data["PredictedFraction1"].to_numpy())
@@ -527,19 +497,15 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
     print("Pooled performance",TrueFractionPixels.shape,PredfractionPixels.shape,IntensityPixels.shape,ErrorPixels.shape)
     
     fig, ax = plt.subplots(figsize=(8,6))
-    #m3=ax.scatter(TrueFractionPixels, PredfractionPixels,c=IntensityPixels,cmap='turbo', label="STED Power = 30%")
     x_pred = numpy.linspace(0, 1, 10)
     lines=numpy.array([[Overall_data["fit_intercept1"][i],Overall_data["fit_slope1"][i],Overall_data["fit_correlation1"][i]] for i in range(len(pairs))])
-    #print("LINES",lines.dtype)
+
     meanline=numpy.mean(lines.astype(float),axis=0)
     stdline=numpy.std(lines.astype(float),axis=0)
     negstdy=(meanline[0]-stdline[0])+ (meanline[1]-stdline[1]) * x_pred
     posstdy=(meanline[0]+stdline[0])+ (meanline[1]+stdline[1]) * x_pred
     meany=meanline[0]+meanline[1]*x_pred
-    #for i in range(lines.shape[0]):
-    #    line=lines[i,:]
-    #    y_pred = line[0]+ line[1] * x_pred
-        #ax.plot(x_pred, y_pred, label="Correlation r={}".format(line[2]))
+
     ax.fill_between(x_pred,negstdy,posstdy,alpha=0.3)
     ax.plot(x_pred,meany,label="Correlation r={:5.3f}+-{:5.3f}".format(meanline[2],stdline[2]))
     ax.plot([0,1],[0,1],'k--',label="Optimal")
@@ -573,19 +539,16 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
     print("Pooled performance",TrueFractionPixels.shape,PredfractionPixels.shape,IntensityPixels.shape,ErrorPixels.shape)
     
     fig, ax = plt.subplots(figsize=(8,6))
-    #m3=ax.scatter(TrueFractionPixels, PredfractionPixels,c=IntensityPixels,cmap='turbo', label="STED Power = 30%")
+
     x_pred = numpy.linspace(0, 1, 10)
     lines=numpy.array([[Overall_data["fit_intercept2"][i],Overall_data["fit_slope2"][i],Overall_data["fit_correlation2"][i]] for i in range(len(pairs))])
-    #print("LINES",lines.dtype)
+
     meanline=numpy.mean(lines.astype(float),axis=0)
     stdline=numpy.std(lines.astype(float),axis=0)
     negstdy=(meanline[0]-stdline[0])+ (meanline[1]-stdline[1]) * x_pred
     posstdy=(meanline[0]+stdline[0])+ (meanline[1]+stdline[1]) * x_pred
     meany=meanline[0]+meanline[1]*x_pred
-    #for i in range(lines.shape[0]):
-    #    line=lines[i,:]
-    #    y_pred = line[0]+ line[1] * x_pred
-        #ax.plot(x_pred, y_pred, label="Correlation r={}".format(line[2]))
+
     ax.fill_between(x_pred,negstdy,posstdy,alpha=0.3)
     ax.plot(x_pred,meany,label="Correlation r={:5.3f}+-{:5.3f}".format(meanline[2],stdline[2]))
     ax.plot([0,1],[0,1],'k--',label="Optimal")
@@ -606,7 +569,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
     plt.colorbar(m3, ax=ax2,label='Mean Error')
     ax2.set_xlabel('Intensity of pixel')
     ax2.set_ylabel('Fraction ')
-    #ax2.legend()
+
     fig.savefig(os.path.join(savefolder,"Confusionlines_2species_fraction2.pdf"),transparent='True', bbox_inches="tight")
     fig2.savefig(os.path.join(savefolder,"ErrorColormap_2species_fraction2.pdf"),transparent='True', bbox_inches="tight")
     plt.close(fig)
@@ -615,16 +578,9 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM):
     
 
     return numpy.array([Overall_data["resolution1"],Overall_data["resolution2"],Overall_data["res_fraction1"],Overall_data["res_fraction2"],Overall_data["squirrel_f1"],Overall_data["squirrel_f2"]])
-#["_30",[0,4]],["30",[0,0]],["40",[0,0]]
 
-#[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
-Powerslist=[[20,[0,0]]]
-Powerslist=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
-#Powerslist=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
-globalcumstats=[]
-globalcumstatsmean=[]
-globalcumstatsstd=[]
-row=0
+
+# ------------------ Main Simulation Loop ----------------
 
 for power in Powerslist:
     stats=Simulate2SpeciesSTED(power[0],power[1])

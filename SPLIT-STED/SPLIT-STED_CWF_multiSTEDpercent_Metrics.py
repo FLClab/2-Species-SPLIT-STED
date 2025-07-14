@@ -47,25 +47,7 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 #    Sélection des images dans un même fichier avec easygui
 #easygui.diropenbox(default=os.path.expanduser("~Desktop"))
 params_dict = {
-
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
-    "smooth_factor": 0.08,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
-    "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
 }
 nlevels=2
 neighbours=50
@@ -240,8 +222,6 @@ for i,im in enumerate(images) :
         fg.append(seuil)
         #print("Caclulation for an image of shape", image1.shape, "...")
         params_dict["foreground_threshold"] = seuil
-
-        params_dict["Nb_to_sum"] = image1.shape[2]
         print("foreground_threshold=", params_dict["foreground_threshold"])
 
 
@@ -436,7 +416,7 @@ for i,im in enumerate(images) :
         ims=ax.imshow(im_fractnan,cmap=phasorcolor)
         fig.colorbar(ims, ax=ax)
         filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_SPLIT_STED_fractmap_{}_{}.pdf".format(nlevels,neighbours))
-        #imsave(filenameout, im_fractnan, luts=phasorcolor)
+        
         fig.savefig(filenameout,transparent='True', bbox_inches="tight")
         plt.close(fig)
 
@@ -449,7 +429,7 @@ for i,im in enumerate(images) :
         fig.colorbar(ims,ax=ax)
 
         filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_SPLIT_STED_fractmap_reversed_{}_{}.pdf".format(nlevels,neighbours))
-        #imsave(filenameout, reversefract, luts=phasorcolor)
+        
         fig.savefig(filenameout,transparent='True', bbox_inches="tight")
         plt.close(fig)
 
@@ -459,10 +439,10 @@ for i,im in enumerate(images) :
 
         filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_SPLIT_STED_dtcwt_{}_{}.tiff".format(nlevels,neighbours))
         imsave(filenameout, im_splitsted.astype(numpy.uint16), luts="Red Hot")
-        #tifffile.imwrite(filenameout, im_splitsted.astype(numpy.uint16))
+
         filenameout = os.path.join(savefolder,os.path.basename(im).split(extension)[0] + "_STED.tiff")
         imsave(filenameout,image1[:,:,10:111].sum(axis=2).astype(numpy.uint16), luts="Red Hot")
-        #tifffile.imwrite(filenameout, image1[:,:,10:].sum(axis=2).astype(numpy.uint16))
+
         
 # Measure the resolution of the SPLIT-STED image
         res_splitsted = decorr.calculate(im_splitsted)
@@ -525,12 +505,7 @@ y=[data_objectifs['Res sted stack'][i]*20 for i in range(data_objectifs['STEDper
 yconf=[data_objectifs['Res conf stack'][i]*20 for i in range(data_objectifs['STEDpercent'].shape[0])]
 y.extend(yconf)
 pp=[dfmean['STEDpercent'][i] for i in range(dfmean['STEDpercent'].shape[0])]
-#print("xy",x,y)
-#xx=dfmeanoverall['STEDpercent']*0
-#yy=dfmeanoverall['Res conf stack']*20
-#print("xxyy",xx,yy)
-#x=numpy.stack((x,xx))
-#y=numpy.stack((y,yy))
+
 def STEDRes(x, a, b):
     """
     Function to fit to resolution vs STED power graphs.

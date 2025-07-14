@@ -1,11 +1,16 @@
-# -*- coding: utf-8 -*-
+"""
+Script to perform mono-exponential function fitting on the synthectic 2-species STED-FLIM images 
+The script will simulate the addition of two STED-FLIM images, one of each species.
+The script then performs MLE fitting and plots the phasor distributions of on raw and the combined images."""
+
+
 import os.path
 from sys import path as path1;
 Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
 path1.append(Functionspath)
 import math
 import matplotlib.pyplot as plt
-
+import easygui
 import numpy
 import glob
 import itertools
@@ -29,57 +34,44 @@ import tifffile
 from scipy.optimize import minimize
 from tqdm import tqdm
 matplotlib.rcParams['axes.linewidth'] = 0.8
+
+
 # ------------------ Default Input variables ----------------
 params_dict = {
     # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 100,  # The Tg infered from this variable override Tg
-    "smooth_factor":0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
+filename1= easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with images of the first species")
+filename2= easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with images of the second species")
+
 # -----------------------------------------------------------
+
 def Simulate2SpeciesSTED(STEDPOWER):
 
-    f1= easygui.diropenbox(default=os.path.expanduser("~/Desktop"))
-    f2= easygui.diropenbox(default=os.path.expanduser("~/Desktop"))
-    f1 = os.path.join(f1,"*_{}percentSTED.msr".format(STEDPOWER))
-    f2 = os.path.join(f2,"*_{}percentSTED.msr".format(STEDPOWER))
 
-
+    f1 = os.path.join(filename1,"*_{}percentSTED.msr".format(STEDPOWER))
+    f2 = os.path.join(filename2,"*_{}percentSTED.msr".format(STEDPOWER))
     filenames = [f1,f2]
-    filenamescontrol = [f1,f2]
     labels=["Bassoon_CF594",'PSD95_STORANGE',"Mixture"]
-    #keys=['CONF640 {10}','CONF640 {0}']
-    keyscontrols = ['STED 561 {11}','STED 561 {11}']
-    keysmixed = ['STED 561 {11}','STED 561 {11}']
-    #keyscontrols=[1,1]
-    #keysmixed=[1,1]
-    #keyscontrols = [ 'Conf_635P {2}','Conf_635P {2}']
-    #keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
+
+
+    # Channel names to use in the images. For Tiff files, use the channel number.
+
+    keys = ['STED 561 {11}','STED 561 {11}']
+    #keys=[1,1]
+    #keys = [ 'STED_635P {2}', 'STED_635P {2}']
     
-    msrfiles = []
+ 
     #plt.style.use('dark_background')
     
     colors=['cyan','magenta','springgreen']
     #colors=['magenta']
     
-    
-    
-    
-    
+
+    # Create the output folder
     #savefolder=str(input("Name of Output folder: "))
     savefolder = "Simulation_Cy3_{}Percent_MLEinput".format(STEDPOWER)
     savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
@@ -92,11 +84,13 @@ def Simulate2SpeciesSTED(STEDPOWER):
     print('There are ',number, 'Images in these folders')
     pairs = list(itertools.product(images[0], images[1]))
     print(len(pairs))
+
+    # Create a DataFrame to store the overall data
     Overall_data = pd.DataFrame(
         columns=["Power",'image1', 'image2', 'resolution1', 'resolution2'])
     
+    # Create a figure for the scatter plot
     fig4,ax_scatter = plt.subplots(figsize=(2,2))
-
     edge = numpy.linspace(start=0, stop=15, num=200)
     theta = numpy.linspace(0, numpy.pi, 100)
     r = 0.5
@@ -109,6 +103,8 @@ def Simulate2SpeciesSTED(STEDPOWER):
     ax_scatter.set_xlabel('g')
     ax_scatter.set_ylabel('s')
 
+
+# Loop through all the possible pairs of images
     for Pair_id, (a, b) in enumerate(pairs):
         ov_data = [STEDPOWER,a, b]
         msrfiles = [a, b]
@@ -116,56 +112,47 @@ def Simulate2SpeciesSTED(STEDPOWER):
         print("Working on pair number ",Pair_id," out of ",len(pairs))
         print("***********************************************************")
         print(msrfiles)
-        croplist=[]
+       
         Imagelist = []
         Combolist = []
-        ComboMasklist = []
-        Masklist = []
-        ControlImagesList = []
         seuils = []
         for i, msr in enumerate(msrfiles):
             print("i",i)
             imagemsr=load_image(msr)
             #print(imagemsr.keys())
-            image1 = select_channel(imagemsr, keysmixed[i])
-            imagec1 = select_channel(imagemsr, keyscontrols[i])
-            #image1 = imagemsr[keysmixed[i]]
-            #imagec1 = imagemsr[keyscontrols[i]]
-            #res_control = decorr.calculate(numpy.sum(imagec1[:,:,10:],axis=2))
+            image1 = select_channel(imagemsr, keys[i])
+          
+           # Calculate the resolution of the image
             res_mix = decorr.calculate(numpy.sum(image1[:, :, 10:111],axis=2))
             if math.isinf(res_mix):
                 res_mix=10
             #print("res_control",res_control*20,"res_mix ",res_mix*20 )
             ov_data.append(res_mix * 20)
-            #ControlImagesList.append(imagec1)
+          
             Imagelist.append(image1)
             print(image1.shape)
             imsum=numpy.sum(image1[:,:,10:111],axis=2)
             #seuil = get_foreground(image1)
             seuil=10
             seuils.append(seuil)
-            mask=imsum>seuil
-            mask=scipy.ndimage.binary_fill_holes(mask)
-            Masklist.append(mask)
-    
-        print("masklist",len(Masklist),Masklist[0].shape)
+
+
+        # Create an empty array of the maximum size of both images
         Combo=numpy.zeros(numpy.max([Imagelist[0].shape,Imagelist[1].shape],axis=0))
         Comboo = numpy.zeros(numpy.max([Imagelist[0].shape, Imagelist[1].shape], axis=0))
-        #Combo=numpy.zeros((300,300,250))
-        Combomask1 = numpy.zeros(Combo.shape[0:2])
-        Combomask2 = numpy.zeros(Combo.shape[0:2])
+        # Create empty arrays to store the single species images
         Combosingle1 = numpy.zeros(Combo.shape[0:2])
         Combosingle2= numpy.zeros(Combo.shape[0:2])
         print('Combo',Combo.shape)
-        print('Combomask', Combomask1.shape)
+        
     
         minx=0
         maxx=Imagelist[0].shape[0]
         miny=0
         maxy=Imagelist[0].shape[1]
-
+        # Fill the Combo array with the first image
         Combo[minx:maxx,miny:maxy ,:]+=Imagelist[0][:,:, :]
-        Combomask1[minx:maxx,miny:maxy]+=Masklist[0]
+    
         Combolist.append(Combo.copy())
         Combosingle1[minx:maxx, miny:maxy] += numpy.sum(Imagelist[0][:,:,10:111],axis=2)
         minx = 0
@@ -176,16 +163,10 @@ def Simulate2SpeciesSTED(STEDPOWER):
     
         Combo[minx:maxx, miny:maxy, :] += Imagelist[1][:, :, :]
         Comboo[minx:maxx, miny:maxy, :] += Imagelist[1][:, :, :]
-        Combomask2[minx:maxx, miny:maxy] += Masklist[1]
-    
         Combosingle2[minx:maxx, miny:maxy] += numpy.sum(Imagelist[1][:,:,10:111], axis=2)
-        ComboMasklist = [Combomask1, Combomask2]
         Combolist.append(Comboo)
         Combolist.append(Combo)
 
-    
-        Imagelist.append(Combo)
-        ControlImagesList.append(Combo)
     
         CoM_x, CoM_y = [], []
         d_melange = pd.DataFrame(columns=['g', 's'])
@@ -206,7 +187,7 @@ def Simulate2SpeciesSTED(STEDPOWER):
             params_dict["Nb_to_sum"] = image1.shape[2]
             print("foreground_threshold=", params_dict["foreground_threshold"])
             #x,y, original_idxes,Images,Images_Filtered=DTCWT_Phasor(image1, 0, nlevels=10, neighborhood=50)
-            x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+            x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
             #x = x[imsum > params_dict["foreground_threshold"]]
             #y = y[imsum > params_dict["foreground_threshold"]]
             df['x'] = x.flatten()
@@ -311,6 +292,7 @@ globalcumstatsstd=[]
 row=0
 
 for power in Powerslist:
+
     stats=Simulate2SpeciesSTED(power)
     print(stats.shape)
 

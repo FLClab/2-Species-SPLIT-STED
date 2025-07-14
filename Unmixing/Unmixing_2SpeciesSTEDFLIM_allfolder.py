@@ -1,6 +1,14 @@
-# -*- coding: utf-8 -*-
+
 """
- 
+ Script to unmix two species in STED-FLIM images using phasor analysis.
+ This script allows the user to select folders containing control images for two fluorophores and a folder with mixed images.
+ It calculates the phasor coordinates, performs unmixing, and generates output images and plots.  
+
+The script outputs:
+    - the phasor distribution of the mixed images colored by the unmixing results
+    - the mixed images colored by the unmixing results and the separated fractions
+    - the phasor distribution of the control images
+    - Composite image of the unmixed fluorophores with the third fraction removed
 """
 import os
 import glob
@@ -25,24 +33,10 @@ from tiffwrapper import imsave,LifetimeOverlayer
 #plt.style.use('dark_background')
 # ------------------ Default Input variables ----------------
 params_dict = {
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
     "smooth_factor": 0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
 cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
     name="coolspring",
@@ -172,7 +166,7 @@ for power in powers:
         params_dict["Nb_to_sum"] = image1.shape[2]
         print("foreground_threshold=", params_dict["foreground_threshold"])
 
-        x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+        x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict)
         df['x']=x.flatten()
         df['y']=y.flatten()
         m, phi = to_polar_coord(df['x'], df['y'])
@@ -227,23 +221,23 @@ for power in powers:
         dg = pd.DataFrame(columns=['g', 's'])
         imagemsr = load_image(mixedimage)
         image1 = select_channel(imagemsr, keys[2])
-        #image1 = imagemsr[keys[2]]
+  
         print(image1.shape)
         imsum = image1[:,:,10:111].sum(axis=2)
         imsum = imsum.astype('int16')
-        # Pour l'image du mélange on ne filtre pas le foreground pour bien classifier les pixels moins brillants
+
         params_dict["foreground_threshold"] = 5
         params_dict["Nb_to_sum"] = image1.shape[2]
         print("foreground_threshold=", params_dict["foreground_threshold"])
-        #ax.imshow(imsum, cmap ='hot')
 
-        x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+
+        x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
         df['x'] = x.flatten()
         df['y'] = y.flatten()
         m, phi = to_polar_coord(df['x'], df['y'])
         g, s = polar_to_cart(m, phi)
         dg['g'], dg['s'] = g, s
-        #ax.imshow(imsum, cmap='hot')
+    
         d_melange['g'], d_melange['s'] = g, s
 
         kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
@@ -252,7 +246,7 @@ for power in powers:
         CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
 
 
-        p3 = d_melange[['g', 's']].to_numpy() #phaseur qui sera projeté
+        p3 = d_melange[['g', 's']].to_numpy() 
         imsum_flat_lin1,imsum_flat_lin2,Solve=unmix2species(p3, original_idxes,image1,P_n,p2)
         fraction1 = imsum_flat_lin2.copy()
         fraction2 = imsum_flat_lin1.copy()
@@ -260,16 +254,15 @@ for power in powers:
         imsum_flat_lin2*= imsum
         mixphasor = ax_scatter.scatter(g, s, s=1,c=Solve[1,:],cmap="cool",rasterized=True,label="Mixture")
 
-
         lines = [mpatches.Patch(color=colors[i], label=labels[i]) for i in range(len(labels))]
-        #ax_scatter.legend(handles=lines, prop={'size': 20})
+    
 
         p2pnline = ax_scatter.plot([Pn_x, P2_x], [Pn_y, P2_y], c='dodgerblue')
         pnscatter = ax_scatter.scatter(Pn_x, Pn_y, s=50, c='gold')
         p2scatter = ax_scatter.scatter(P2_x, P2_y, s=50, c='gold')
         fig4.savefig(os.path.join(savefolder, "Phasor_2species_{}.pdf".format(os.path.basename(mixedimage).split(extension)[0])), transparent='True',
                         bbox_inches="tight",dpi=900)
-        #ax_scatter.get_legend().remove()
+
         pnscatter.remove()
         p2scatter.remove()
         ax_scatter.lines[-1].remove()
@@ -281,8 +274,7 @@ for power in powers:
         ax_im3[1].axis('off')
         ax_im3[2].axis('off')
         ax_im3[3].axis('off')
-        #ax_im4.axis('off')
-        #imsum_flat1 =ax_im.imshow(imsum_flat, cmap='turbo', vmin=numpy.min(t2), vmax=1)
+
         imsum_flat3 =ax_im3[1].imshow(imsum_flat_lin1, cmap='hot')
         cbar3 =fig_im3.colorbar(imsum_flat3, ax=ax_im3[1],fraction=0.05, pad=0.01)
         imsum_flat5 =ax_im3[2].imshow(imsum_flat_lin2, cmap='hot')

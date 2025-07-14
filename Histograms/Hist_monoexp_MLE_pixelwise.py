@@ -1,10 +1,9 @@
 
 
-""""    Computes lifetime with MLE method of each pixel
-        in selected region
-        Shows lifetime image modulated in intensity
+""""    Computes lifetime with by performing a fit of a mono-exponential function using the MLE method for each pixel
+   
+       Returns the lifetime image modulated in intensity
 """
-
 import os
 import matplotlib.pyplot as plt
 import glob
@@ -23,11 +22,11 @@ from Main_functions import load_image, get_foreground, select_channel
 from tiffwrapper import LifetimeOverlayer
 # -----------------------------------------------------------
 
-filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select the folder containing the images")
 print(filename)
 
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
-mapcomp = {'CONF561': 0, 'STED561' : 1}
+#mapcomp = {'CONF561': 0, 'STED561' : 1} # For Tiff file, give the channel numbers
 
 # Make list of all the images in the folder
 extension = ".msr"
@@ -40,21 +39,23 @@ if len(images) == 0:
     print('There are ',len(images), ' tiff files in this folder')
     extension = ".tiff"
 
-# -----------------------------------------------------------
-#     Choose msr file in folder
 
-for imagei in images:
-    print(os.path.basename(imagei))
+# Ask the user for a name for the output folder and create it
+savefolder=str(input("Name of Output folder: "))
+savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
+os.makedirs(savefolder, exist_ok=True)
+
+# -----------------------------------------------------------
 # Ask user to choose an image file
-numim = int(input('Fichier msr a extraire (1er=0): '))
+
+for i,imagei in enumerate(images):
+    print(i, os.path.basename(imagei))
+numim = int(input('Enter the index of the file to load (1st=0): '))
 images = images[numim]
 # Read the selected image file
 imagemsr = load_image(images)
 
-
-
 # -----------------------------------------------------------
-#     Open mapcomp's images
 
 for key in mapcomp:
     print(mapcomp[key])
@@ -64,32 +65,25 @@ for key in mapcomp:
     print(dim)
     centerx=int(dim[0]/2)
     centery = int(dim[1] / 2)
-    #image1=image1[centerx-30:centerx+30,centery-30:centery+30,:]
+
     if dim[2] > 250 :
         image1 = image1[:,:,:250].astype(numpy.int16)
         print(image1.shape)
         dim=image1.shape
-
-    #image1 = image1[  140:240 , 240:340, :250 ] # Change image dimensions here
     dim = image1.shape
-
     imsum= numpy.sum(image1[:,:,10:], axis=2, dtype = numpy.int16)
 
-    fig, ax = plt.subplots()
-    ax.axis('off')
-    imgplot1 = ax.imshow(imsum, cmap='hot')
-    cbar = fig.colorbar(imgplot1)
-    cbar.set_label('Intensity')
-    #plt.show()
-
 # -----------------------------------------------------------
-#    Lifetime matrix
 
-    #seuil = get_foreground(image1)
     seuil= 5
     indice=20
     mlifetime = numpy.empty((imsum.shape))
 
+
+# Loop over the pixels in the image
+    # For each pixel, calculate the mono-exponential fit using MLE
+    # If the pixel intensity is below the threshold, set the lifetime to 0
+    mlifetime.fill(numpy.nan)
     for iy, ix in tqdm(numpy.ndindex(imsum.shape)):
         y = image1[iy, ix]
         if y.sum() < seuil :
@@ -117,7 +111,7 @@ for key in mapcomp:
     ax1.axis('off')
     cbar =fig1.colorbar(imgplot1)
     cbar.set_label("Lifetime [ns]")
-    #plt.show()
+
 
 # -----------------------------------------------------------
 #    Lifetime modulated in intensity
@@ -136,12 +130,15 @@ for key in mapcomp:
     img = ax2.imshow(lifetime_rgb)
     cbar = fig2.colorbar(cmap, ax=ax2)
     cbar.set_label("temps de vie [ns]")
+
+    # Save the figures and images
     filenameout = os.path.basename(images).split(extension)[0] + "_MLE_Lifetime_{}.tiff".format(key)
-    tifffile.imwrite(filenameout, mlifetime.astype(numpy.uint16))
+    tifffile.imwrite(os.path.join(savefolder,filenameout), mlifetime.astype(numpy.uint16))
     filenameout = os.path.basename(images).split(extension)[0] + "_Intensity_{}.tiff".format(key)
-    tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
-    fig2.savefig(os.path.basename(images).split(extension)[0] +'MLELifetime_IntensityComposite_{}.png'.format(key), transparent='True', bbox_inches="tight")
-    fig2.savefig(os.path.basename(images).split(extension)[0] +'MLELifetime_IntensityComposite_{}.pdf'.format(key), transparent='True', bbox_inches="tight")
+    tifffile.imwrite(os.path.join(savefolder,filenameout), imsum.astype(numpy.uint16))
+    fig1.savefig(os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] +'MLELifetime_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
+    fig2.savefig(os.path.join(savefolder,os.path.basename(images).split(extension)[0] +'MLELifetime_IntensityComposite_{}.png'.format(key)), transparent='True', bbox_inches="tight")
+    fig2.savefig(os.path.join(savefolder,os.path.basename(images).split(extension)[0] +'MLELifetime_IntensityComposite_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
 
     plt.show()
 

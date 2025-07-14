@@ -107,29 +107,15 @@ def pathpatch_translate(pathpatch, delta):
     pathpatch._segment3d += delta
 # ------------------ Default Input variables ----------------
 params_dict = {
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
-    "smooth_factor": 2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": np.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
 # -----------------------------------------------------------
 #    Paths to folders containing the images, 1 per dye.
-f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select the folder containing the images of the first dye")
+f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select the folder containing the images of the second dye")
 
 filenames = [f1,f2]
 
@@ -214,7 +200,7 @@ for k,filename in enumerate(filenames) :
             #params_dict["foreground_threshold"] = get_foreground(image1)
             params_dict["foreground_threshold"]=10
             print("foreground_threshold=", params_dict["foreground_threshold"])
-            x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+            x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict)
             df['x']=x.flatten()
             df['y']=y.flatten()
     # Apply the calibration to the phasor distribution using the IRF measurement in polar coordinates and return the cartesian coordinates

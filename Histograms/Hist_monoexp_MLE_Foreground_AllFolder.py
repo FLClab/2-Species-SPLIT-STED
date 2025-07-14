@@ -1,6 +1,7 @@
 
 """"   
-    This script is used to compute the lifetime of the entire foreground in each FLIM  image in a folder
+    This script is used to compute the lifetime of the entire foreground in each FLIM  image in a folder.
+
     The lifetime is measured using a fit of the histogram with a mono-exponential model with MLE error estimation
 The script will output a csv file with the lifetime values for each image in the folder
 """
@@ -32,12 +33,12 @@ graphcolor="deepskyblue"
 
 
 # Path to the folder containing the images
-filename= easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+filename= easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select the folder containing the images")
 
 
 # Dictionary of the image identifiers (Channel names) to be included
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
-#mapcomp = {'CONF561': 0, 'STED561' : 1}
+#mapcomp = {'CONF561': 0, 'STED561' : 1} # For Tiff file, give channel number
 #mapcomp = {'Conf635': 'Conf_635P {2}','STED635': 'STED_635P {2}'}
 
 

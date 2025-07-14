@@ -1,9 +1,13 @@
 """
-Created on Mon Mar 7 2022
+
 Program that creates simulated 2 species STED-FLIM images by summing single species images and then 
 unmixing them using the 2 Species SPLIT-STED method.
 The program then calculates the fraction of each species in the mixture and compares it to the true fraction
  and computes different metrics such as resolution and SQUIRREL
+
+
+The routine is defined as a function and called at the end of the script in a loop over the different STED powers.
+
 """
 
 # -*- coding: utf-8 -*-
@@ -39,23 +43,10 @@ from skspatial.objects import Line
 # ------------------ Default Input variables ----------------
 params_dict = {
     # Parameter in option in the matlab code
-      #"Tg" : 10, #% 'First frame to sum:'
-    "Nb_to_sum": 100,  # The Tg infered from this variable override Tg
-    "smooth_factor":0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
 
 
@@ -64,7 +55,32 @@ def abc_to_rgb(A=0.0,B=0.0,C=0.0):
 # suitable red, green, blue values.
     return (min(B+C,1.0),min(A+C,1.0),min(A+B,1.0))
 
+#Opens dialog box for the user to select the folders containing the control images
+filename1=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for First fluorophore")
+filename2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for Second fluorophore")
+
+
+# Image IDs to use as controls for each STED power
+Powerslist=[[10,[7,7,1,0,0,0,1,19]],[20,[7,7,1,0,0,0,1,19]],[30,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
+#Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]# Spectrin Bassoon Cy5
+
+labels = ['Bassoon_CF594 Confocal','Bassoon_CF594 STED 10%','Bassoon_CF594 STED 20%','Bassoon_CF594 STED 30%','Homer_STORANGE Confocal','Homer_STORANGE STED 10%','Homer_STORANGE STED 20%','Homer_STORANGE STED 30%', 'Mixture']
+
+
+# Channels to use for the control images
+keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
+#keys= ['Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}']
+#keys = [ 'Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}','Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}']
+#keys=[0,1,1,1,0,1,1,1] # For Tiff file, use channel ID
+
+# Channel to use for the mixed images
+keysmixed = ['STED 561 {11}','STED 561 {11}']
+#keysmixed = ['STED_635P {2}','STED_635P {2}']
+#keysmixed = ['STED640 {10}', 'STED640 {10}']
+#keysmixed=[1,1] # For Tiff file, use channel ID
 # -----------------------------------------------------------
+
+
 def Simulate3speciesLineControls(STEDPOWER, NUMIM):
     """
     Generates simulated combinations of pairs of images acquired with the same STED power
@@ -86,26 +102,12 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         - A legend file containing the paths to the control images and to the files that are mixed together for each pairID
     """
 
-    # Define the folders containing the control images
-    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for First fluorophore")
-    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder containing control images for Second fluorophore")
-
+    f2= os.path.join(filename2,"*_{}percentSTED.msr".format(STEDPOWER))
+    f1= os.path.join(filename1,"*_{}percentSTED.msr".format(STEDPOWER))
     filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
-
-    f2= os.path.join(f2,"*_{}percentSTED.msr".format(STEDPOWER))
-    f1= os.path.join(f1,"*_{}percentSTED.msr".format(STEDPOWER))
     filenames = [f1,f2]
 
-    #keys=['CONF640 {10}','CONF640 {0}']
-    labels = ['Bassoon_CF594 Confocal','Bassoon_CF594 STED 10%','Bassoon_CF594 STED 20%','Bassoon_CF594 STED 30%','Homer_STORANGE Confocal','Homer_STORANGE STED 10%','Homer_STORANGE STED 20%','Homer_STORANGE STED 30%', 'Mixture']
-    keysmixed = ['STED 561 {11}','STED 561 {11}']
-    #keysmixed = ['STED_635P {2}','STED_635P {2}']
-    
 
-    keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
-    #keys= ['Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','Conf_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}','STED_635P {2}']
-    #keys = [ 'Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}','Conf640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}', 'STED640 {10}']
-    msrfiles = []
    # plt.style.use('dark_background')
     colors=['lightsteelblue', 'deepskyblue', 'royalblue','midnightblue','lightsalmon','lightcoral','crimson','darkred','springgreen']
 
@@ -114,6 +116,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
     savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefolder)
     os.makedirs(savefolder,exist_ok=True)
 
+    
     def plot_legend():
         # Plots a legend for the colour scheme
         #given by abc_to_rgb. Includes some code adapted
@@ -150,8 +153,8 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         fig.savefig(os.path.join(savefolder,'Triangle_Legend.svg'), transparent='True', bbox_inches="tight", dpi=900)
     plot_legend()
 
-
 # Use the control images to build the triangle in phasor space that will be used to unmix the mixed images
+    msrfiles = []
     for k,filename in enumerate(filenamescontrol) :
         print(labels[k])
         # Make list of all the images in the folder
@@ -164,9 +167,6 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
             images = glob.glob(path)
             print('There are ',len(images), ' tiff files in this folder')
             extension = ".tiff"
-        for imagei in images:
-            print(os.path.basename(imagei)) 
-        #numim = int(input('Fichier msr a extraire (1er=0): '))
         numim=NUMIM[k]
         image = images[numim]
         msrfiles.append(image)
@@ -196,7 +196,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
             data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
         imagemsr=load_image(msr)
         image1 = select_channel(imagemsr, keys[i])
-        #image1 = imagemsr[keys[i]]
+        
         imsum = image1.sum(axis=2)
         imsum = imsum.astype('int16')
         
@@ -503,20 +503,16 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
             mask = numpy.zeros(Combo.shape[0:2], dtype=bool)
             print(ComboSinglelist[p].shape,numpy.min(maski*ComboSinglelist[p]),numpy.max(maski*ComboSinglelist[p]))
             for j, region in enumerate(props):
-                #if (region.area > 10) and (0 not in region.bbox) and (Imagelist[p].shape[0] not in region.bbox) and (Imagelist[p].shape[1] not in region.bbox):
                 if (region.area > 10) :
-                    #data.loc[data.shape[0] + 1] = {'area': region.area, 'bbox': region.bbox,
-                     #                           'mean_intensity': region.mean_intensity, 'coords': region.image,
-                     #                           'centroid': region.centroid, 'channel': p}
-                    # print(region.image)
+
                     croplist.append(region.intensity_image)
                     mask[region.bbox[0]:region.bbox[2], region.bbox[1]:region.bbox[3]] += region.image
                     truefraction=GroundTruth_Fraction[p][region.bbox[0]:region.bbox[2], region.bbox[1]:region.bbox[3]]*region.image
                     predfraction = Predicted_Fraction[p][region.bbox[0]:region.bbox[2],
                                     region.bbox[1]:region.bbox[3]] * region.image
-                    #print(numpy.count_nonzero(numpy.isnan(truefraction)))
+                  
                     TruefractionPixels.extend( truefraction[numpy.isfinite(truefraction) ].flatten())
-                    #print(numpy.nanmean(truefraction))
+                    
                     Truefraction.append(numpy.nanmean(truefraction))
 
                     Predfraction.append(numpy.mean(predfraction))
@@ -529,7 +525,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
             ErrorPixels=numpy.abs(PredfractionPixels-TruefractionPixels)
             IntensityPixels = numpy.array(IntensityPixels)
 
-            #print(data['channel'].unique())
+          
             model = LinearRegression().fit(TruefractionPixels.reshape((-1, 1)), PredfractionPixels)
             r_sq = model.score(TruefractionPixels.reshape((-1, 1)), PredfractionPixels)
             x_pred = numpy.linspace(0, 1, 10)
@@ -543,8 +539,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         Combomask = numpy.logical_or(FilteredMaskList[0],FilteredMaskList[1])    
         imsum = Combo[:, :, 10:111].sum(axis=2)
         
-        #fraction1 *= imsum
-        #fraction2 *= imsum
+
         print(" imsum_flat_lin3", numpy.min(imsum_flat_lin3), numpy.max(imsum_flat_lin3))
         imsum_flat_lin3 *= imsum
         difference = imsum - imsum_flat_lin3
@@ -578,7 +573,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
                                                                            Combomask2, Combomask2)
         ov_data.extend([res_fraction1 * 20, res_fraction2 * 20,res_fraction3 * 20, squirrel_f1, squirrel_f2,squirrelsmoothf1[2],squirrelsmoothf2[2]])
         Overall_data.loc[Pair_id] = ov_data
-        #Overall_data.loc[Pair_id] = ov_data
+        
 
         imagecomp=numpy.dstack((squirrelmap1,squirrelmap2))
         imagecomp=numpy.moveaxis(imagecomp,2,0)
@@ -617,14 +612,6 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         with open(os.path.join(savefolder,'legend.txt'),'a') as data: 
             data.write("{}\t{}\t{}\n".format(Pair_id,a,b))
 
-        #imagecomp=numpy.dstack(image1)
-        #imagecomp=numpy.moveaxis(imagecomp,2,0)
-            
-
-        #filenameout=os.path.join(mapfoldernames[key],os.path.basename(imagei).split(".msr")[0]+"_{}.tiff".format(key))
-        #imwrite(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=mapluts[key], ranges=maprange[key],pixelsize=(pixelX * 1e+6,pixelY* 1e+6))
-        # # imsum_flat_bi*=(imsum-imsum_flat_lin3)
-            
 
         Predicted_Fraction[1][numpy.isnan(GroundTruth_Fraction[1])]=numpy.nan
         Predicted_Fraction[0][numpy.isnan(GroundTruth_Fraction[0])]=numpy.nan  
@@ -690,14 +677,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         filenameout = os.path.join(savefolder,"{}_OverlayF1.tiff".format(Pair_id))
         tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))
 
-        # imsum_flat5 = ax_im[1,4].imshow(lifetime_rgb)
-        # cbar6 = fig_im.colorbar(cmap, ax=ax_im[1,4], fraction=0.05, pad=0.01)
-        #
 
-
-    #Overall_data = pd.DataFrame(
-    #    columns=['image1', 'image2', 'resolution1', 'resolution2', 'TrueFraction', 'PredictedFraction', 'PixelError',
-    #             'PixelIntensity', 'fit_intercept', 'fit_slope', 'fit_correlation', "res_fraction1", "res_fraction2"])
     Overall_data.to_csv(os.path.join(savefolder,"Overall_data_3species_{}.csv".format(STEDPOWER)))
 
     TrueFractionPixels=numpy.concatenate(Overall_data["TrueFraction1"].to_numpy())
@@ -707,20 +687,17 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
     print("Pooled performance",TrueFractionPixels.shape,PredfractionPixels.shape,IntensityPixels.shape,ErrorPixels.shape)
 
     fig, ax = plt.subplots(figsize=(8,6))
-    #m3=ax.scatter(TrueFractionPixels, PredfractionPixels,c=IntensityPixels,cmap='turbo', label="STED Power = 30%")
+   
     x_pred = numpy.linspace(0, 1, 10)
     
     lines=numpy.array([[Overall_data["fit_intercept1"][i],Overall_data["fit_slope1"][i],Overall_data["fit_correlation1"][i]] for i in range(len(pairs))])
-    #print("LINES",lines.dtype)
+   
     meanline=numpy.mean(lines.astype(float),axis=0)
     stdline=numpy.std(lines.astype(float),axis=0)
     negstdy=(meanline[0]-stdline[0])+ (meanline[1]-stdline[1]) * x_pred
     posstdy=(meanline[0]+stdline[0])+ (meanline[1]+stdline[1]) * x_pred
     meany=meanline[0]+meanline[1]*x_pred
-    #for i in range(lines.shape[0]):
-    #    line=lines[i,:]
-    #    y_pred = line[0]+ line[1] * x_pred
-        #ax.plot(x_pred, y_pred, label="Correlation r={}".format(line[2]))
+
     ax.fill_between(x_pred,negstdy,posstdy,alpha=0.3)
     ax.plot(x_pred,meany,label="Correlation r={:5.3f}+-{:5.3f}".format(meanline[2],stdline[2]))
     ax.plot([0,1],[0,1],'k--',label="Optimal")
@@ -741,7 +718,6 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
     plt.colorbar(m3, ax=ax2,label='Mean Error')
     ax2.set_xlabel('Intensity of pixel')
     ax2.set_ylabel('Fraction ')
-    #ax2.legend()
     fig.savefig(os.path.join(savefolder,"Confusionlines_3species_LineControls_fraction1.pdf"),transparent='True', bbox_inches="tight")
     fig2.savefig(os.path.join(savefolder,"ErrorColormap_3species_LineControls_fraction1.pdf"),transparent='True', bbox_inches="tight")
     plt.close(fig)
@@ -753,19 +729,15 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
     print("Pooled performance",TrueFractionPixels.shape,PredfractionPixels.shape,IntensityPixels.shape,ErrorPixels.shape)
 
     fig, ax = plt.subplots(figsize=(8,6))
-    #m3=ax.scatter(TrueFractionPixels, PredfractionPixels,c=IntensityPixels,cmap='turbo', label="STED Power = 30%")
     x_pred = numpy.linspace(0, 1, 10)
     lines=numpy.array([[Overall_data["fit_intercept2"][i],Overall_data["fit_slope2"][i],Overall_data["fit_correlation2"][i]] for i in range(len(pairs))])
-    #print("LINES",lines.dtype)
+  
     meanline=numpy.mean(lines.astype(float),axis=0)
     stdline=numpy.std(lines.astype(float),axis=0)
     negstdy=(meanline[0]-stdline[0])+ (meanline[1]-stdline[1]) * x_pred
     posstdy=(meanline[0]+stdline[0])+ (meanline[1]+stdline[1]) * x_pred
     meany=meanline[0]+meanline[1]*x_pred
-    #for i in range(lines.shape[0]):
-    #    line=lines[i,:]
-    #    y_pred = line[0]+ line[1] * x_pred
-        #ax.plot(x_pred, y_pred, label="Correlation r={}".format(line[2]))
+
     ax.fill_between(x_pred,negstdy,posstdy,alpha=0.3)
     ax.plot(x_pred,meany,label="Correlation r={:5.3f}+-{:5.3f}".format(meanline[2],stdline[2]))
     ax.plot([0,1],[0,1],'k--',label="Optimal")
@@ -786,7 +758,6 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
     plt.colorbar(m3, ax=ax2,label='Mean Error')
     ax2.set_xlabel('Intensity of pixel')
     ax2.set_ylabel('Fraction ')
-    #ax2.legend()
     fig.savefig(os.path.join(savefolder,"Confusionlines_3species_LineControls_fraction2.pdf"),transparent='True', bbox_inches="tight")
     fig2.savefig(os.path.join(savefolder,"ErrorColormap_3species_LineControls_fraction2.pdf"),transparent='True', bbox_inches="tight")
 
@@ -796,25 +767,12 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
 
     return numpy.array([Overall_data["resolution1"],Overall_data["resolution2"],Overall_data["res_fraction1"],Overall_data["res_fraction2"],Overall_data["res_fraction3"],Overall_data["squirrel_f1"],Overall_data["squirrel_f2"]])
 
-#["_30",[0,4]],["30",[0,0]],["40",[0,0]]
 
-#[[5,[6,6,5,4,6,6,5,3]],[10,[6,6,5,4,6,6,5,3]],[15,[6,6,5,4,6,6,5,3]],[20,[6,6,5,4,6,6,5,3]],[30,[6,6,5,4,6,6,5,3]],[40,[6,6,5,4,6,6,5,3]]]
-#Powerslist=[[10,[8,8,7,14,4,4,8,9]],[20,[8,8,7,14,4,4,8,9]],[30,[8,8,7,14,4,4,8,9]],[40,[8,8,7,14,4,4,8,9]]]
-#Powerslist=[[30,[2,2,0,3,13,13,10,11]],[10,[2,2,0,3,13,13,10,11]],[20,[2,2,0,3,13,13,10,11]],[40,[2,2,0,3,13,13,10,11]]]
-Powerslist=[[10,[1,1,6,2,5,5,6,7]],[20,[1,1,6,2,5,5,6,7]],[30,[1,1,6,2,5,5,6,7]],[40,[1,1,6,2,5,5,6,7]]]
-Powerslist=[[10,[8,8,9,7,5,5,6,7]],[20,[8,8,9,7,5,5,6,7]],[30,[8,8,9,7,5,5,6,7]],[40,[8,8,9,7,5,5,6,7]]]
-Powerslist=[[10,[7,7,1,0,0,0,1,19]],[20,[7,7,1,0,0,0,1,19]],[30,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
-#Powerslist=[[20,[7,7,1,0,0,0,1,19]]]
-#Powerslist=[[40,[1,1,6,2,5,5,6,7]]]
-#Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]
-#numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
-#numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
-
+# Main code to run the simulation
 
 for power in Powerslist:
     stats=Simulate3speciesLineControls(power[0],power[1])
     print(stats.shape)
-
     plt.show()
 
 

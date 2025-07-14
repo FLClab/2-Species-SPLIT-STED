@@ -9,26 +9,14 @@ import skimage
 
 import dtcwt
 import matplotlib.pyplot as plt
+
 params_dict = {
-    # Parameter in option in the matlab code
-        "Tg" : 10, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
     "smooth_factor": 0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
+# ---------------------
 def Median_Filter(im, sm, n):
     """
     Applies a median filter to the input image.
@@ -55,37 +43,24 @@ def Median_Filter(im, sm, n):
     return im[3:-3,3:-3]
 
 
-def Median_Phasor(sted_stack_fname, params_dict, Nb_to_sum, smooth_factor, foreground_threshold,
-               im_smooth_cycles, phasor_smooth_cycles, tau_exc, intercept_at_origin, m0, M0, Min, harm1,
-               klog, show_plots=False, new_tau_exc=None, return_analysis_fig=False):
+def Median_Phasor(sted_stack_fname, params_dict, smooth_factor, foreground_threshold, phasor_smooth_cycles, harm1):
     """
     Calculate the phasor distribution for a given FLIM image with median filtering.
 
     Args:
         sted_stack_fname (str or ndarray): The filename or the STED stack itself.
         params_dict (dict): A dictionary containing various parameters.
-        Nb_to_sum (int): The number of frames to sum.
+
         smooth_factor (int): The smoothing factor.
         foreground_threshold (float): The threshold for foreground detection.
-        im_smooth_cycles (int): The number of smoothing cycles for the image.
         phasor_smooth_cycles (int): The number of smoothing cycles for the phasor.
-        tau_exc (float): The excitation lifetime.
-        intercept_at_origin (bool): Whether to intercept at the origin.
-        m0 (float): The m0 value.
-        M0 (float): The M0 value.
-        Min (float): The Min value.
         harm1 (int): The harmonic value.
-        klog (float): The klog value.
-        show_plots (bool, optional): Whether to show plots. Defaults to False.
-        new_tau_exc (float, optional): The new excitation lifetime. Defaults to None.
-        return_analysis_fig (bool, optional): Whether to return the analysis figure. Defaults to False.
+
 
     Returns:
         tuple: A tuple containing x, y, g_smoothed, s_smoothed, and original_idxes.
     """
-    
-    if new_tau_exc:
-        tau_exc = new_tau_exc
+
 
     if type(sted_stack_fname) == str:
         sted_stack = skio.imread(sted_stack_fname)
@@ -94,8 +69,7 @@ def Median_Phasor(sted_stack_fname, params_dict, Nb_to_sum, smooth_factor, foreg
         sted_stack = sted_stack_fname
 
     X, Y, N = sted_stack.shape
-    if Nb_to_sum:
-        Tg = N - Nb_to_sum + 1
+
 
     g = (sted_stack * numpy.cos(2 * numpy.pi * (harm1) * numpy.arange(N) / N)).sum(axis=2) / sted_stack.sum(axis=2)
     g[numpy.isnan(g)] = 0

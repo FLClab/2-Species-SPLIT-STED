@@ -16,11 +16,12 @@ from tiffwrapper import imwrite
 import easygui
 
 def load_msr(msrPATH):
-    """Loads the msr data from the msr file. The data is in a numpy array.
-
+    """Loads the data and metadata from an .msr file
     :param msrPATH: The path to the msr file
 
-    :returns: A dict with the name of the stack and the corresponding data
+    :returns: 
+    outputDict: A dictionnary with the name of each channel and the corresponding data
+    outputDictMeta: A dictionnary with the name of each channel and the corresponding metadata
     """
     imageObj = File(msrPATH, File.Read)
     outputDict = {}
@@ -34,11 +35,12 @@ def load_msr(msrPATH):
     return outputDict,outputDictMeta
 
 def load_msr_nometa(msrPATH):
-    """Loads the msr data from the msr file. The data is in a numpy array.
-
+    """Loads the data from an .msr file
     :param msrPATH: The path to the msr file
 
-    :returns: A dict with the name of the stack and the corresponding data
+    :returns: 
+    outputDict: A dictionnary with the name of each channel and the corresponding data
+
     """
     imageObj = File(msrPATH, File.Read)
     outputDict = {}
@@ -52,7 +54,7 @@ def load_msr_nometa(msrPATH):
 
 ##When the code is run, a navigator window will appear. Browse to and select folder containing .msr images to convert
 print("Press Alt+tab to find the windows browser \n")
-filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder with .msr files to convert to .tiff")
 print(filename)
 
 path=os.path.join(filename,"*.msr")
@@ -65,9 +67,13 @@ print('There are ',len(images), 'Images in this folder')
 mapcomp={ '': ["Confocal_561 {11}", "STED 561 {11}"]}
 #mapcomp={ '': ['Conf_635P {2}', 'STED_635P {2}'] }
 #mapcomp={ '':['Conf640 {10}','STED640 {10}']}
-mapcomp={ '':['STAR 635P_CONF {0}']}
+#mapcomp={ '':['STAR 635P_CONF {0}']}
+
 mapfoldernames={}
 for key in mapcomp:
+    # Create a folder to save the converted images
+    # If the folder already exists, it will not be created again
+    # The folder will be created on the Desktop
     outpath=os.path.join(os.path.expanduser("~/Desktop"),os.path.basename(filename))
     os.makedirs(outpath, exist_ok=True)
     mapfoldernames[key]=outpath
@@ -78,6 +84,7 @@ for c,imagei in enumerate(images):
         meta=True
         imagemsr,metadata=load_msr(imagei)
 
+# If loading the msr causes an error, try loading without metadata
     except RuntimeError:
         try:
             imagemsr=load_msr_nometa(imagei)
@@ -87,14 +94,15 @@ for c,imagei in enumerate(images):
             continue
     for key in mapcomp:
         outpath=os.path.join(filename,key)
-
+        
         channels=mapcomp[key]
-
+        # If one channel is specified, it will be saved as a single-channel image
         if len(channels)==1:
             try:
                 image1=imagemsr[channels[0]]
-                #print(metadata[channels[0]])
+               
                 if meta:
+                    # Get pixel size from metadata
                     pixelX=metadata[channels[0]]['x']['psz']
                     pixelY = metadata[channels[0]]['y']['psz']
                 image1=numpy.expand_dims(image1, axis=0)
@@ -116,13 +124,14 @@ for c,imagei in enumerate(images):
                 continue
 
 
-            #io.imsave(imagei.split(".msr")[0]+"_{}.tiff".format(key),image1)
-
+          
+    # If multiple channels are specified, a composite image will be created
         elif len(channels)>1:
             try:
                 image1=[imagemsr[channel] for channel in channels]
 
                 if meta:
+                    # Get pixel size from metadata
                     pixelX=metadata[channels[0]]['x']['psz']
                     pixelY = metadata[channels[0]]['y']['psz']
 
@@ -136,7 +145,6 @@ for c,imagei in enumerate(images):
                 continue
 
             imagecomp=numpy.stack(image1)
-            #print(imagecomp.shape)
             imagecomp=numpy.moveaxis(imagecomp,3,0)
             print(imagecomp.shape)
 

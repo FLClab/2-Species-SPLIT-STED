@@ -1,7 +1,7 @@
 
-
 """"   
-    This script is used to compute the lifetime of the entire foreground in each FLIM  image in a folder
+    This script is used to compute the lifetime of the entire foreground in each FLIM  image in a folder.
+    
     The lifetime is measured using a fit of the histogram with a biexponential model with MLE error estimation
 The script will output a csv file with the lifetime values for each image in the folder
 """
@@ -29,13 +29,14 @@ import seaborn
 
 # Path to the folder containing the images
 
-filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select the folder containing the images")
 
 # Dictionary of the image identifiers (Channel names) to be included
 
 #mapcomp = {'Conf635': 'Conf_635P {2}','STED635': 'STED_635P {2}'}
 mapcomp = {'Confocal':'Confocal_561 {11}', 'STED':'STED 561 {11}'}
-#mapcomp = {'Confocal':0, 'STED':1}
+#mapcomp = {'Confocal':0, 'STED':1} # For Tiff file, use the channel numbers
+
 # Make list of all the images in the folder
 print(filename)
 
@@ -50,7 +51,7 @@ if len(images) == 0:
     print('There are ',len(images), ' tiff files in this folder')
     extension = ".tiff"
 
-# Ask the user for a name for the output folder and create it
+# Ask the user for a name for the output folder and create it on the Desktop
 savefoldername=str(input("Name of Output folder: "))
 savefolder = os.path.join(os.path.expanduser("~/Desktop"), "MLEForeground_"+savefoldername)
 os.makedirs(savefolder, exist_ok=True)
@@ -83,7 +84,7 @@ for image_id,imagei in enumerate(images):
     imagemsr = load_image(imagei)
 
 # -----------------------------------------------------------
-#     Open mapcomp's images
+#    Select the channel image based on the mapcomp dictionary
     
     for k,key in enumerate(mapcomp):
         print(mapcomp[key])

@@ -31,7 +31,7 @@ from sys import path as path1;
 Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
 path1.append(Functionspath)
 from Main_functions import (line_equation, to_polar_coord, polar_to_cart, load_image,select_channel, get_foreground)
-from Phasor_functions import Median_Phasor,unmix3species,unmix3species_norescale
+from Phasor_functions import Median_Phasor,unmix3species
 from tiffwrapper import make_composite,imsave,LifetimeOverlayer
 from skspatial.objects import Circle
 from skspatial.objects import Line
@@ -43,24 +43,10 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 
 # ------------------ Default Input variables ----------------
 params_dict = {
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
-    "smooth_factor":0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
 cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
     name="nice-prism",
@@ -99,6 +85,9 @@ if None in [f1,f2,f3,savefolder]:
     f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
 
     savefolder=str(input("Name of Output folder: "))
+
+    # Select the images to use for the controls
+
     #numimlist=[3,3,5,2,16,16,1,4]
     #numimlist=[27,27,12,3,6,6,9,3]
     #numimlist=[34,34,37,51,51,51,48,45]
@@ -201,8 +190,8 @@ for k,filename in enumerate(filenamescontrol) :
         print('There are ',len(images), ' tiff files in this folder')
         extension = ".tiff"
 
-    for imagei in images:
-        print(os.path.basename(imagei)) 
+    for i,imagei in enumerate(images):
+        print(i,os.path.basename(imagei)) 
     if numimlist is None:
         numim = int(input('Please enter the image number (1st=0): '))
         image = images[numim]
@@ -215,7 +204,7 @@ path = os.path.join(filenamemixed, '*'+extension)
 #path = os.path.join(filenamemixed, '*rep0*.msr')
 mixedimages = glob.glob(path)
 
-#fig, ax = plt.subplots()
+
 fig4,ax_scatter = plt.subplots(figsize=(2,2))
 
 
@@ -261,7 +250,7 @@ for i, msr in enumerate(msrfiles) :
     params_dict["Nb_to_sum"] = image1.shape[2]
     print("foreground_threshold=", params_dict["foreground_threshold"])
     
-    x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+    x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict)
     df['x']=x.flatten()
     df['y']=y.flatten()
     m, phi = to_polar_coord(df['x'], df['y'])
@@ -273,13 +262,7 @@ for i, msr in enumerate(msrfiles) :
     CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
     a=ax_scatter.scatter(g, s, s=0.5, c=colors[i], alpha=0.10,label=labels[i],rasterized=True)
     scatterlist.append(a)
-    #print('DENSITY ESTIMATION IS HARD WORK, BE PATIENT PLEASE')
-    #seaborn.kdeplot(x=g,y=s,ax=ax_scatter,color=colors[i],levels=[0.2,0.4,0.6,0.8,1.0],linewidths= 1.5)
-    #counts,bins,barsx=ax_hist_x.hist(g, bins=100, color=colors[i], linewidth=2,density=True, histtype = 'step')
-    #counts,bins,barsy=ax_hist_y.hist(s, bins=100, orientation = 'horizontal', color=colors[i],linewidth=2, density=True, histtype = 'step')
-    #barsxlist.append(barsx)
-    #barsylist.append(barsy)
-    #print("ALL DONE WITH HISTOGRAMS")
+
 
 ##Calcul de Pn
 # Projection des centroides sur le demi-cercle
@@ -400,8 +383,7 @@ for m,mixedimage in enumerate(mixedimages):
     params_dict["Nb_to_sum"] = image1.shape[2]
     print("foreground_threshold=", params_dict["foreground_threshold"])
 
-    x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict,
-                                                                show_plots=False)
+    x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
     df['x'] = x.flatten()
     df['y'] = y.flatten()
     m, phi = to_polar_coord(df['x'], df['y'])
@@ -418,7 +400,7 @@ for m,mixedimage in enumerate(mixedimages):
     print("p3",p3.shape)
 
     imsum_flat_lin1, imsum_flat_lin2, imsum_flat_lin3, Solve = unmix3species(p3, original_idxes, image1, P_n, p2,p0)
-    #imsum_flat_lin1, imsum_flat_lin2, imsum_flat_lin3, Solve =unmix3species_norescale(p3, original_idxes, image1, P_n, p2,p0)
+
 
     print('F1',imsum_flat_lin1.min(),imsum_flat_lin1.max())
     print('F2',imsum_flat_lin2.min(),imsum_flat_lin2.max())

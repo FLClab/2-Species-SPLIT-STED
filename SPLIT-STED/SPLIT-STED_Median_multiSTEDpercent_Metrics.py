@@ -46,35 +46,20 @@ from tiffwrapper import imsave,LifetimeOverlayer
 matplotlib.rcParams['axes.linewidth'] = 0.8
 # -----------------------------------------------------------
 params_dict = {
-
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
     "smooth_factor": 0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
-
 
 #plt.style.use('dark_background')
 
 
-## Path of folder containing images
+## Path of folder containing images. Dialog box to select the folder
 
-filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-## Dictionary of the images to be used (keys in the .msr files)
+filename = easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select folder with images")
+
+## Dictionary of the images to be used (keys in the .msr files, channel numbers in the .tiff files)
 mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
              'Conf FLIM' : 'Conf_635P {2}', 
              'STED FLIM' :'STED_635P {2}',
@@ -94,6 +79,7 @@ mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
 
 colors=["springgreen",'orangered','gold','deepskyblue']
 labels=["STED Phasor","Phasor centroids","Pure species coordinates","Projection Line"]
+
 # Path of the folder where the results will be saved
 savefolder=str(input("Name of Output folder: "))
 savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
@@ -237,7 +223,7 @@ for i,im in enumerate(images) :
 
 
 # Calculate the phasor distribution with median filtering
-        x,y,g_smoothed,s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+        x,y,g_smoothed,s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
         df['x'], df['y'] =x.flatten(), y.flatten()
 # Apply phasor calibration in polar coordinates (based on IRF measurement) and return to cartesan (g,s)
 
@@ -309,7 +295,7 @@ for i,im in enumerate(images) :
         CoM_x.sort()
         CoM_y.sort(reverse=True) # To get the order CoM = [STED1 < STED2, ...]
 # Calculate the phasor of the STED-FLIM image with a lower foreground threshold to include all pixels in SPLIT-STED 
-        x,y,g_smoothed,s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+        x,y,g_smoothed,s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
         df['x'], df['y'] =x.flatten(), y.flatten()
             # Apply phasor calibration in polar coordinates (based on IRF measurement) and return to cartesan (g,s)
         m, phi = to_polar_coord(df['x'], df['y'])

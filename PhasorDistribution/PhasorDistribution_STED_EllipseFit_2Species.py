@@ -10,11 +10,7 @@ it then calculates for all pairs of images of the same power the following metri
 
 and saves the results in a csv file
 """
-import argparse
-
-
 import skimage
-
 import os
 import glob
 import numpy as np
@@ -27,14 +23,10 @@ import os
 import itertools
 import easygui
 import math
-import os.path
 from sys import path as path1; 
 Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")
 path1.append(Functionspath)
-
-
 from statistics_functions import get_significance
-
 from Main_functions import (load_image,select_channel,to_polar_coord, polar_to_cart, get_foreground)
 from Phasor_functions import Median_Phasor
 import scipy
@@ -42,6 +34,8 @@ from shapely.geometry.point import Point
 from shapely import affinity
 from sklearn.cluster import KMeans
 matplotlib.rcParams['axes.linewidth'] = 0.8
+
+# Functions to create ellipses 
 def create_ellipse(center, lengths, angle=0):
     """
     create a shapely ellipse. adapted from
@@ -80,107 +74,48 @@ def rotation_matrix(d):
     M = ddt + np.sqrt(1 - sin_angle**2) * (eye - ddt) + sin_angle * skew
     return M
 
-def pathpatch_2d_to_3d(pathpatch, z = 0, normal = 'z'):
-    """
-    Transforms a 2D Patch to a 3D patch using the given normal vector.
-
-    The patch is projected into they XY plane, rotated about the origin
-    and finally translated by z.
-    """
-    if type(normal) is str: #Translate strings to normal vectors
-        index = "xyz".index(normal)
-        normal = np.roll((1.0,0,0), index)
-
-    normal /= np.linalg.norm(normal) #Make sure the vector is normalised
-
-    path = pathpatch.get_path() #Get the path and the associated transform
-    trans = pathpatch.get_patch_transform()
-
-    path = trans.transform_path(path) #Apply the transform
-
-    pathpatch.__class__ = art3d.PathPatch3D #Change the class
-    pathpatch._code3d = path.codes #Copy the codes
-    pathpatch._facecolor3d = pathpatch.get_facecolor #Get the face color
-
-    verts = path.vertices #Get the vertices in 2D
-
-    d = np.cross(normal, (0, 0, 1)) #Obtain the rotation vector
-    M = rotation_matrix(d) #Get the rotation matrix
-
-    pathpatch._segment3d = np.array([np.dot(M, (x, y, 0)) + (0, 0, z) for x, y in verts])
-
-def pathpatch_translate(pathpatch, delta):
-    """
-    Translates the 3D pathpatch by the amount delta.
-    """
-    pathpatch._segment3d += delta
 # ------------------ Default Input variables ----------------
 params_dict = {
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
-    "smooth_factor": 2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": np.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
-
-
 
 #plt.style.use('dark_background')
 
-parser = argparse.ArgumentParser(description='Outputs phasor distribution properties for 2 folders of images')
-parser.add_argument("-f1","--f1",help='Path to first folder', type=str )
 
-parser.add_argument("-f2","--f2",help='Path to second folder',  type=str )
-parser.add_argument("-savefolder","--savefolder",help='Name of folder to save to',  type=str )
-args =vars(parser.parse_args())
-print(args)
-f1=args["f1"]
-f2=args["f2"]
-savefoldername=args["savefolder"]
+f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder with images of first dye")
+f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder with images of second dye")
+savefoldername =str(input("Name of folder to save to: "))
 
-if None in args.values():
-
-
-    savefoldername =str(input("Name of folder: "))
-    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
-    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"))
   
-
 filenames = [f1,f2]
 
-# List of powers to use for the phasor calculation
+# List of powers to use for the phasor calculation 
+# string to look for in the filenames
 powers=["_*","_5","_10","_15","_20"]
-#powers=["_5","_5","_10","_15","_20","_30","_40"]
 #powers=["_*","_10","_20","_30","_40"]
-#powersnum=[0,5,10,15,20,30,40]
+
+# Values to use for the powers in the plot
 #powersnum=[0,10,20,30,40]
-#powers=["_10","_20","_30","_40"]#
-powersnum=[0,10,20,30,40]
 powersnum=[0,5,10,15,20]
+
 ticklabels=["0","22","44","66","88"]
 mwpowers=["","0","44","88"]
 
-# List of keys to use for the phasor calculation
+# List of channels to use for the phasor calculation. For Tiff files, use the channel number instead of the key
+
 #keys=['Conf_ 594 {2}','STED_594 {2}','STED_594 {2}','STED_594 {2}','STED_594 {2}']
 keys=['Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys=['Conf640 {10}','STED640 {10}','STED640 {10}','STED640 {10}','STED640 {10}']
 keys=['Confocal_561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
 #keys=['Conf_635P {2}','Conf_635P {2}','Conf_635P {2}','Conf_635P {2}']
 #keys=['STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
-keys=[0,1,1,1,1]
+
+keys=[0,1,1,1,1] # For Tiff files, use the channel number instead of the key
+
 colors=['magenta','cyan','lawngreen','mediumpurple']
 #colors_centroids=[['lightskyblue', 'deepskyblue','blue','mediumblue','darkblue',"cyan"],["pink","lightpink",'lightcoral','indianred','mediumvioletred',"magenta"]]
 colors=[['deepskyblue', 'deepskyblue','deepskyblue','deepskyblue','deepskyblue','deepskyblue'],["hotpink","hotpink","hotpink","hotpink","hotpink","hotpink"]]
@@ -196,6 +131,7 @@ Ellipsedims={}
 Filenames={}
 # Create a dataframe to store the results
 Overall_data = pd.DataFrame(columns=["Power",'image1', 'image2', 'IOU','Centroid Distance','Shortest Distance'])
+
 # Create a folder to save the results
 savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefoldername + "_PhasorDists")
 os.makedirs(savefolder,exist_ok=True)
@@ -207,7 +143,6 @@ ax_scatter.set_xlim(0, 1)
 ax_scatter.set_ylim(0, 1)
 
 
-# ax_scatter = fig.add_subplot(gs[0:4, 0:4])
 # Create the universal semi-circle and plot it
 theta = np.linspace(0, np.pi, 100)
 r = 0.5
@@ -258,7 +193,7 @@ for k,filename in enumerate(filenames) :
             #params_dict["foreground_threshold"] = get_foreground(image1)
             params_dict["foreground_threshold"]=10
             print("foreground_threshold=", params_dict["foreground_threshold"])
-            x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+            x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict)
             df['x']=x.flatten()
             df['y']=y.flatten()
         # Calibrate the phasor distribution in polar coordinates based on the IRF measurement and return to (g,s) coordinates

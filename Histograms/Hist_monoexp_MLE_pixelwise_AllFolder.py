@@ -1,8 +1,8 @@
 
 
-""""    Computes lifetime with MLE method of each pixel
-        in selected region
-        Shows lifetime image modulated in intensity
+""""    Computes lifetime with by performing a fit of a mono-exponential function using the MLE method for each pixel
+   
+       Returns the lifetime image modulated in intensity
 """
 
 import os
@@ -26,14 +26,14 @@ from tiffwrapper import LifetimeOverlayer
 
 # Path to the folder containing the images
 
-filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"))
+filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select the folder containing the images")
 print(filename)
 
 # Dictionary of the image identifiers (Channel names) to be included
 
 mapcomp = {'STED635': 'STED_635P {2}','Conf635': 'Conf_635P {2}'}
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
-#mapcomp = {'CONF': 0, 'STED' : 1}
+#mapcomp = {'CONF': 0, 'STED' : 1} # For Tiff file, give the channel numbers
 
 # Make list of all the images in the folder
 extension = ".msr"
@@ -79,22 +79,17 @@ for imagei in images:
         dim = image1.shape
 
         imsum= numpy.sum(image1[:,:,10:], axis=2, dtype = numpy.int16)
-        # Make a plot of the intensity image
-        fig, ax = plt.subplots()
-        ax.axis('off')
-        imgplot1 = ax.imshow(imsum, cmap='hot')
-        cbar = fig.colorbar(imgplot1)
-        cbar.set_label('Intensity')
-        #plt.show()
+
 
     # -----------------------------------------------------------
-    #    Lifetime matrix
 
-        #seuil = get_foreground(image1)
         seuil= 5
         mlifetime = numpy.empty((imsum.shape))
         indice=20
-
+        # Loop over the pixels in the image
+        # For each pixel, calculate the mono-exponential fit using MLE
+        # If the pixel intensity is below the threshold, set the lifetime to 0
+        mlifetime.fill(numpy.nan)
         for iy, ix in tqdm(numpy.ndindex(imsum.shape)):
             y = image1[iy, ix]
             if y.sum() < seuil :
@@ -119,30 +114,32 @@ for imagei in images:
 
         mlifetime_nan=mlifetime.copy()
         mlifetime_nan[imsum < seuil]=numpy.nan
+
+        # Make a plot of the lifetime image
         fig1, ax1 = plt.subplots()
         imgplot1 = ax1.imshow(mlifetime_nan, cmap='jet',vmin=1, vmax=4)
         ax1.axis('off')
         cbar =fig1.colorbar(imgplot1)
         cbar.set_label("Lifetime [ns]")
-        #plt.show()
+        
 
     # -----------------------------------------------------------
     #    Lifetime modulated in intensity
-
-
         overlayer = LifetimeOverlayer(mlifetime, imsum/imsum.max(), cname='jet')
         lifetime_rgb, cmap = overlayer.get_overlay(
             lifetime_minmax=(1,4),
             intensity_minmax=(0, 0.45)
                     )
                 
-        """ If error, watch out conversion in lifetime.py """
+        # Make a plot of the lifetime image modulated in intensity
 
         fig2, ax2 = plt.subplots()
         ax2.axis('off')
         img = ax2.imshow(lifetime_rgb)
         cbar = fig2.colorbar(cmap, ax=ax2)
-        cbar.set_label("temps de vie [ns]")
+        cbar.set_label("Lifetime [ns]")
+
+        # Save the figures and images
         filenameout = os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] + "_MLE_Lifetime_{}.tiff".format(key))
         tifffile.imwrite(filenameout, mlifetime)
         filenameout =os.path.join(savefolder, os.path.basename(imagei).split(extension)[0] + "_Intensity_{}.tiff".format(key))
@@ -150,7 +147,7 @@ for imagei in images:
         fig1.savefig(os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] +'MLELifetime_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
         fig2.savefig(os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] +'MLELifetime_IntensityComposite_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")
         plt.close('all')
-# plt.show()
+
 
 
 

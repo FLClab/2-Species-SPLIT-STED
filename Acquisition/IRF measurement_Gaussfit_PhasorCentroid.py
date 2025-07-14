@@ -1,9 +1,13 @@
-""" Computes the Full-Width at half maximum (FWHM) of the Instrument Response Function (IRF)
-measurement.  
+""" Analysis of the Instrument Response Function (IRF) measurement.  
     
     Use a Confocal-FLIM image of a gold bead sample that backscatters the laser to the detector.
+
+    
     The script will plot the histogram of the IRF measurement and fit a Gaussian to it.
-    The FWHM is calculated from the fitted Gaussian.
+    The Full-Width at half maximum (FWHM) is calculated from the fitted Gaussian.
+
+    The script will also calculate the centroid of the phasor distribution of the IRF measurement.
+    The script will plot the phasor distribution and the centroid in a phasor plot.
 
 """
 
@@ -22,31 +26,17 @@ from Main_functions import get_foreground,load_image,select_channel, to_polar_co
 from Phasor_functions import Median_Phasor
 # ------------------ Default Input variables ----------------
 params_dict = {
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
-    "smooth_factor": 2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
 
 # -----------------------------------------------------------
 # Select the folder containing the images
 filename=os.path.join(os.path.dirname(__file__), "IRF_measurement")
 key= 'STAR 635P_CONF {0}'
-#key=0
+#key=0 # For Tiff file,
 
 # Make list of all the images in the folder
 extension = ".msr"
@@ -64,8 +54,8 @@ if len(images) == 0:
 # -----------------------------------------------------------
 #   Ask user to select the image file to extract the IRF
 
-for imagei in images:
-    print(os.path.basename(imagei))
+for i, imagei in enumerate(images):
+    print(i, os.path.basename(imagei))
 # Ask user to choose an image file
 numim = int(input('Enter the index of the file to load (1st=0): '))
 images = images[numim]
@@ -145,7 +135,7 @@ print("Caclulation for an image of shape", image1.shape, "...")
 
 params_dict["foreground_threshold"]=20
 print("foreground_threshold=", params_dict["foreground_threshold"])
-x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict, show_plots=False)
+x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict)
 df['x']=x.flatten()
 df['y']=y.flatten()
 ax_centroids.scatter(df['x'],df['y'],s=0.5, c="gray",alpha=0.1,rasterized=True)

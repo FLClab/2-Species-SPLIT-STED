@@ -1,6 +1,14 @@
-# -*- coding: utf-8 -*-
+
 """
- 
+ Script to unmix two species in confocal-FLIM images using phasor analysis.
+ This script allows the user to select folders containing control images for two fluorophores and a folder with mixed images.
+ It calculates the phasor coordinates, performs unmixing, and generates output images and plots.
+
+  The script outputs:
+    - the phasor distribution of the mixed images colored by the unmixing results
+    - the mixed images colored by the unmixing results and the separated fractions
+    - the phasor distribution of the control images
+    - Composite image of the unmixed fluorophores with the third fraction removed
 """
 
 import os
@@ -27,24 +35,10 @@ from tiffwrapper import imsave,LifetimeOverlayer
 #plt.style.use('dark_background')
 # ------------------ Default Input variables ----------------
 params_dict = {
-    # Parameter in option in the matlab code
-    #    "Tg" : 6, #% 'First frame to sum:'
-    "Nb_to_sum": 250,  # The Tg infered from this variable override Tg
-    "smooth_factor":0.2,  # % 'Smoothing factor:'
-    "im_smooth_cycles": 0,  # % 'Smoothing cycles image:'
+    "smooth_factor": 0.2,  # % 'Smoothing factor:'
     "phasor_smooth_cycles": 1,  # % 'Smoothing cycles phasor:'
     "foreground_threshold": 10,
-    "tau_exc": numpy.inf,  # % 'Tau_exc'
-    "intercept_at_origin": False,  # % 'Fix Intercept at origin'
-
-    # Parameters that are calculated in th matlab code but that could be modified manually
-    "M0": None,
-    "Min": None,
-
-    # Paramaters that are fixed in the matlab code
-    "m0": 1,
-    "harm1": 1,  # MATLAB code: harm1=1+2*(h1-1), where h1=1
-    "klog": 4,
+    "harm1": 1,
 }
 
 matplotlib.rcParams['axes.linewidth'] = 0.8
@@ -204,7 +198,7 @@ for m,mixedimage in enumerate(mixedimages):
 
     imsum = image1.sum(axis=2)
     imsum = imsum.astype('int16')
-    # Pour l'image du mélange on ne filtre pas le foreground pour bien classifier les pixels moins brillants
+
     params_dict["foreground_threshold"] = 5
     
     params_dict["Nb_to_sum"] = image1.shape[2]
@@ -279,8 +273,7 @@ for m,mixedimage in enumerate(mixedimages):
     ax_im3[1].axis('off')
     ax_im3[2].axis('off')
     ax_im3[3].axis('off')
-    #ax_im4.axis('off')
-    #imsum_flat1 =ax_im.imshow(imsum_flat, cmap='turbo', vmin=numpy.min(t2), vmax=1)
+
     imsum_flat3 =ax_im3[1].imshow(imsum_flat_lin1, cmap='hot')
     cbar3 =fig_im3.colorbar(imsum_flat3, ax=ax_im3[1],fraction=0.05, pad=0.01)
     imsum_flat5 =ax_im3[2].imshow(imsum_flat_lin2, cmap='hot')
@@ -321,5 +314,4 @@ for m,mixedimage in enumerate(mixedimages):
 
     fig_im3.savefig(os.path.join(savefolder,'Images__SeparateConf_CentroidsCircle'+os.path.basename(mixedimage).split(extension)[0] +'.pdf'),transparent='True', bbox_inches="tight")
 
-#plt.show()
 
