@@ -6,20 +6,13 @@ It iterates through the list of powers and asks the user to select regions to be
 imaging parameters,acquires images using the established sequence, and saves the configuration and images.
 """
 
-
 import os
-import functools
-import warnings
-import time
 import csv
 import matplotlib; matplotlib.use("TkAgg")
 from matplotlib import pyplot
-import sys
-import skimage.io
 import yaml
 from abberior import microscope, user, utils
 from datetime import date
-import pandas
 import numpy
 import random
 
