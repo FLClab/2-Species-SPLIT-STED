@@ -15,7 +15,7 @@ The README is divided into the following sections
     - [SPLIT-STED](#split-sted)
     - [Unmixing](#unmixing)
     - [Simulation](#simulation)
-
+- [Usage](#usage)
 - [Citation](#citation)
 
 <a id="installation"></a>
@@ -98,6 +98,15 @@ Creates synthetic double-species images by summing single-species STED-FLIM imag
 - `Simulation_2SpeciesSTED-FLIM_looppowers.py` : Generates synthetic two-species images and performs two-species STED-FLIM unmixing. Calculates metrics (resolution, SQUIRREL) and saves them to a .csv file. Also saves input images and unmixing results (color-coded phasor and images) for each synthetic image.
 - `Simulation_2SpeciesSPLIT-STED_looppowers.py`: Generates synthetic two-species images and perform two-Species SPLIT-STED unmixing. Calculates metrics (resolution, SQUIRREL) and saves input images and unmixing results (color-coded phasor and images)
 - `ReadCSVstoGraphs_Simulation.py` : Reads the .csv files produced by **Simulation_2SpeciesSTED-FLIM_looppowers.py** and **Simulation_2SpeciesSPLIT-STED_looppowers.py** and produces comparison graphs of the performance metrics of both unmixing methods as a function of the depletion power.
+
+<a id="usage"></a>
+### Usage notes
+Here is a summary of the main parameters that the different scripts require
+```bash
+filename:
+keys
+numim
+```
 
 <a id="citation"></a>
 ## Citation
