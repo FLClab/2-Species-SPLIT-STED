@@ -146,8 +146,8 @@ for i,folder in enumerate(folders):
     row=0
     # Group the data in the dataframe by depletion powers and calculate the mean, standard deviation and standard error of the mean of the metrics.
     Mean_Power=Overall_data.groupby(by=["Power"]).mean(numeric_only=True).reset_index()
-    STD_Power=Overall_data.groupby(by=["Power"]).std().reset_index()
-    SEM_Power = Overall_data.groupby(by=["Power"]).sem().reset_index()
+    STD_Power=Overall_data.groupby(by=["Power"]).std(numeric_only=True).reset_index()
+    SEM_Power = Overall_data.groupby(by=["Power"]).sem(numeric_only=True).reset_index()
 
 
     # Extract the important metric statistics from the dataframe for plotting
@@ -332,7 +332,7 @@ Overall_data= pd.concat([df.assign(identity=k) for k,df in zip(labels,cumdf)])
 print(Overall_data.shape)
 
 Mean_Power = Overall_data.groupby(by=["Power"]).mean(numeric_only=True).reset_index()
-STD_Power = Overall_data.groupby(by=["Power"]).std().reset_index()
+STD_Power = Overall_data.groupby(by=["Power"]).std(numeric_only=True).reset_index()
 print(list(Overall_data.columns))
 resmeanout=Overall_data[["res_fraction1","res_fraction2"]].mean(axis=1).values
 resmeanin=Overall_data[["resolution1","resolution2"]].mean(axis=1).values
@@ -343,7 +343,7 @@ axoverall2.set_title("res_fraction2")
 axoverall9.set_title("resolution1")
 axoverall10.set_title("resolution2")
 seaborn.violinplot(data=Overall_data,x=Overall_data["Power"],y=Overall_data["res_fraction1"],hue="identity",ax=axoverall1,width=0.55)
-seaborn.violinplot(data=Overall_data,x=Overall_data["Power"],y=Overall_data["res_fraction3"],hue="identity",ax=axoverall11,width=0.55)
+#seaborn.violinplot(data=Overall_data,x=Overall_data["Power"],y=Overall_data["res_fraction3"],hue="identity",ax=axoverall11,width=0.55)
 seaborn.violinplot(data=Overall_data,x=Overall_data["Power"],y=Overall_data["res_fraction2"],hue="identity",ax=axoverall2,width=0.55)
 seaborn.violinplot(data=Overall_data,x=Overall_data["Power"],y=Overall_data["resolution2"],hue="identity",ax=axoverall9,width=0.55)
 seaborn.violinplot(data=Overall_data,x=Overall_data["Power"],y=Overall_data["resolution1"],hue="identity",ax=axoverall10,width=0.55)
