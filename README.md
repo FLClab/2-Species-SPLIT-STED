@@ -15,7 +15,7 @@ The README is divided into the following sections
     - [SPLIT-STED](#split-sted)
     - [Unmixing](#unmixing)
     - [Simulation](#simulation)
-- [Usage](#usage)
+- [Usage Notes](#usage)
 - [Citation](#citation)
 
 <a id="installation"></a>
@@ -25,7 +25,7 @@ The source code `2 Species SPLIT-STED` relies on Python scientific librairies. T
 
 Assuming the users have a working installation of Python on their computer (we recommend using Anaconda. See [installation instructions](https://docs.anaconda.com/anaconda/install/)), and either cloned or downloaded the files in this repository on their computer, the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
 
-In an Anaconda Prompt window, enter the following lines to create a new environnement called FLIM, containing the necessary dependencies. requirements.txt is the path to this file obtained from this repository.
+The following lines create a new environnement called FLIM, containing the necessary dependencies. `requirements.txt` is the path to this file obtained from this repository.
 ```bash
 conda create -n FLIM python=3.11.4
 conda activate FLIM
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ```
  If available, install the specpy package provided with the Imspector software for your specific python version. 
 
-All data is provided as both .tiff and .msr files and the scripts can read both. If you want to use these scripts with other data formats, simply change the *load_image* and *select_channel* functions in **Functions/Main_Functions.py**.
+All data is provided as both .tiff and .msr files in the [Zenodo dataset](https://doi.org/10.5281/zenodo.15438494) and the scripts can read both file formats. To use these scripts with other data formats, simply change the *load_image* and *select_channel* functions in **Functions/Main_Functions.py**.
 
 <a id="toc"></a>
 ## Folder contents
@@ -102,11 +102,26 @@ Creates synthetic double-species images by summing single-species STED-FLIM imag
 <a id="usage"></a>
 ### Usage notes
 Here is a summary of the main parameters that the different scripts require
-```bash
-filename:
-keys
-numim
+
+- filename : Path to a folder containing images. For most scripts, a dialog box is generated using the easygui package for the user to browse their computer and select the folder using this line.
 ```
+filename=easygui.diropenbox()
+```
+This line can be replaced by an explicit statement of a folder path.
+
+- keys : Identifiers to select the correct imaging channel from the image file. 
+    - For .tiff files, integer that corresponds to the channel (0:Confocal or 1:STED)
+    - For .msr files, string that corresponds to the channel name in Imspector as shown in the yellow box in the image below. When an incorrect key is entered, the select_channel function will print a list of available keys.
+
+<img src="img/keys_imspector_screenshot.png" alt="Screenshot of Imspector measurement window showing the channel name." width="500"/> 
+
+- savefolder : The name for the Results folder that will be created on the Desktop. In most scripts, the user will be prompted to enter the name. 
+<img src="img/Savefolder_Prompt.png" alt="Screenshot of prompt asking the user to input a folder name." width="500"/>
+
+- numim : Integer to identify specific images in a folder. For some scripts, a list of the image names and indexes will be printed and the user will be prompted to enter the index.
+<img src="img/Numim_prompt.png" alt="Screenshot of prompt asking the user to input the file number" width="500"/>
+
+
 
 <a id="citation"></a>
 ## Citation

@@ -11,7 +11,11 @@ except:
 
 def select_channel(file,channel):
     if type(file)==dict:
-        return file[channel]
+        try:
+            return file[channel]
+        except KeyError:
+            print(f"Channel {channel} not found in file.\n Available channels: {list(file.keys())}")
+            return None
     else:
         #Selects a channel from a multi-channel image file.
         if len(file.shape) == 4:
@@ -22,6 +26,7 @@ def select_channel(file,channel):
         elif len(file.shape) == 3:
             print(file.shape)
             return numpy.moveaxis(file, 0, -1)
+        
 def load_image(file):
     if ".msr" in file:
         image=load_msr(file)
