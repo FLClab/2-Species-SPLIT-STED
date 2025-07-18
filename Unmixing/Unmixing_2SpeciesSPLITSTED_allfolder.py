@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 """
 Script that performs 2 species SPLIT-STED phasor analysis on a set of images.
 The script takes as input 2 folders of control images, one for each species, and a folder of mixed images.
