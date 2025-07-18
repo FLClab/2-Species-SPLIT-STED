@@ -127,7 +127,7 @@ This line can be replaced by an explicit statement of a folder path.
 
 <a id="citation"></a>
 ## Citation
-If you use any material from this repository please cite the following paper:
+If you use any material from this repository please cite the following preprint:
 > Deschênes, A. et al. Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED. bioRxiv 2025.07.17.661952 (2025) doi:10.1101/2025.07.17.661952.
 
 ```
