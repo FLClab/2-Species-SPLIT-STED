@@ -1,7 +1,9 @@
 # 2 Species SPLIT-STED
 
 All the codes used to produce figures and analyze data for:  
-Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED.
+_Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED._
+ 
+ A preprint version of the paper is available <a href="https://doi.org/10.1101/2025.07.17.661952">here</a>.
 
 The Confocal- and STED-FLIM images of neuronal proteins dataset is available to downlad from the [Zenodo dataset](https://doi.org/10.5281/zenodo.15438494)
 
@@ -126,3 +128,20 @@ This line can be replaced by an explicit statement of a folder path.
 <a id="citation"></a>
 ## Citation
 If you use any material from this repository please cite the following paper:
+> Deschênes, A. et al. Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED. bioRxiv 2025.07.17.661952 (2025) doi:10.1101/2025.07.17.661952.
+
+```
+@article{deschenes2025,
+  title = {Enhancing {{STED Microscopy}} via {{Fluorescence Lifetime Unmixing}} and {{Filtering}} in {{Two-Species SPLIT-STED}}},
+  author = {Desch{\^e}nes, Andr{\'e}anne and Ollier, Antoine and Lafontaine, Marie and {Michaud-Gagnon}, Albert and Santiague, Jeffrey-Gabriel Steavan and Bilodeau, Anthony and Gagn{\'e}, Christian and Koninck, Paul De and {Lavoie-Cardinal}, Flavie},
+  year = {2025},
+  month = jul,
+  pages = {2025.07.17.661952},
+  issn = {2692-8205},
+  doi = {10.1101/2025.07.17.661952},
+  urldate = {2025-07-18},
+  chapter = {New Results},
+  copyright = {{\copyright} 2025, Posted by Cold Spring Harbor Laboratory. This pre-print is available under a Creative Commons License (Attribution-NonCommercial-NoDerivs 4.0 International), CC BY-NC-ND 4.0, as described at http://creativecommons.org/licenses/by-nc-nd/4.0/},
+  langid = {english}
+}
+```
