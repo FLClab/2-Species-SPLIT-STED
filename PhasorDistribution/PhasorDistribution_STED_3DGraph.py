@@ -3,7 +3,6 @@
 Code to make 3D graph of the phasor distribution of STED images of 2 different dyes for different depletion powers.
 Each dye is represented by a different color scatter plot and ellipses are fit on the 70th percentile of the distributions.
 
-
 """
 import skimage
 
@@ -240,13 +239,12 @@ for k,filename in enumerate(filenames) :
                 pathpatch_2d_to_3d(ell, z=0, normal='z')
                 pathpatch_translate(ell, (0,0, powersnum[a]))
                 ell.set_facecolor("None")
-                #ell.set_edgecolor(colors[k][a])
+
                 ell.set_edgecolor("k")
                 ell.set_linewidth(1.0)
 
 
-    
-        #plt.close(figellipse)
+
 # Save the figures
 figellipse.savefig("Ellipses.pdf",transparent=True, bbox_inches="tight",dpi=900)
 

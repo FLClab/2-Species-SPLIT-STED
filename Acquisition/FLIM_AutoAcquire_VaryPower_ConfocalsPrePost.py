@@ -16,9 +16,10 @@ from datetime import date
 import numpy
 import random
 
-# List of powers to be used for the acquisition, in % and the number of repetitions
+# List of powers to be used for the acquisition, in % 
 #powers = [5,10,15,20]
 powers = [10,20,30,40]
+# Number of repetitions of each power
 reps = 5
 # Repeat the power list and shuffle the list
 powers = list(numpy.repeat(powers, reps))

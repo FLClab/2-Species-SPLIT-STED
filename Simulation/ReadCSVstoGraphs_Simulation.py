@@ -35,11 +35,10 @@ offsetin=[-4,4]
 offsetout=[-2,2]
 labels=["STED-FLIM","SPLIT-STED"]
 
-# Paths to the folders containing the CSV files
+# Paths to the folders containing the CSV files. Open a dialog to select each folder
 
 folder1=easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with 2species STED-FLIM simulation results")
 folder2=easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with 2 species SPLIT-STED simulation results")
-
 
 folders=[folder1,folder2]
 print(folders)

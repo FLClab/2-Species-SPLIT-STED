@@ -21,7 +21,7 @@ from Main_functions import get_foreground,load_msr,load_image,select_channel
 from Mono_fit import ExpFunMono_MLE
 from tiffwrapper import LifetimeOverlayer
 
-
+#plt.style.use('dark_background')
 # -----------------------------------------------------------
 
 # Path to the folder containing the images
@@ -50,7 +50,7 @@ if len(images) == 0:
 savefolder=str(input("Name of Output folder: "))
 savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
 os.makedirs(savefolder, exist_ok=True)
-#plt.style.use('dark_background')
+
 
 # -----------------------------------------------------------
 # Loop over the images in the folder
@@ -59,23 +59,19 @@ for imagei in images:
     imagemsr = load_image(imagei)
     
 # -----------------------------------------------------------
-#  # Loop over the channels in the dictionary
+#  # Loop over the channels in the image (Confocal and STED)
 
     for key in mapcomp:
         print(mapcomp[key])
-        #image1=imagemsr[mapcomp[key]]
+    
         image1 = select_channel(imagemsr, mapcomp[key])
-        dim = image1.shape
-        print(dim)
-        centerx=int(dim[0]/2)
-        centery = int(dim[1] / 2)
-        #image1=image1[centerx-30:centerx+30,centery-30:centery+30,:]
+
+        
         if dim[2] > 250 :
             image1 = image1[:,:,:250].astype(numpy.int16)
             print(image1.shape)
             dim=image1.shape
 
-        #image1 = image1[  140:240 , 240:340, :250 ] # Change image dimensions here
         dim = image1.shape
 
         imsum= numpy.sum(image1[:,:,10:], axis=2, dtype = numpy.int16)
@@ -95,12 +91,11 @@ for imagei in images:
             if y.sum() < seuil :
                 mlifetime[iy, ix] = 0
             else :
-                #maxy = numpy.max(y) 
-                #indice = numpy.argmax(y)
+
                 y = y[indice:]
                 y= y / y.sum()
                 absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
-    #   Computes lifetime for each pixel
+    #   Perform MLE fit to estimate lifetime for each pixel
 
                 tau = 2
                 nb_photons = 100

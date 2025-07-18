@@ -34,6 +34,7 @@ from shapely.geometry.point import Point
 from shapely import affinity
 from sklearn.cluster import KMeans
 matplotlib.rcParams['axes.linewidth'] = 0.8
+#plt.style.use('dark_background')
 
 # Functions to create ellipses 
 def create_ellipse(center, lengths, angle=0):
@@ -83,13 +84,12 @@ params_dict = {
     "harm1": 1,
 }
 
-#plt.style.use('dark_background')
-
-
+# Path to folder containing the images, 1 per dye. A file browser will open for the user to navigate to and select the desired folder.
 f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder with images of first dye")
 f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder with images of second dye")
-savefoldername =str(input("Name of folder to save to: "))
 
+# Ask user to input the name of the folder to save the results
+savefoldername =str(input("Name of folder to save to: "))
   
 filenames = [f1,f2]
 
@@ -181,14 +181,14 @@ for k,filename in enumerate(filenames) :
         # Read the image and calculate its phasor distribution with median filtering
             imagemsr = load_image(msr)
             print(os.path.basename(msr))
-            #print(imagemsr.keys())
+           
             Filenames[k][powersnum[a]].append(os.path.basename(msr))
 
 
             df = pd.DataFrame(columns=['x','y'])
             dg = pd.DataFrame(columns=['g', 's'])
             image1=select_channel(imagemsr, keys[a])
-            #image1=imagemsr[keys[a]]
+      
             print("Caclulation for an image of shape", image1.shape, "...")
             #params_dict["foreground_threshold"] = get_foreground(image1)
             params_dict["foreground_threshold"]=10
@@ -201,7 +201,7 @@ for k,filename in enumerate(filenames) :
             g,s =polar_to_cart(m, phi)
             dg['g'], dg['s'] = g, s
 
-        # Calculate the centroid of the phasor distribution
+        # Calculate the centroid of the phasor distribution using KMeans clustering
             kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
             y_kmeans = kmeans.fit_predict(dg)
             
@@ -235,16 +235,10 @@ for k,filename in enumerate(filenames) :
                 Ellipsedims[k][powersnum[a]][2, i] =angle
             else:
                 Ellipsedims[k][powersnum[a]][2, i] = 180+angle
-            #axcentroids.scatter(CoM_x, CoM_y, s=50, c = colors[k][a])
-            
-            #axellipse.scatter(CoM_x, CoM_y,powersnum[a],marker="X", s=100, linewidth=2, c = "k",edgecolor="k")
+
         MeanPositions[k][powersnum[a]]=np.mean(Positions[k][powersnum[a]],axis=1)
     
-    #plt.close(figellipse)
 
-
-#dists=[math.dist([CoM_x1[i],CoM_x1[i]],[CoM_x2[i],CoM_x2[i]])for i in range(len(CoM_x1))]
-#print(Positions)
 table=np.zeros((2,len(powersnum)))
 table2=np.empty((2,1))
 table4=np.empty((2,1))
@@ -253,11 +247,13 @@ table5=np.empty((2,1))
 table6=np.zeros((2,len(powersnum)))
 print(table2.shape)
 start=0
-
+# Loop through the powers and plot the centroids and ellipses for each dye
 for b,power in enumerate(powersnum):
     print("power",power)
+    # Plot the centroids of the phasor distributions
     ax_scatter.scatter(MeanPositions[0][power][0], MeanPositions[0][power][1], s=10, c=colors_centroids[0][b])
     ax_scatter.scatter(MeanPositions[1][power][0], MeanPositions[1][power][1], s=10, c=colors_centroids[1][b])
+    # Create the ellipses for the phasor distribution of each dye and plot them
     ell1 = mpatches.Ellipse([MeanPositions[0][power][0], MeanPositions[0][power][1]], width=np.mean(Ellipsedims[0][power][0, :]),
                            height=np.mean(Ellipsedims[0][power][1, :]), angle=np.mean(Ellipsedims[0][power][2, :]))
     ell2 = mpatches.Ellipse([MeanPositions[1][power][0], MeanPositions[1][power][1]], width=np.mean(Ellipsedims[1][power][0, :]),
@@ -265,10 +261,9 @@ for b,power in enumerate(powersnum):
     
     ellipse1=create_ellipse((MeanPositions[0][power][0], MeanPositions[0][power][1]), (np.mean(Ellipsedims[0][power][0, :]),np.mean(Ellipsedims[0][power][1, :])), angle=np.mean(Ellipsedims[0][power][2, :]))
     ellipse2=create_ellipse((MeanPositions[1][power][0], MeanPositions[1][power][1]), (np.mean(Ellipsedims[1][power][0, :]),np.mean(Ellipsedims[1][power][1, :])), angle=np.mean(Ellipsedims[1][power][2, :]))
-    intersect = ellipse1.intersection(ellipse2)
+    intersect = ellipse1.intersection(ellipse2) # intersection of the two ellipses
 
-    # ellmin = mpatches.Ellipse([positions[p],0.5],width=np.min(Ellipsedims[key][power][0,:]),height=np.min(Ellipsedims[key][power][1,:]),angle=np.min(Ellipsedims[key][power][2,:]))
-    # ellmax = mpatches.Ellipse([positions[p],0.5],width=np.max(Ellipsedims[key][power][0,:]),height=np.max(Ellipsedims[key][power][1,:]),angle=np.max(Ellipsedims[key][power][2,:]))
+
     ax_scatter.add_artist(ell1)
     ax_scatter.add_artist(ell2)
     ell1.set_facecolor("None")
@@ -278,10 +273,13 @@ for b,power in enumerate(powersnum):
     ell1.set_linewidth(0.8)
     ell2.set_linewidth(0.8)
     table[0,b]=power
+    # Calculate the distance between the centroids of the phasor distributions
     table[1,b]=scipy.spatial.distance.euclidean([MeanPositions[0][power][0],MeanPositions[0][power][1]],[MeanPositions[1][power][0],MeanPositions[1][power][1]])
     table3[0,b]=power
+    # Calculate the intersection over union (IoU) for the ellipses
     table3[1,b]=intersect.area/(ellipse1.area+ellipse2.area)
     table6[0, b] = power
+    # Calculate the shortest distance between the ellipse of each dye
     table6[1, b] =ellipse1.distance(ellipse2)
 
 
@@ -297,6 +295,8 @@ for b,power in enumerate(powersnum):
     for di,dist in enumerate(alldists):
         tabletemp[0, di] = power
         tabletemp[1, di] =dist
+    
+    # Calculate the intersection over union (IoU) and shortest distance between the ellipses for each possible pair of images (1 per dye)
     for d,pair in enumerate(itertools.product(range(Positions[0][power].shape[1]),range(Positions[1][power].shape[1]))):
 
         ellipse1 = create_ellipse((Positions[0][power][0,pair[0]], Positions[0][power][1,pair[0]]),
@@ -323,7 +323,7 @@ for b,power in enumerate(powersnum):
 
        
 
-    #print(tabletemp.shape)
+
     table2=np.concatenate([table2,tabletemp],axis=1)
     #table2=np.concatenate([table2,tabletemp],axis=1)
     #print(table2.shape)
@@ -336,6 +336,7 @@ table2=table2[:,1:]
 table4=table4[:,1:]
 table5=table5[:,1:]
 
+# Calculate the mean and standard deviation of the distances between the centroids and the ellipses for each power
 table4mean=np.empty((3,1))
 listtable4=[]
 for x in sorted(np.unique(table4[0,:])):
@@ -490,29 +491,21 @@ ax3[1,1].set_xticklabels(mwpowers,fontsize=16)
 for k,key in enumerate(Ellipsedims.keys()):
 
     for p,power in enumerate(Ellipsedims[key].keys()):
-        #print(Ellipsedims[key][power].shape)
+
         x=power*np.ones((1, Ellipsedims[key][power].shape[1]))
         semimajor=(Ellipsedims[key][power][1,:]/2)
         semiminor=(Ellipsedims[key][power][0,:]/2)
-        #ecc=np.sqrt(1-semiminor/semimajor)
+
         ecc = semiminor / semimajor
         area=np.pi*semiminor*semimajor
-        #print("Angles",power,key,Ellipsedims[key][power][2,:])
+
         ell = mpatches.Ellipse([positions[p],0.5],width=np.mean(Ellipsedims[key][power][0,:]),height=np.mean(Ellipsedims[key][power][1,:]),angle=np.mean(Ellipsedims[key][power][2,:]))
-        #ellmin = mpatches.Ellipse([positions[p],0.5],width=np.min(Ellipsedims[key][power][0,:]),height=np.min(Ellipsedims[key][power][1,:]),angle=np.min(Ellipsedims[key][power][2,:]))
-        #ellmax = mpatches.Ellipse([positions[p],0.5],width=np.max(Ellipsedims[key][power][0,:]),height=np.max(Ellipsedims[key][power][1,:]),angle=np.max(Ellipsedims[key][power][2,:]))
+
         ax5[k].add_artist(ell)
         ell.set_facecolor("None")
         ell.set_edgecolor(colors[k][p])
         ell.set_linewidth(3)
-        #ax5[k].add_artist(ellmin)
-        #ellmin.set_facecolor("None")
-       # ellmin.set_edgecolor(colors[k][p])
-        #ellmin.set_linewidth(1.5)
-       # ax5[k].add_artist(ellmax)
-      #  ellmax.set_facecolor("None")
-       # ellmax.set_edgecolor(colors[k][p])
-       # ellmax.set_linewidth(1.5)
+
 
         ax2[0,k].bar(power,np.mean(Ellipsedims[key][power][0,:]),yerr=np.std(Ellipsedims[key][power][0,:]),width=5,lw=3,capsize=10,color=colors[k][p])
         ax2[1,k].bar(power,np.mean(Ellipsedims[key][power][1,:]),yerr=np.std(Ellipsedims[key][power][1,:]),width=5,lw=3,capsize=10,color=colors[k][p])
@@ -522,8 +515,7 @@ for k,key in enumerate(Ellipsedims.keys()):
         ax2[1,k].scatter(x,Ellipsedims[key][power][1,:],c=colors[k][p],edgecolors="black")
         ax3[0,k].scatter(x,ecc,c=colors[k][p],edgecolors="black")
         ax3[1, k].scatter(x, area, c=colors[k][p], edgecolors="black")
-    #fig2.show()
-    #fig3.show()
+
     
 fig2.savefig(os.path.join(savefolder,'Barplot_MajorMinorlengths_Ellipses.pdf'),transparent='True', bbox_inches="tight")
 fig3.savefig(os.path.join(savefolder,'Barplot_AreaAspectratio_Ellipses.pdf'),transparent='True', bbox_inches="tight")

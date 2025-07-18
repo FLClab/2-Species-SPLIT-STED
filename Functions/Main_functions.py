@@ -77,7 +77,7 @@ def to_polar_coord(g, s, phi_IRF=0.4695955819269703, m_IRF=0.9527011687260826) :
 
 def to_polar_coord_2ndharm(g, s, phi_IRF=0.8874357044014783, m_IRF=0.9460309688519306) :
     """
-    Converts Cartesian phasor coordinates in the first harmonic to polar coordinates and performs calibration based on IRF measurement
+    Converts Cartesian phasor coordinates in the second harmonic to polar coordinates and performs calibration based on IRF measurement
 
     Parameters:
     g (list): List of x-coordinates.
@@ -178,17 +178,3 @@ def line_equation(P1, P2):
     #print("y = {m}x + {c}".format(m=numpy.round(m,2),c=numpy.round(c,2)))
     return m, c
 
-def ask_user(question):
-    """Ask user a question and return the answer.
-
-    Args:
-        question (string): The question to ask the user.
-
-    Returns:
-        Bool: True if the answer is yes, False otherwise.
-    """
-    answer = input(question + " (Y/n) : ")
-    if answer == "Y" or answer == "y" or answer == "yes" or answer == "Yes" or answer == "YES" or answer == "":
-        return True
-    else:
-        return False

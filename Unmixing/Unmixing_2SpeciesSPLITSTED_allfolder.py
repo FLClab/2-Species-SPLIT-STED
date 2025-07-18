@@ -86,7 +86,7 @@ if None in [f1,f2,f3,savefolder]:
 
     savefolder=str(input("Name of Output folder: "))
 
-    # Select the images to use for the controls
+    # Select the images to use for the controls. If none are selected, the script will ask for the image number
 
     #numimlist=[3,3,5,2,16,16,1,4]
     #numimlist=[27,27,12,3,6,6,9,3]

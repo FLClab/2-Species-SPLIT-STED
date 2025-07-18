@@ -64,9 +64,6 @@ Overall_data = pd.DataFrame(
 
 # -----------------------------------------------------------
 
-
-
-
 for image_id,imagei in enumerate(images):
     print("##################")
     print("Image {} of {}\n".format(image_id,len(images)))
@@ -80,12 +77,12 @@ for image_id,imagei in enumerate(images):
     imagemsr = load_image(imagei)
 
 # -----------------------------------------------------------
-#     Open mapcomp's images
+#    Loop over the channels in the image (Confocal and STED)
 
     for k,key in enumerate(mapcomp):
         print(mapcomp[key])
         image1=select_channel(imagemsr, mapcomp[key])
-        #image1=imagemsr[mapcomp[key]]
+     
         dim = image1.shape
 
 
@@ -100,13 +97,11 @@ for image_id,imagei in enumerate(images):
 
     # -----------------------------------------------------------
 
-        #seuil = get_foreground(image1)
+ 
         seuil= 5
     # Sum of all the histograms of the foreground pixels
         y=numpy.sum(image1[imsum>seuil, :],axis=0)
-    # Cut histogram to start at 21st bin
-        #maxy = numpy.max(y)
-        #indice = numpy.argmax(y)
+    # Cut histogram to start at 21st bin to perform tail fitting
         indice=20
         y = y[indice:]
         y= y / y.sum()

@@ -9,7 +9,7 @@ The routine is defined as a function and called at the end of the script in a lo
 
 """
 
-# -*- coding: utf-8 -*-
+
 import os
 from sys import path as path1;
 Functionspath=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Functions")

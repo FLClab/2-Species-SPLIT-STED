@@ -89,7 +89,7 @@ for image_id,imagei in enumerate(images):
     for k,key in enumerate(mapcomp):
         print(mapcomp[key])
         image1 = select_channel(imagemsr, mapcomp[key])
-        #image1=imagemsr[mapcomp[key]]
+      
         dim = image1.shape
         if k==0:
             ov_data = [int(conf_percent), os.path.basename(imagei)]

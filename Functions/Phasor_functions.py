@@ -121,14 +121,17 @@ def DTCWT_Phasor(sted_stack_fname, foreground_threshold,nlevels=2, neighborhood=
         sted_stack = sted_stack_fname
     sted_stack[numpy.sum(sted_stack[:,:,10:111],axis=2)<foreground_threshold,:]=0
     X, Y, N = sted_stack.shape
+    # Calculate the phasor distribution of the image using sine-cosine transforms
     Im=sted_stack.sum(axis=2)
     FReal = (sted_stack * numpy.cos((2 * numpy.pi * numpy.arange(N))/ N)).sum(axis=2)
     FImag = (sted_stack * numpy.sin((2 * numpy.pi * numpy.arange(N))/ N)).sum(axis=2)
-    #print("Im",numpy.min(Im),numpy.max(Im))
+    
     FReal[FReal <0]=0
     FImag[FImag < 0]=0
 
     Images=[Im,FReal,FImag]
+
+    # Apply DTCWT filtering to the phasor coordinates
     Images_Filtered=[]
     transform = dtcwt.Transform2d(biort='legall',qshift='qshift_a')
     for I in Images:
@@ -141,7 +144,7 @@ def DTCWT_Phasor(sted_stack_fname, foreground_threshold,nlevels=2, neighborhood=
         Levels=[I_t.highpasses[i] for i in range(nlevels)]
         Amplitudes=[numpy.absolute(Level) for Level in Levels]
 
-        #GlobalNoise=numpy.median([Amplitudes[0][:,:,1],Amplitudes[0][:,:,4]])/0.6745
+       
         GlobalNoise = numpy.median([Amplitudes[0][:, :, 0], Amplitudes[0][:, :, 2]]) / 0.6745
 
 
@@ -154,8 +157,7 @@ def DTCWT_Phasor(sted_stack_fname, foreground_threshold,nlevels=2, neighborhood=
                 padded = numpy.pad(currentAmp, neighborhood, mode='edge')
                 localnoise=1/(2*neighborhood+1)**2*numpy.sum(numpy.lib.stride_tricks.sliding_window_view(padded,(2*neighborhood+1,2*neighborhood+1)),axis=(-1,-2))
 
-                #kernel = numpy.ones((2 * neighborhood + 1, 2 * neighborhood + 1))
-                #localnoise=1/(2*neighborhood+1)**2*scipy.signal.convolve2d(kernel,padded,mode='valid')
+
                 localnoiseband[:,:,b]=localnoise
             LocalNoiseEstimate.append(localnoiseband)
         FilteredPyramid=[]
@@ -192,11 +194,10 @@ def DTCWT_Phasor(sted_stack_fname, foreground_threshold,nlevels=2, neighborhood=
     with numpy.errstate(divide='ignore', invalid='ignore'):
         G = numpy.true_divide(Images_Filtered[1],Images_Filtered[0])
         S = numpy.true_divide(Images_Filtered[2],Images_Filtered[0])
-    #G=Images_Filtered[1]/Images_Filtered[0]
-    #S=Images_Filtered[2]/Images_Filtered[0]
+
     G=numpy.nan_to_num(G,posinf=0)
     S = numpy.nan_to_num(S,posinf=0)
-
+    
     original_idxes = numpy.arange(len(G.flatten()))
 
     return G,S, original_idxes,Images,Images_Filtered

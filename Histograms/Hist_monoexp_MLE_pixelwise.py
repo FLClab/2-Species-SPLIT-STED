@@ -21,10 +21,12 @@ from Mono_fit import ExpFunMono_MLE
 from Main_functions import load_image, get_foreground, select_channel
 from tiffwrapper import LifetimeOverlayer
 # -----------------------------------------------------------
-
+# Path to the folder containing the images
+# Opens file dialog to select folder
 filename =easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Select the folder containing the images")
 print(filename)
 
+# Dictionary of the image identifiers (Channel names) to be included
 mapcomp = {'CONF561': 'Confocal_561 {11}', 'STED561' : 'STED 561 {11}'}
 #mapcomp = {'CONF561': 0, 'STED561' : 1} # For Tiff file, give the channel numbers
 
@@ -56,11 +58,11 @@ images = images[numim]
 imagemsr = load_image(images)
 
 # -----------------------------------------------------------
-
+# Loop over the channels in the image (Confocal and STED)
 for key in mapcomp:
     print(mapcomp[key])
     image1=select_channel(imagemsr, mapcomp[key])
-    #image1=imagemsr[mapcomp[key]]
+
     dim = image1.shape
     print(dim)
     centerx=int(dim[0]/2)
@@ -89,8 +91,7 @@ for key in mapcomp:
         if y.sum() < seuil :
             mlifetime[iy, ix] = 0
         else :
-            #maxy = numpy.max(y) 
-            #indice = numpy.argmax(y)
+# Remove the first 20 bins to perform tail-fitting
             y = y[indice:]
             y= y / y.sum()
             absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08

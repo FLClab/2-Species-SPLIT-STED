@@ -1,7 +1,10 @@
 """
-Script to perform mono-exponential function fitting on the synthectic 2-species STED-FLIM images 
-The script will simulate the addition of two STED-FLIM images, one of each species.
-The script then performs MLE fitting and plots the phasor distributions of on raw and the combined images."""
+Script to perform mono-exponential function fitting on the synthectic 2-species STED-FLIM images' histograms 
+The script will combine two STED-FLIM images, one of each species.
+The script then performs MLE fitting and plots the phasor distributions of the raw and the combined images.
+
+The routine is defined as a function that is called with different STED powers at the end of the script.
+"""
 
 
 import os.path
@@ -34,7 +37,7 @@ import tifffile
 from scipy.optimize import minimize
 from tqdm import tqdm
 matplotlib.rcParams['axes.linewidth'] = 0.8
-
+#plt.style.use('dark_background')
 
 # ------------------ Default Input variables ----------------
 params_dict = {
@@ -44,9 +47,12 @@ params_dict = {
     "foreground_threshold": 10,
     "harm1": 1,
 }
+# Path to the folder with the images (one per dye). A file browser will open for the user to select the folder.
 filename1= easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with images of the first species")
 filename2= easygui.diropenbox(default=os.path.expanduser("~/Desktop"),title="Select folder with images of the second species")
 
+# List of STED powers of images to analyze (in %, part of the image filenames)
+Powerslist=[10,20,30,40]
 # -----------------------------------------------------------
 
 def Simulate2SpeciesSTED(STEDPOWER):
@@ -64,15 +70,12 @@ def Simulate2SpeciesSTED(STEDPOWER):
     #keys=[1,1]
     #keys = [ 'STED_635P {2}', 'STED_635P {2}']
     
- 
-    #plt.style.use('dark_background')
     
     colors=['cyan','magenta','springgreen']
-    #colors=['magenta']
-    
+ 
 
-    # Create the output folder
-    #savefolder=str(input("Name of Output folder: "))
+    # Create the output folder on the Desktop
+    
     savefolder = "Simulation_Cy3_{}Percent_MLEinput".format(STEDPOWER)
     savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
     os.makedirs(savefolder,exist_ok=True)
@@ -83,7 +86,7 @@ def Simulate2SpeciesSTED(STEDPOWER):
     number = [len(glob.glob(filename)) for filename in filenames]
     print('There are ',number, 'Images in these folders')
     pairs = list(itertools.product(images[0], images[1]))
-    print(len(pairs))
+    print("There are ",len(pairs)," pairs of images to process")
 
     # Create a DataFrame to store the overall data
     Overall_data = pd.DataFrame(
@@ -280,16 +283,9 @@ def Simulate2SpeciesSTED(STEDPOWER):
 
 
     return numpy.array([Overall_data["resolution1"],Overall_data["resolution2"]])
-#["_30",[0,4]],["30",[0,0]],["40",[0,0]]
 
-#[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
-Powerslist=[10,20,30,40]
-Powerslist=[20]
-#Powerslist=[[30,[0,0]],[40,[0,0]]]
-globalcumstats=[]
-globalcumstatsmean=[]
-globalcumstatsstd=[]
-row=0
+
+
 
 for power in Powerslist:
 

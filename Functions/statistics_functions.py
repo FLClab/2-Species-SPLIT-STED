@@ -21,10 +21,10 @@ def get_significance(samples, show_qq=False, force_normal_test=False, show_sr=Fa
     Computes a statistic analysis of the given samples.
 
     :param samples: A list of sample observations
-    :param show_qq: Wheter to show the quantiles
-    :param force_normal_test: Wheter to force the normal test
-    :param show_sr: Wheter to show standard residuals
-    :param verbose: Wheter to use verbose
+    :param show_qq: Whether to show the quantiles
+    :param force_normal_test: Whether to force the normal test
+    :param show_sr: Whether to show standard residuals
+    :param verbose: Whether to use verbose
     """
     _print = print if verbose else lambda *args, **kwargs : None # Defines the level of verbosity
     fitted, residuals, standard_res, quantiles = ANOVA.fit_model(samples)

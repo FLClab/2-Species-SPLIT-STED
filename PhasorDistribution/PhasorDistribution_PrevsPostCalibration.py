@@ -1,7 +1,6 @@
 
 """
-
-
+Script to plot a phasor distribution before and after calibration with the IRF measurement
 """
 import skimage
 
@@ -69,6 +68,7 @@ image = images[numim]
 colors_Centroids=["k","m","k"]
 colors=['gray', "hotpink"]
 
+# Phasor coordinates of the centroid of the IRF measurement in polar coordinates
 IRF= (0.9527011687260826, 0.4695955819269703)
 MeanPositions={}
 Ellipsedims={}
