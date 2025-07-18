@@ -176,10 +176,10 @@ def plot_legend():
 
 plot_legend()
 
-
+# Make list of all the images in the control folders and ask user to select the image to use as control
 for k,filename in enumerate(filenamescontrol) :
     print(labels[k])
-    # Make list of all the images in the folder
+    
     extension = ".msr"
     path=os.path.join(filename,"*.msr")
     images = glob.glob(path)
@@ -204,39 +204,41 @@ path = os.path.join(filenamemixed, '*'+extension)
 #path = os.path.join(filenamemixed, '*rep0*.msr')
 mixedimages = glob.glob(path)
 
-
+# Create figure for phasor plot
 fig4,ax_scatter = plt.subplots(figsize=(2,2))
-
-
 ax_scatter.set_xlim(0, 1.05)
 ax_scatter.set_ylim(-0.05, 1)
-
 ax_scatter.set_xlabel('g')
 ax_scatter.set_ylabel('s')
+
+# Draw the universal semi-circle
 edge = numpy.linspace(start=0, stop=15, num=200)
 theta = numpy.linspace(0, numpy.pi, 100)
 r = 0.5
 x1 = r*numpy.cos(theta) + 0.5
 x2 = r*numpy.sin(theta)
 ax_scatter.plot(x1,x2, color = "black", ls = "--",linewidth=0.8)
-CoM_x, CoM_y = [], []
+
+
+# Create a legend file
 with open(os.path.join(savefolder,'legend.txt'),'w') as data:
     data.write("Controls\n")
+
+# Loop through the control images and calculate their phasor distributions to build the reference triangle
 scatterlist = []
 barsxlist = []
 barsylist = []
+CoM_x, CoM_y = [], []
 for i, msr in enumerate(msrfiles) : 
     df = pd.DataFrame(columns=['x','y'])
     dg = pd.DataFrame(columns=['g', 's'])
     imagemsr=load_image(msr)
     image1=select_channel(imagemsr,keys[i])
-    #image1 = imagemsr[keys[i]]
     print(image1.shape)
+    # Write the control image name and the corresponding label and key to the legend file
     with open(os.path.join(savefolder,'legend.txt'),'a') as data:
         data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
-   # print(imagemsr.keys())
 
-    #image1 =image1[10: -10, 10: -10,:]
     print(image1.shape)
     imsum = image1[:,:,10:111].sum(axis=2)
     imsum = imsum.astype('int16')
@@ -245,27 +247,26 @@ for i, msr in enumerate(msrfiles) :
 
 
     print("Caclulation for an image of shape", image1.shape, "...")
-
     params_dict["foreground_threshold"] = seuil
-    params_dict["Nb_to_sum"] = image1.shape[2]
     print("foreground_threshold=", params_dict["foreground_threshold"])
-    
+    # Calculate the phasor distribution of the foreground of the control image
     x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict)
     df['x']=x.flatten()
     df['y']=y.flatten()
     m, phi = to_polar_coord(df['x'], df['y'])
     g,s =polar_to_cart(m, phi)
     dg['g'], dg['s'] = g, s
+    # Calculate the centroid of the phasor distribution using KMeans clustering
     kmeans = KMeans(n_clusters = 1, init = 'k-means++', random_state = 42)
     y_kmeans = kmeans.fit_predict(dg)
+    # Store the centroid coordinates in a list
     CoM_x.extend(kmeans.cluster_centers_[:, 0][:].tolist())
     CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
+    # Plot the phasor distribution of the control image
     a=ax_scatter.scatter(g, s, s=0.5, c=colors[i], alpha=0.10,label=labels[i],rasterized=True)
     scatterlist.append(a)
 
-
-##Calcul de Pn
-# Projection des centroides sur le demi-cercle
+# Find nearest points to the semi-circle of the confocal phasor centroids
 xaxis = numpy.linspace(0, 1.5, 100)
 norm = numpy.sqrt((CoM_x[0] - 0.5) ** 2 + (CoM_y[0] ** 2))
 Pn_x = 0.5 + (r * (CoM_x[0] - 0.5) / norm)
@@ -275,32 +276,32 @@ norm = numpy.sqrt((CoM_x[4] - 0.5) ** 2 + (CoM_y[4] ** 2))
 P2_x = 0.5 + (r * (CoM_x[4] - 0.5) / norm)
 P2_y = 0 + r * (CoM_y[4] - 0) / norm
 p2 = numpy.array([P2_x, P2_y])
+
+# Separate the centroids of the two species into 2 lists
 PointsSpecies1 = numpy.stack(
     [numpy.array([Pn_x, Pn_y]), numpy.array([CoM_x[1], CoM_y[1]]), numpy.array([CoM_x[2], CoM_y[2]]),
         numpy.array([CoM_x[3], CoM_y[3]])])
 PointsSpecies2 = numpy.stack(
     [numpy.array([P2_x, P2_y]), numpy.array([CoM_x[5], CoM_y[5]]), numpy.array([CoM_x[6], CoM_y[6]]),
         numpy.array([CoM_x[7], CoM_y[7]])])
-# Pn_x, Pn_y = CoM_x[0], CoM_y[0]
 
-# coeffs1=numpy.polyfit([CoM_x[1],CoM_x[2],CoM_x[3]],[CoM_y[1],CoM_y[2],CoM_y[3]],1)
-# coeffs2=numpy.polyfit([CoM_x[5],CoM_x[6],CoM_x[7]],[CoM_y[5],CoM_y[6],CoM_y[7]],1)
+
+# Fit lines to the phasor centroids of each of the two species
 coeffs1 = numpy.polyfit([Pn_x, CoM_x[1], CoM_x[2], CoM_x[3]], [Pn_y, CoM_y[1], CoM_y[2], CoM_y[3]], 1)
 coeffs2 = numpy.polyfit([P2_x, CoM_x[5], CoM_x[6], CoM_x[7]], [P2_y, CoM_y[5], CoM_y[6], CoM_y[7]], 1)
 y1 = coeffs1[0] * xaxis + coeffs1[1]
-#ax_scatter.plot(xaxis, y1, 'dodgerblue')
 y2 = coeffs2[0] * xaxis + coeffs2[1]
-#ax_scatter.plot(xaxis, y2, 'dodgerblue')
+
+# Find the intersection point of the two lines
 det = coeffs2[0] - coeffs1[0]
 x = (coeffs1[1] - coeffs2[1]) / det
 y = (coeffs2[0] * coeffs1[1] - coeffs1[0] * coeffs2[1]) / det
-#ax_scatter.scatter(x, y, s=10)
-
 p0 = numpy.array([x, y])
 print('p0', p0)
+
+# Check if the intersection point is inside the universal semi-circle
 circ = Circle([0.5, 0], 0.5)
 check = circ.contains_point([x, y])
-
 if check == False:  # If intersection point is outside the circle, find intersection with circle
     print("I'm outside the circle, coming in!")
     circle = Circle([0.5, 0], 0.5)
@@ -309,7 +310,6 @@ if check == False:  # If intersection point is outside the circle, find intersec
     point_a, point_b = circle.intersect_line(line1)
     point_c, point_d = circle.intersect_line(line2)
     print('abcd', point_a, point_b, point_c, point_d)
-    # circle.plot_2d(ax_scatter)
     print(numpy.array([point_a, point_c]))
     p0 = numpy.mean(numpy.array([point_a, point_c]), axis=0)
     x = p0[0]
@@ -326,12 +326,16 @@ if y < 0:  # If intersection point is under the semi-circle, find intersection w
     y = p0[1]
 print('p0', p0)
 print("POINTS", P_n, p2, p0)
-# ax_scatter.scatter(projectionbest[:,0], projectionbest[:,1],s=5, c='magenta',alpha=0.1)
+
+# Save the phasor containing the phasor distributions of the control images
 fig4.savefig(os.path.join(savefolder, 'Phasor_SeparateSTED_3species_LineControls_controlsonly.pdf'),
                 transparent='True', bbox_inches="tight",dpi=900)
+
+# Clear the scatter plot
 lines = [mpatches.Patch(color=colors[j], label=labels[j]) for j in range(len(labels))]
-#ax_scatter.legend(handles=lines, prop={'size': 20})
 t = [scatter.remove() for scatter in scatterlist]
+
+# Plot control image centroids, the reference triangle with the control points and lines and save the figure
 pnscatter = ax_scatter.scatter(Pn_x, Pn_y, s=50, c='gold')
 p2scatter = ax_scatter.scatter(P2_x, P2_y, s=50, c='gold')
 p0scatter = ax_scatter.scatter(p0[0], p0[1], s=50, c='gold')
@@ -342,8 +346,7 @@ centroidscatter1=ax_scatter.scatter(PointsSpecies1[:,0],PointsSpecies1[:,1],s=50
 centroidscatter2 = ax_scatter.scatter(PointsSpecies2[:,0],PointsSpecies2[:,1], s=50,c=colors[4:-1])
 fig4.savefig(os.path.join(savefolder, "Phasor_3species_LineControls_ControlsOnly.pdf"), transparent='True',
                 bbox_inches="tight")
-#fig4.savefig(os.path.join(savefolder, "Phasor_3species_LineControls_ControlsOnly.png"), transparent='True',bbox_inches="tight")
-#ax_scatter.get_legend().remove()
+# Clear the scatter plot
 pnscatter.remove()
 p2scatter.remove()
 p0scatter.remove()
@@ -352,12 +355,9 @@ centroidscatter2.remove()
 ax_scatter.lines[-1].remove()
 ax_scatter.lines[-1].remove()
 ax_scatter.lines[-1].remove()
-#print("barsxlist",len(barsxlist))
-#for bi in range(len(barsxlist)):
-    #   t = [b.remove() for b in barsxlist[bi]]
-    #   t = [b.remove() for b in barsylist[bi]]
 
 
+# Loop through the mixed images and unmix them using the phasor triangle built from the control images
 for m,mixedimage in enumerate(mixedimages):
 
     d_melange = pd.DataFrame(columns=['g', 's'])
@@ -369,20 +369,16 @@ for m,mixedimage in enumerate(mixedimages):
     imagemsr = load_image(mixedimage)
     print(mixedimage)
 
-    #image1 = imagemsr[keys[-1]]
+
     image1= select_channel(imagemsr,keys[-1])
-    print(image1.shape)
-    # image1 =image1[10: -10, 10: -10,:]
     print(image1.shape)
     imsum = image1[:,:,10:111].sum(axis=2)
     imsum = imsum.astype('int16')
 
     seuil = 5
-    #seuil = get_foreground(imsum)
     params_dict["foreground_threshold"] = seuil
-    params_dict["Nb_to_sum"] = image1.shape[2]
     print("foreground_threshold=", params_dict["foreground_threshold"])
-
+    # Calculate the phasor distribution of the foreground of the mixed image
     x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
     df['x'] = x.flatten()
     df['y'] = y.flatten()
@@ -390,15 +386,13 @@ for m,mixedimage in enumerate(mixedimages):
     g, s = polar_to_cart(m, phi)
     dg['g'], dg['s'] = g, s
     d_melange['g'], d_melange['s'] = g, s
+    # Calculate 2 centroids of the phasor distribution using KMeans clustering
     kmeans = KMeans(n_clusters=2, init='k-means++', random_state=42)
     y_kmeans = kmeans.fit_predict(dg)
-
-
-
-
-    p3 = d_melange[['g', 's']].to_numpy() #phaseur qui sera projeté
+    p3 = d_melange[['g', 's']].to_numpy() 
     print("p3",p3.shape)
 
+    # Unmix the mixed image using the phasor triangle built from the control images
     imsum_flat_lin1, imsum_flat_lin2, imsum_flat_lin3, Solve = unmix3species(p3, original_idxes, image1, P_n, p2,p0)
 
 
@@ -406,16 +400,15 @@ for m,mixedimage in enumerate(mixedimages):
     print('F2',imsum_flat_lin2.min(),imsum_flat_lin2.max())
     print('F3',imsum_flat_lin3.min(),imsum_flat_lin3.max())
 
-
+    # Plot the phasor distribution of the mixed image colored by the unmixing results
     colours = [abc_to_rgb(A=point[0],B=point[1],C=point[2]) for point in numpy.transpose(Solve)]
     print("colours",numpy.min(colours),numpy.max(colours))
     mixphasor = ax_scatter.scatter(p3[:,0],p3[:,1],s=1,c=colours,rasterized=True)
-
+    # Save the phasor distribution of the mixed image as a png
     fig4.savefig(os.path.join(savefolder, "Phasor_3species_LinesControls_{}.png".format(os.path.basename(mixedimage).split(extension)[0])), transparent='True',
                     bbox_inches="tight",dpi=900)
 
-    #lines = [mpatches.Patch(color=colors[i], label=labels[i]) for i in range(len(labels))]
-    #ax_scatter.legend(handles=lines, prop={'size': 20})
+    # Plot the control points and the lines connecting them and save the figure as a pdf
     pnscatter = ax_scatter.scatter(Pn_x, Pn_y, s=50, c='gold')
     p2scatter = ax_scatter.scatter(P2_x, P2_y, s=50, c='gold')
     p0scatter = ax_scatter.scatter(p0[0], p0[1], s=50, c='gold')
@@ -425,23 +418,17 @@ for m,mixedimage in enumerate(mixedimages):
     
     fig4.savefig(os.path.join(savefolder, "Phasor_3species_LinesControls_{}.pdf".format(os.path.basename(mixedimage).split(extension)[0])), transparent='True',
                     bbox_inches="tight",dpi=900)
+    
+    # Clear the scatter plot
     mixphasor.remove()
-    #ax_scatter.get_legend().remove()
     pnscatter.remove()
     p2scatter.remove()
     p0scatter.remove()
     ax_scatter.lines[-1].remove()
     ax_scatter.lines[-1].remove()
     ax_scatter.lines[-1].remove()
-    #t = [b.remove() for b in barsx]
-    #t = [b.remove() for b in barsy]
-    # for l in [0,1,2,3,4]:
-    #    id=ax_scatter.collections[-1]
-    #   id.remove()
 
     
-
-
     imsum_flat_lin3[numpy.isinf(imsum_flat_lin3)] = 0
     imsum_flat_lin3[numpy.isnan(imsum_flat_lin3)] = 0
     imsum_flat_lin3 = numpy.where(imsum_flat_lin3 < 0, 0, imsum_flat_lin3)
@@ -460,7 +447,7 @@ for m,mixedimage in enumerate(mixedimages):
     imsum_flat_bi1 = numpy.where(imsum_flat_bi1 > 1, 1, imsum_flat_bi1)
 
     
-
+    # Apply the calculated fractions to the intensity image to obtain the fraction images
     fraction1 = imsum_flat_bi.copy()
     fraction2 = imsum_flat_bi1.copy()
     fraction3=imsum_flat_lin3.copy()
@@ -470,7 +457,7 @@ for m,mixedimage in enumerate(mixedimages):
     fraction2 *= difference
 
 
-
+    # Plot the unmixed images and the intensity image
     fig_im3, ax_im3 = plt.subplots(ncols=5,nrows=1,figsize=(20,6))
     ax_im3[0].axis('off')
     ax_im3[1].axis('off')
@@ -530,24 +517,28 @@ for m,mixedimage in enumerate(mixedimages):
 
     imsum_flattt =ax_im3[4].imshow(lifetime_rgb)
 
-
+# Saved the unmixed fraction images as composite tiff images
     imagecomp = numpy.dstack((fraction1,fraction2))
     imagecomp = numpy.moveaxis(imagecomp, 2, 0)
     filenameout = os.path.join(savefolder, os.path.basename(mixedimage).split(extension)[
         0] + "_STED3species_LineControls_UnmixedComposite.tiff")
     imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("Magenta Hot", "Cyan Hot"),
             pixelsize=(20E-3, 20E-3))
-
+    
+# Save the intensity of the mixed image
     filenameout = os.path.join(savefolder,
                                 os.path.basename(mixedimage).split(extension)[0] + "_STED3species_LineControls_MixedIntensity.tiff")
     print(filenameout)
     imsave(file=filenameout, data=imsum.astype(numpy.uint16), luts="Red Hot", pixelsize=(20E-3, 20E-3))
 
+# Save the unmixed fractions as tiff images
     filenameout = os.path.join(savefolder,
                                 os.path.basename(mixedimage).split(extension)[0] + "_STED3species_LineControls_f1f2f3.tiff")
     imagecomp = numpy.dstack((imsum_flat_bi, imsum_flat_bi1,imsum_flat_lin3))
     imagecomp = numpy.moveaxis(imagecomp, 2, 0)
     tifffile.imwrite(filenameout, imagecomp)
+
+
     filenameout = os.path.join(savefolder,
                                 os.path.basename(mixedimage).split(extension)[0] + "_STED3species_LineControls_F1Overlay.tiff")
 
@@ -557,6 +548,4 @@ for m,mixedimage in enumerate(mixedimages):
                                     os.path.basename(mixedimage).split(extension)[0] + '.pdf'), transparent='True',
                     bbox_inches="tight")
 
-
-#plt.show()
 

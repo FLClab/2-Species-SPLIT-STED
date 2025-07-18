@@ -44,10 +44,8 @@ cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
 )
 matplotlib.colormaps.register(cmap=cmap, force=True)
 matplotlib.colormaps.register(cmap=cmap.reversed(), force=True)
-
-
 matplotlib.rcParams['axes.linewidth'] = 0.8
-#plt.style.use('dark_background')
+
 # -----------------------------------------------------------
 
 # Select the folders containing the control images and the mixed images. Open a dialog box to select the folders.
@@ -130,6 +128,7 @@ for power in powers:
 
     ax_scatter.set_xlabel('g')
     ax_scatter.set_ylabel('s')
+    # Plot the universal semi-circle in the phasor plot
     edge = numpy.linspace(start=0, stop=15, num=200)
     theta = numpy.linspace(0, numpy.pi, 100)
     r = 0.5
@@ -162,12 +161,12 @@ for power in powers:
 
         seuil = get_foreground(imsum)
 
-        # Calulate the phasor coordinates for the foreground of the control image
+        
         print("Caclulation for an image of shape", image1.shape, "...")
         params_dict["foreground_threshold"] = seuil
-        params_dict["Nb_to_sum"] = image1.shape[2]
+  
         print("foreground_threshold=", params_dict["foreground_threshold"])
-
+        # Calulate the phasor coordinates for the foreground of the control image
         x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict)
         df['x']=x.flatten()
         df['y']=y.flatten()
@@ -181,6 +180,7 @@ for power in powers:
         CoM_x.extend(kmeans.cluster_centers_[:, 0][:].tolist())
         CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
 
+        # Plot the phasor distribution for the control image
         a=ax_scatter.scatter(g, s, s=1, c=colors[i], alpha=0.1, label=labels[i],rasterized=True)
         scatterlist.append(a)
 
@@ -231,14 +231,15 @@ for power in powers:
         imsum = image1[:,:,10:111].sum(axis=2)
         imsum = imsum.astype('int16')
 
-        # Calculate the phasor distribution for the mixed image
+        # Calculate the phasor distribution of the foreground for the mixed image
         params_dict["foreground_threshold"] = 5
-        params_dict["Nb_to_sum"] = image1.shape[2]
+
         print("foreground_threshold=", params_dict["foreground_threshold"])
 
         x, y, g_smoothed, s_smoothed, original_idxes = Median_Phasor(image1, params_dict, **params_dict)
         df['x'] = x.flatten()
         df['y'] = y.flatten()
+        # Calibrate the phasor distribution using the IRF
         m, phi = to_polar_coord(df['x'], df['y'])
         g, s = polar_to_cart(m, phi)
         dg['g'], dg['s'] = g, s
