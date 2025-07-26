@@ -25,7 +25,7 @@ The README is divided into the following sections
 
 The source code `2 Species SPLIT-STED` relies on Python scientific librairies. The source code was tested in a Python 3.11 environnement. We provide a `requirements.txt` file to facilitate the installation of the necessary dependencies.
 
-Assuming the users have a working installation of Python on their computer (we recommend using Anaconda. See [installation instructions](https://docs.anaconda.com/anaconda/install/)), and either cloned or downloaded the files in this repository on their computer, the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
+Assuming the users have a working installation of Python on their computer (we recommend using Anaconda. See [installation instructions](https://docs.anaconda.com/anaconda/install/)), and [cloned](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repository on their computer, the users should create a new Python 3.11 environnement to avoid impacting on other file dependencies. 
 
 The following lines create a new environnement called FLIM, containing the necessary dependencies. `requirements.txt` is the path to this file obtained from this repository.
 ```bash
@@ -105,7 +105,7 @@ Creates synthetic double-species images by summing single-species STED-FLIM imag
 ### Usage notes
 Here is a summary of the main parameters that the different scripts require
 
-- filename : Path to a folder containing images. For most scripts, a dialog box is generated using the easygui package for the user to browse their computer and select the folder using this line.
+- filename : Path to a folder containing images. For most scripts, a dialog box is generated using the  [easygui](https://pypi.org/project/easygui/) package for the user to browse their computer and select the folder using this line.
 ```
 filename=easygui.diropenbox()
 ```
@@ -119,10 +119,11 @@ This line can be replaced by an explicit statement of a folder path.
 
 - savefolder : The name for the Results folder that will be created on the Desktop. In most scripts, the user will be prompted to enter the name. 
 <img src="img/Savefolder_Prompt.png" alt="Screenshot of prompt asking the user to input a folder name." width="500"/>
+This can be replaced by an explicit statement of a string to use as the results folder name.
 
 - numim : Integer to identify specific images in a folder. For some scripts, a list of the image names and indexes will be printed and the user will be prompted to enter the index.
 <img src="img/Numim_prompt.png" alt="Screenshot of prompt asking the user to input the file number" width="500"/>
-
+This can be replaced by an explicit statement of an integer to use as the index.
 
 
 <a id="citation"></a>
@@ -133,7 +134,7 @@ If you use any material from this repository please cite the following preprint:
 ```
 @article{deschenes2025,
   title = {Enhancing {{STED Microscopy}} via {{Fluorescence Lifetime Unmixing}} and {{Filtering}} in {{Two-Species SPLIT-STED}}},
-  author = {Desch{\^e}nes, Andr{\'e}anne and Ollier, Antoine and Lafontaine, Marie and {Michaud-Gagnon}, Albert and Santiague, Jeffrey-Gabriel Steavan and Bilodeau, Anthony and Gagn{\'e}, Christian and Koninck, Paul De and {Lavoie-Cardinal}, Flavie},
+  author = {Desch{\^e}nes, Andr{\'e}anne and Ollier, Antoine and Lafontaine, Marie and {Michaud-Gagnon}, Albert and Santiague, Jeffrey-Gabriel Steavan and Bilodeau, Anthony and Gagn{\'e}, Christian and {De Koninck}, Paul and {Lavoie-Cardinal}, Flavie},
   year = {2025},
   month = jul,
   pages = {2025.07.17.661952},
