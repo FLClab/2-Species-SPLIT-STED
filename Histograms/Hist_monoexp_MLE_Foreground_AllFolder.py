@@ -125,6 +125,20 @@ for image_id,imagei in enumerate(images):
             ov_data.append(lifetime)
 # Add the lifetime values to the dataframe
             Overall_data.loc[len(Overall_data)] = ov_data
+        def expfun(t, a,tauval):
+            return a*numpy.exp(- (t) / tauval)
+        fig,ax=plt.subplots()
+        y=numpy.sum(image1[imsum>seuil, :],axis=0)
+        y= y / y.max()
+        absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
+        expon = expfun(absci,numpy.max(y), lifetime)
+        hist = ax.plot(absci, y, c='lime',linewidth=2)
+        ax.set_xlabel("Time (ns)")
+        ax.set_ylabel("Normalized Intensity")
+        #ax.set_ylim([0,0.06])
+        ax.plot(absci, expon, color='black')
+        fig.savefig(os.path.join(savefolder, "Histogram_Foreground_{}_{}.pdf".format(os.path.basename(imagei),mapcomp[key])), transparent='True', bbox_inches="tight")
+        plt.close(fig)
 Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_{}.csv".format(savefoldername)))
 
 print(Overall_data.shape)
