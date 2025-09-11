@@ -69,6 +69,12 @@ mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
              'STED FLIM' :'STED 561 {11}',
              'Conf post' : 'Confocal_Post {15}',
             'STED High' : 'STED 561_HighP {16}'}
+mapcomp = {  'Conf pre'  : 'Confocal_Pre {14}',
+             'Conf FLIM' :'Conf_ 594 {2}',
+             'STED FLIM' :'STED_594 {2}', 
+              'Conf post' : 'Confocal_Post {15}',
+            'STED High' :None}
+
 
 # mapcomp = { 
 #              'Conf FLIM' : 0,
@@ -76,11 +82,11 @@ mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
 #              'STED High' :None
 # }
 
-mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
-             'Conf FLIM' : 'Conf_635P {2}', 
-             'STED FLIM' :'STED_635P {2}',
-             'Conf post' :  'Conf_post {7}',
-            'STED High' : None}
+#mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
+#             'Conf FLIM' : 'Conf_635P {2}', 
+#             'STED FLIM' :'STED_635P {2}',
+#             'Conf post' :  'Conf_post {7}',
+#            'STED High' : None}
 
 
 colors=["springgreen",'orangered','gold','deepskyblue']
@@ -166,6 +172,10 @@ for i,im in enumerate(images) :
     if extension == ".msr":
         Conf_init = select_channel(imagemsr,mapcomp['Conf pre'])
         Conf_end = select_channel(imagemsr,mapcomp['Conf post'])
+        if Conf_init is None:
+            Conf_init = numpy.ones((512,512))
+        if Conf_end is None:
+            Conf_end = numpy.zeros((512,512))
     else:
         print("intensity confocal images not stored in tiffs")
         Conf_init = numpy.ones((512,512))
@@ -474,6 +484,8 @@ data_objectifs.STEDpercent= data_objectifs.STEDpercent.astype(float)
 data_objectifs=data_objectifs.sort_values(by=['STEDpercent'])
 data_objectifs.to_csv(os.path.join(savefolder,"data_objectifs.csv"))
 print(data_objectifs)
+data_objectifs.reset_index(drop=True, inplace=True)
+print(data_objectifs)
 dfmeanoverall=data_objectifs.mean(numeric_only=True)
 dfstdoverall=data_objectifs.std(numeric_only=True)
 dfmean=data_objectifs.groupby('STEDpercent', as_index=False).mean(numeric_only=True)
@@ -575,7 +587,7 @@ Ax2.set_xlabel('STED depletion power [%]')
 Ax.set_ylabel('Resolution [nm]')
 Ax.legend(loc='upper right')
 Ax2.legend(loc='upper left')
-Ax.set_ylim([75,325])
+Ax.set_ylim([50,325])
 mwpowers=["0","44","88","132","176"]
 Ax.set_xticks([0,10,20,30,40])
 Ax.set_xticklabels(mwpowers)

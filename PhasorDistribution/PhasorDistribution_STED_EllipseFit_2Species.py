@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn
 import os
+import csv
 import itertools
 import easygui
 import math
@@ -95,14 +96,14 @@ filenames = [f1,f2]
 
 # List of powers to use for the phasor calculation 
 # string to look for in the filenames
-powers=["_*","_5","_10","_15","_20"]
-#powers=["_*","_10","_20","_30","_40"]
+powers=["_*","_5","_10","_15","_20","_30"]
+powers=["_10","_10","_20","_30","_40"]
 
 # Values to use for the powers in the plot
 #powersnum=[0,10,20,30,40]
-powersnum=[0,5,10,15,20]
+powersnum=[0,10,20,30,40]
 
-ticklabels=["0","22","44","66","88"]
+ticklabels=["0","44","88","132","176"]
 mwpowers=["","0","44","88"]
 
 # List of channels to use for the phasor calculation. For Tiff files, use the channel number instead of the key
@@ -110,21 +111,21 @@ mwpowers=["","0","44","88"]
 #keys=['Conf_ 594 {2}','STED_594 {2}','STED_594 {2}','STED_594 {2}','STED_594 {2}']
 keys=['Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys=['Conf640 {10}','STED640 {10}','STED640 {10}','STED640 {10}','STED640 {10}']
-keys=['Confocal_561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
+#keys=['Confocal_561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
 #keys=['Conf_635P {2}','Conf_635P {2}','Conf_635P {2}','Conf_635P {2}']
 #keys=['STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
 
-keys=[0,1,1,1,1] # For Tiff files, use the channel number instead of the key
+#keys=[0,1,1,1,1] # For Tiff files, use the channel number instead of the key
 
 colors=['magenta','cyan','lawngreen','mediumpurple']
 #colors_centroids=[['lightskyblue', 'deepskyblue','blue','mediumblue','darkblue',"cyan"],["pink","lightpink",'lightcoral','indianred','mediumvioletred',"magenta"]]
 colors=[['deepskyblue', 'deepskyblue','deepskyblue','deepskyblue','deepskyblue','deepskyblue'],["hotpink","hotpink","hotpink","hotpink","hotpink","hotpink"]]
-colors_centroids=[["#7ce8ffff","#55d0ffff","#00acdfff","#0080bfff","#00456bff"],["#fcbcd7ff","#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff"]]
+colors_centroids=[["#7ce8ffff","#55d0ffff","#00acdfff","#0080bfff","#00456bff","#033550ff","#022233ff"],["#fcbcd7ff","#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff","#5d1a43ff","#981164ff"]]
 #colors=["orangered"]
 
-names= ['Bassoon CF594', 'Homer STAR Orange']
+#names= ['Bassoon CF594', 'Homer STAR Orange']
 
-
+names=['PSD95_STRED','rBassoon_ATTO647N']
 Positions={}
 MeanPositions={}
 Ellipsedims={}
@@ -191,7 +192,7 @@ for k,filename in enumerate(filenames) :
       
             print("Caclulation for an image of shape", image1.shape, "...")
             #params_dict["foreground_threshold"] = get_foreground(image1)
-            params_dict["foreground_threshold"]=10
+            params_dict["foreground_threshold"]=5
             print("foreground_threshold=", params_dict["foreground_threshold"])
             x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict)
             df['x']=x.flatten()
@@ -202,7 +203,7 @@ for k,filename in enumerate(filenames) :
             dg['g'], dg['s'] = g, s
 
         # Calculate the centroid of the phasor distribution using KMeans clustering
-            kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42)
+            kmeans = KMeans(n_clusters=1, init='k-means++', random_state=42,n_init=10)
             y_kmeans = kmeans.fit_predict(dg)
             
             CoM_x=kmeans.cluster_centers_[:, 0][:]
@@ -237,8 +238,14 @@ for k,filename in enumerate(filenames) :
                 Ellipsedims[k][powersnum[a]][2, i] = 180+angle
 
         MeanPositions[k][powersnum[a]]=np.mean(Positions[k][powersnum[a]],axis=1)
-    
-
+for k in Positions.keys():
+    print("k",k)
+    with open(os.path.join(savefolder,"Overall_data_EllipsePositions_{}.csv".format(names[k])), 'w') as csv_file:  
+        writer = csv.writer(csv_file)
+        for a,pow in enumerate(Positions[k].keys()):
+            print("a",a)
+            for i in range(Positions[k][pow].shape[1]):
+                writer.writerow([powersnum[a], Positions[k][pow][0,i], Positions[k][pow][1,i]])
 table=np.zeros((2,len(powersnum)))
 table2=np.empty((2,1))
 table4=np.empty((2,1))
@@ -331,6 +338,7 @@ for b,power in enumerate(powersnum):
 
 # Save the results in the dataframe to a csv file
 Overall_data.to_csv(os.path.join(savefolder,"Overall_data_Ellipses_"+savefoldername+".csv"))
+fig.savefig(os.path.join(savefolder,"Centroids_Mean.pdf"),transparent=True, bbox_inches="tight",dpi=900)
 print(Overall_data)
 table2=table2[:,1:]
 table4=table4[:,1:]
@@ -520,6 +528,6 @@ for k,key in enumerate(Ellipsedims.keys()):
 fig2.savefig(os.path.join(savefolder,'Barplot_MajorMinorlengths_Ellipses.pdf'),transparent='True', bbox_inches="tight")
 fig3.savefig(os.path.join(savefolder,'Barplot_AreaAspectratio_Ellipses.pdf'),transparent='True', bbox_inches="tight")
 fig5.savefig(os.path.join(savefolder,'Mean_Ellipses.pdf'),transparent='True', bbox_inches="tight")
-fig.savefig(os.path.join(savefolder,"Centroids_Mean.pdf"),transparent=True, bbox_inches="tight",dpi=900)
+
 fig1.savefig(os.path.join(savefolder,"Centroids_Distances_violin.pdf"),transparent=True, bbox_inches="tight",dpi=900)
 plt.close('all')
