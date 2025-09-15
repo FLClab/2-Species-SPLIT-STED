@@ -284,7 +284,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM):
         print("I'm in the negatives, coming up!")
         line1 = Line.from_points([Pn_x, Pn_y], [x, y])
         line2 = Line.from_points([P2_x, P2_y], [x, y])
-        line3 = Line.from_points([0, 0], [0.1])
+        line3 = Line.from_points([0, 0], [1,0])
         point_a = line3.intersect_line(line1)
         point_b = line3.intersect_line(line2)
         p0 = numpy.mean(numpy.array([point_a, point_b]), axis=0)
