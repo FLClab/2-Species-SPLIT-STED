@@ -87,7 +87,7 @@ Single-species [SPLIT-STED](https://doi.org/10.1039/C8NR07485B) to improve resol
 
 <a id="unmixing"></a>
 ### Unmixing
-Algorithms to separate dyes of different lifetimes in Confocal-FLIM and STED-FLIM images using [linear systems of equations in phasor space](https://doi.org/10.1088/2050-6120/ab8570)
+Algorithms to separate dyes of different lifetimes in Confocal-FLIM and STED-FLIM images using [linear systems of equations in phasor space](https://doi.org/10.1038/s41596-018-0026-5)
 - `Unmixing_2SpeciesSPLITSTED.ipynb` Jupyter Notebook implementation of two-species SPLIT-STED. A small set of example data is downloaded by the script from this repository into an **Example_data** subfolder if it is not already present.
 - `Unmixing_2SpeciesConfocalFLIM__allfolder.py` : Separates phasors of two-species Confocal-FLIM images into two fractional components. Uses the same pair of control images for the entire folder of mixed images
 - `Unmixing_2SpeciesSTEDFLIM_allfolder.py`: Separates phasors of two-species STED-FLIM images into two fractional components. Uses the same control images for all two-species images acquired with the same depletion power (1 pair of controls per depletion power)
