@@ -66,7 +66,7 @@ filename2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Selec
 # Image IDs to use as controls for each STED power
 #Powerslist=[[10,[7,7,1,0,0,0,1,19]],[20,[7,7,1,0,0,0,1,19]],[30,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
 Powerslist=[[20,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
-Powerslist=[[40,[3,3,1,0,0,0,1,8]]] #PSD95 Bassoon Cy3 MiniNew_10,20,30
+Powerslist=[[10,[3,3,1,0,0,0,1,8]],[20,[3,3,1,0,0,0,1,8]],[30,[3,3,1,0,0,0,1,8]],[40,[3,3,1,0,0,0,1,8]]] #PSD95 Bassoon Cy3 MiniNew_10,20,30
 #Powerslist=[[20,[2,2,1,0,0,0,1,4]]] #PSD95 Bassoon Cy3 in MiniNew
 #Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]# Spectrin Bassoon Cy5
 
@@ -77,6 +77,8 @@ types=["Uniform","IRF","Alexa647"]
 #photons=[10,20,30,40,50]
 pixels=[1,10,20]
 photons=[10,20,30]
+#pixels=[10]
+#photons=[30]
 combos=list(itertools.product(pixels,photons))
 for type in types:
     print(type)
@@ -135,7 +137,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
     colors=['lightsteelblue', 'deepskyblue', 'royalblue','midnightblue','lightsalmon','lightcoral','crimson','darkred','springgreen']
 
     # Create a folder to save the results
-    savefolder = "Simulation_Cy3_{}Percent_3Species_LineControls_PSD95Bassoon".format(STEDPOWER)
+    savefolder = "Simulation_Cy3_{}Percent_3Species_LineControls_PSD95Bassoon_NoiseBoth".format(STEDPOWER)
     savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefolder)
     os.makedirs(savefolder,exist_ok=True)
 
@@ -177,7 +179,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
     plot_legend()
 
 # Use the control images to build the triangle in phasor space that will be used to unmix the mixed images
-    msrfiles = []
+    msrfilescontrols = []
     for k,filename in enumerate(filenamescontrol) :
         print(labels[k])
         # Make list of all the images in the folder
@@ -188,174 +190,8 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
         # Select the image to use as control
         numim=NUMIM[k]
         image = images[numim]
-        msrfiles.append(image)
-    print(msrfiles)
-
-
-    CoM_x, CoM_y = [], []
-    # Create a figure for the phasor plot
-    fig4,ax_scatter = plt.subplots(figsize=(3,3))
-    # draw universal semi-circle
-    edge = numpy.linspace(start=0, stop=15, num=200)
-    theta = numpy.linspace(0, numpy.pi, 100)
-    r = 0.5
-    x1 = r * numpy.cos(theta) + 0.5
-    x2 = r * numpy.sin(theta)
-    ax_scatter.plot(x1, x2, color="k", ls="--",linewidth=0.8)
-
-# Create legend file 
-    with open(os.path.join(savefolder,'legend.txt'),'w') as data: 
-        data.write("Controls\n")
-    scatterlist=[]
-
-    for i, msr in enumerate(msrfiles) : 
-        df = pd.DataFrame(columns=['x','y'])
-        dg = pd.DataFrame(columns=['g', 's'])
-
-       # Write the control images info in the legend file
-        with open(os.path.join(savefolder,'legend.txt'),'a') as data: 
-            data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
-         # Load the image and select the channel    
-        imagemsr=load_image(msr)
-        image1 = select_channel(imagemsr, keys[i])
-        
-        imsum = image1.sum(axis=2)
-        imsum = imsum.astype('int16')
-        
-        # Calculate the phasor distribution of the foreground of the control image
-        seuil = get_foreground(imsum)
-        print("Caclulation for an image of shape", image1.shape, "...")
-        params_dict["foreground_threshold"] = seuil
-        
-        print("foreground_threshold=", params_dict["foreground_threshold"])
-        
-        x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict)
-        df['x']=x.flatten()
-        df['y']=y.flatten()
-        m, phi = to_polar_coord(df['x'], df['y'])
-        g,s =polar_to_cart(m, phi)
-        dg['g'], dg['s'] = g, s
-
-        # Find the centroid of the phasor distribution using KMeans clustering
-        kmeans = KMeans(n_clusters = 1, init = 'k-means++', random_state = 42)
-        y_kmeans = kmeans.fit_predict(dg)
-        CoM_x.extend(kmeans.cluster_centers_[:, 0][:].tolist())
-        CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
-
-        # Plot the phasor distribution
-        a=ax_scatter.scatter(g, s, s=1, c=colors[i], alpha=0.10,label=labels[i],rasterized=True)
-        scatterlist.append(a)
-
-    ax_scatter.set_xlim(0, 1)
-    ax_scatter.set_ylim(0, 1)
-
-    ax_scatter.set_xlabel('g')
-    ax_scatter.set_ylabel('s')
-
-    ##Calculating the points of the triangle in phasor space to be used for unmixing
-
-    # Projecting the centroids of the controls on the semi-circle
-    xaxis = numpy.linspace(0, 1.5, 100)
-    r = 0.5
-    norm = numpy.sqrt((CoM_x[0] - 0.5) ** 2 + (CoM_y[0] ** 2))
-    Pn_x = 0.5 + (r * (CoM_x[0] - 0.5) / norm)
-    Pn_y = 0 + r * (CoM_y[0] - 0) / norm
-    P_n = numpy.array([Pn_x, Pn_y])
-    norm = numpy.sqrt((CoM_x[4] - 0.5) ** 2 + (CoM_y[4] ** 2))
-    P2_x = 0.5 + (r * (CoM_x[4] - 0.5) / norm)
-    P2_y = 0 + r * (CoM_y[4] - 0) / norm
-    p2 = numpy.array([P2_x, P2_y])
-
-    #Fit linear trajectory through centroids of controls for each species
-    PointsSpecies1 = numpy.stack(
-        [numpy.array([Pn_x, Pn_y]), numpy.array([CoM_x[1], CoM_y[1]]), numpy.array([CoM_x[2], CoM_y[2]]),
-            numpy.array([CoM_x[3], CoM_y[3]])])
-    PointsSpecies2 = numpy.stack(
-        [numpy.array([P2_x, P2_y]), numpy.array([CoM_x[5], CoM_y[5]]), numpy.array([CoM_x[6], CoM_y[6]]),
-            numpy.array([CoM_x[7], CoM_y[7]])])
-
-    coeffs1 = numpy.polyfit([Pn_x, CoM_x[1], CoM_x[2], CoM_x[3]], [Pn_y, CoM_y[1], CoM_y[2], CoM_y[3]], 1)
-    coeffs2 = numpy.polyfit([P2_x, CoM_x[5], CoM_x[6], CoM_x[7]], [P2_y, CoM_y[5], CoM_y[6], CoM_y[7]], 1)
-
-    #Find intersection point of the two lines
-    y1 = coeffs1[0] * xaxis + coeffs1[1]
-    y2 = coeffs2[0] * xaxis + coeffs2[1]
-    det = coeffs2[0] - coeffs1[0]
-    x = (coeffs1[1] - coeffs2[1]) / det
-    y = (coeffs2[0] * coeffs1[1] - coeffs1[0] * coeffs2[1]) / det
-    p0 = numpy.array([x, y])
-    print('p0', p0)
-
-# Check if intersection point is inside the semi-circle
-    circ = Circle((0.5, 0), radius=0.5)
-    check = circ.contains_point([x, y])
-    if check == False:  # If intersection point is outside the circle, find intersection with circle
-        print("I'm outside the circle, coming in!")
-        circle = Circle([0.5, 0], 0.5)
-        line1 = Line.from_points([Pn_x, Pn_y], [x, y])
-        line2 = Line.from_points([P2_x, P2_y], [x, y])
-        point_a, point_b = circle.intersect_line(line1)
-        point_c, point_d = circle.intersect_line(line2)
-
-        print(numpy.array([point_a, point_c]))
-        p0 = numpy.mean(numpy.array([point_a, point_c]), axis=0)
-        x = p0[0]
-        y = p0[1]
-    if y < 0:  # If intersection point is under the semi-circle, find intersection with x-axis
-        print("I'm in the negatives, coming up!")
-        line1 = Line.from_points([Pn_x, Pn_y], [x, y])
-        line2 = Line.from_points([P2_x, P2_y], [x, y])
-        line3 = Line.from_points([0, 0], [1,0])
-        point_a = line3.intersect_line(line1)
-        point_b = line3.intersect_line(line2)
-        p0 = numpy.mean(numpy.array([point_a, point_b]), axis=0)
-        x = p0[0]
-        y = p0[1]
-
-    print('p0', p0)
-    print("POINTS", P_n, p2, p0)
-
-# Plot the lines and points in the phasor graph
-    pnscatter = ax_scatter.scatter(Pn_x, Pn_y, s=50, c='gold')
-    p2scatter = ax_scatter.scatter(P2_x, P2_y, s=50, c='gold')
-    p0scatter = ax_scatter.scatter(p0[0], p0[1], s=50, c='gold')
-    p0pnline = ax_scatter.plot([Pn_x, p0[0]], [Pn_y, p0[1]], c='dodgerblue')
-    p2pnline = ax_scatter.plot([Pn_x, P2_x], [Pn_y, P2_y], c='dodgerblue')
-    p0p2line = ax_scatter.plot([P2_x, p0[0]], [P2_y, p0[1]], c='dodgerblue')
-    centroidscatter1=ax_scatter.scatter(PointsSpecies1[:,0],PointsSpecies1[:,1],s=50,c="firebrick")
-    centroidscatter2 = ax_scatter.scatter(PointsSpecies2[:,0],PointsSpecies2[:,1], s=50, c="firebrick")
-    # Save the phasor plot
-    fig4.savefig(os.path.join(savefolder, "Phasor_3species_LineControls_ControlsOnly.pdf"), transparent='True',
-                 bbox_inches="tight",dpi=900)
-    
-    # Remove the previous scatter plots from the figure
-    t = [scatter.remove() for scatter in scatterlist]
-    pnscatter.remove()
-    p2scatter.remove()
-    p0scatter.remove()
-    centroidscatter1.remove()
-    centroidscatter2.remove()
-    ax_scatter.lines[-1].remove()
-    ax_scatter.lines[-1].remove()
-    ax_scatter.lines[-1].remove()
-
-
-
-# Combine all possible pairs of images, perform unmixing and calculate metrics
-    images=[glob.glob(filename)for filename in filenames]
-    number = [len(glob.glob(filename)) for filename in filenames]
-    print('There are ',number, 'Images in these folders')
-    
-    # make list of all possible pairs of images
-    pairs = list(itertools.product(images[0], images[1]))
-    print(len(pairs))
-
-
-    # Create a dataframe to store the results
-    Overall_data=pd.DataFrame(columns=["Power",'image1', 'image2', 'resolution1', 'resolution2', "res_fraction1", "res_fraction2","res_fraction3",
-                                       "squirrel_f1","squirrel_f2","squirrelsmooth_f1","squirrelsmooth_f2","Noise percent pixels","Noise number photons","Noise type"])
-    pairnoiseid=0
-    # Loop over different noise levels
+        msrfilescontrols.append(image)
+    print(msrfilescontrols)
     for noise in Noiselist:
         if noise[2]=="Uniform":
             distribution=numpy.ones((1,250),dtype=int) # Uniform distribution of photons across time bins
@@ -370,7 +206,6 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
             elif noise[2]=="Alexa647":
                 filename=r'C:\Users\FLCLab\Documents\GitHub\2-Species-SPLIT-STED\Simulation\alphaTubulin_AF647_STEDPowerBleach_5to20_1_18_5percentSTED.tiff'
                 key= 0 # For Tiff file,
-
             imagemsr = load_image(filename)
             image1=select_channel(imagemsr, key)
             dim = image1.shape
@@ -380,6 +215,191 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
             distribution = numpy.sum(y, axis=0)
             print(distribution.shape)
         
+        CoM_x, CoM_y = [], []
+        # Create a figure for the phasor plot
+        fig4,ax_scatter = plt.subplots(figsize=(3,3))
+        # draw universal semi-circle
+        edge = numpy.linspace(start=0, stop=15, num=200)
+        theta = numpy.linspace(0, numpy.pi, 100)
+        r = 0.5
+        x1 = r * numpy.cos(theta) + 0.5
+        x2 = r * numpy.sin(theta)
+        ax_scatter.plot(x1, x2, color="k", ls="--",linewidth=0.8)
+
+    # Create legend file 
+        with open(os.path.join(savefolder,'legend.txt'),'w') as data: 
+            data.write("Controls\n")
+        scatterlist=[]
+
+        for i, msr in enumerate(msrfilescontrols) : 
+            df = pd.DataFrame(columns=['x','y'])
+            dg = pd.DataFrame(columns=['g', 's'])
+
+        # Write the control images info in the legend file
+            with open(os.path.join(savefolder,'legend.txt'),'a') as data: 
+                data.write("{}\t{}\t{}\n".format(labels[i],keys[i],msr))
+            # Load the image and select the channel    
+            imagemsr=load_image(msr)
+            image1 = select_channel(imagemsr, keys[i])
+
+                                # Add Noise to the image
+            print("Adding {} photons to {}percent of the pixels".format(noise[1], noise[0]))
+            values=numpy.linspace(0,image1.shape[2],num=image1.shape[2],endpoint=False)
+            print(values.shape)
+            print(distribution.shape)
+            num_noisypixels= int(noise[0]/100*image1.shape[0]*image1.shape[1]) # Calculate number of pixels to add noise to
+            x = numpy.random.randint(0,high= image1.shape[0],size=num_noisypixels)
+            y = numpy.random.randint(0, high=image1.shape[1],size=num_noisypixels)
+        
+            for n in range(num_noisypixels):
+                #tlist= numpy.random.randint(0,high=image1.shape[2],size=noise[1]) # Randomly select time bins to add photons to
+                
+
+                tlist=random.choices(values, weights=distribution, k=noise[1])
+                for t in tlist:
+                    t=int(t)
+                    image1[x[n], y[n],t] += 1
+            
+            imsum = image1.sum(axis=2)
+            imsum = imsum.astype('int16')
+            
+            # Calculate the phasor distribution of the foreground of the control image
+            seuil = get_foreground(imsum)
+            print("Caclulation for an image of shape", image1.shape, "...")
+            params_dict["foreground_threshold"] = seuil
+            
+            print("foreground_threshold=", params_dict["foreground_threshold"])
+            
+            x,y,g_smoothed,s_smoothed, original_idxes= Median_Phasor(image1, params_dict, **params_dict)
+            df['x']=x.flatten()
+            df['y']=y.flatten()
+            m, phi = to_polar_coord(df['x'], df['y'])
+            g,s =polar_to_cart(m, phi)
+            dg['g'], dg['s'] = g, s
+
+            # Find the centroid of the phasor distribution using KMeans clustering
+            kmeans = KMeans(n_clusters = 1, init = 'k-means++', random_state = 42)
+            y_kmeans = kmeans.fit_predict(dg)
+            CoM_x.extend(kmeans.cluster_centers_[:, 0][:].tolist())
+            CoM_y.extend(kmeans.cluster_centers_[:, 1][:].tolist())
+
+            # Plot the phasor distribution
+            a=ax_scatter.scatter(g, s, s=1, c=colors[i], alpha=0.10,label=labels[i],rasterized=True)
+            scatterlist.append(a)
+
+        ax_scatter.set_xlim(0, 1)
+        ax_scatter.set_ylim(0, 1)
+
+        ax_scatter.set_xlabel('g')
+        ax_scatter.set_ylabel('s')
+
+        ##Calculating the points of the triangle in phasor space to be used for unmixing
+
+        # Projecting the centroids of the controls on the semi-circle
+        xaxis = numpy.linspace(0, 1.5, 100)
+        r = 0.5
+        norm = numpy.sqrt((CoM_x[0] - 0.5) ** 2 + (CoM_y[0] ** 2))
+        Pn_x = 0.5 + (r * (CoM_x[0] - 0.5) / norm)
+        Pn_y = 0 + r * (CoM_y[0] - 0) / norm
+        P_n = numpy.array([Pn_x, Pn_y])
+        norm = numpy.sqrt((CoM_x[4] - 0.5) ** 2 + (CoM_y[4] ** 2))
+        P2_x = 0.5 + (r * (CoM_x[4] - 0.5) / norm)
+        P2_y = 0 + r * (CoM_y[4] - 0) / norm
+        p2 = numpy.array([P2_x, P2_y])
+
+        #Fit linear trajectory through centroids of controls for each species
+        PointsSpecies1 = numpy.stack(
+            [numpy.array([Pn_x, Pn_y]), numpy.array([CoM_x[1], CoM_y[1]]), numpy.array([CoM_x[2], CoM_y[2]]),
+                numpy.array([CoM_x[3], CoM_y[3]])])
+        PointsSpecies2 = numpy.stack(
+            [numpy.array([P2_x, P2_y]), numpy.array([CoM_x[5], CoM_y[5]]), numpy.array([CoM_x[6], CoM_y[6]]),
+                numpy.array([CoM_x[7], CoM_y[7]])])
+
+        coeffs1 = numpy.polyfit([Pn_x, CoM_x[1], CoM_x[2], CoM_x[3]], [Pn_y, CoM_y[1], CoM_y[2], CoM_y[3]], 1)
+        coeffs2 = numpy.polyfit([P2_x, CoM_x[5], CoM_x[6], CoM_x[7]], [P2_y, CoM_y[5], CoM_y[6], CoM_y[7]], 1)
+
+        #Find intersection point of the two lines
+        y1 = coeffs1[0] * xaxis + coeffs1[1]
+        y2 = coeffs2[0] * xaxis + coeffs2[1]
+        det = coeffs2[0] - coeffs1[0]
+        x = (coeffs1[1] - coeffs2[1]) / det
+        y = (coeffs2[0] * coeffs1[1] - coeffs1[0] * coeffs2[1]) / det
+        p0 = numpy.array([x, y])
+        print('p0', p0)
+
+    # Check if intersection point is inside the semi-circle
+        circ = Circle((0.5, 0), radius=0.5)
+        check = circ.contains_point([x, y])
+        if check == False:  # If intersection point is outside the circle, find intersection with circle
+            print("I'm outside the circle, coming in!")
+            circle = Circle([0.5, 0], 0.5)
+            line1 = Line.from_points([Pn_x, Pn_y], [x, y])
+            line2 = Line.from_points([P2_x, P2_y], [x, y])
+            point_a, point_b = circle.intersect_line(line1)
+            point_c, point_d = circle.intersect_line(line2)
+
+            print(numpy.array([point_a, point_c]))
+            p0 = numpy.mean(numpy.array([point_a, point_c]), axis=0)
+            x = p0[0]
+            y = p0[1]
+        if y < 0:  # If intersection point is under the semi-circle, find intersection with x-axis
+            print("I'm in the negatives, coming up!")
+            line1 = Line.from_points([Pn_x, Pn_y], [x, y])
+            line2 = Line.from_points([P2_x, P2_y], [x, y])
+            line3 = Line.from_points([0, 0], [1,0])
+            point_a = line3.intersect_line(line1)
+            point_b = line3.intersect_line(line2)
+            p0 = numpy.mean(numpy.array([point_a, point_b]), axis=0)
+            x = p0[0]
+            y = p0[1]
+
+        print('p0', p0)
+        print("POINTS", P_n, p2, p0)
+
+    # Plot the lines and points in the phasor graph
+        pnscatter = ax_scatter.scatter(Pn_x, Pn_y, s=50, c='gold')
+        p2scatter = ax_scatter.scatter(P2_x, P2_y, s=50, c='gold')
+        p0scatter = ax_scatter.scatter(p0[0], p0[1], s=50, c='gold')
+        p0pnline = ax_scatter.plot([Pn_x, p0[0]], [Pn_y, p0[1]], c='dodgerblue')
+        p2pnline = ax_scatter.plot([Pn_x, P2_x], [Pn_y, P2_y], c='dodgerblue')
+        p0p2line = ax_scatter.plot([P2_x, p0[0]], [P2_y, p0[1]], c='dodgerblue')
+        centroidscatter1=ax_scatter.scatter(PointsSpecies1[:,0],PointsSpecies1[:,1],s=50,c="firebrick")
+        centroidscatter2 = ax_scatter.scatter(PointsSpecies2[:,0],PointsSpecies2[:,1], s=50, c="firebrick")
+        # Save the phasor plot
+        fig4.savefig(os.path.join(savefolder, "Phasor_3species_LineControls_ControlsOnly_Noise{}_{}pixels_{}photons.pdf").format(noise[2],noise[1],noise[0]), transparent='True',
+                    bbox_inches="tight",dpi=900)
+        
+        # Remove the previous scatter plots from the figure
+        t = [scatter.remove() for scatter in scatterlist]
+        pnscatter.remove()
+        p2scatter.remove()
+        p0scatter.remove()
+        centroidscatter1.remove()
+        centroidscatter2.remove()
+        ax_scatter.lines[-1].remove()
+        ax_scatter.lines[-1].remove()
+        ax_scatter.lines[-1].remove()
+
+
+
+    # Combine all possible pairs of images, perform unmixing and calculate metrics
+        images=[glob.glob(filename)for filename in filenames]
+        number = [len(glob.glob(filename)) for filename in filenames]
+        print('There are ',number, 'Images in these folders')
+        
+        # make list of all possible pairs of images
+        pairs = list(itertools.product(images[0], images[1]))
+        print(len(pairs))
+
+
+        # Create a dataframe to store the results
+        Overall_data=pd.DataFrame(columns=["Power",'image1', 'image2', 'resolution1', 'resolution2', "res_fraction1", "res_fraction2","res_fraction3",
+                                        "squirrel_f1","squirrel_f2","squirrelsmooth_f1","squirrelsmooth_f2","Noise percent pixels","Noise number photons","Noise type"])
+        pairnoiseid=0
+        # Loop over different noise levels
+
+
+
 
 
         # Loop over all pairs of images
