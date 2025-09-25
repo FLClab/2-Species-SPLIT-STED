@@ -28,65 +28,138 @@ savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefoldername + "_Simul
 os.makedirs(savefolder,exist_ok=True)
 
 #Path to folder containing the .csv files
-csvpath = easygui.fileopenbox(default=os.path.expanduser("~/Desktop"),multiple=False)
+#csvpath = easygui.fileopenbox(default=os.path.expanduser("~/Desktop"),multiple=False)
+folder=easygui.diropenbox(default=os.path.expanduser("~/Desktop"))
+folders=[folder]
 
 
 
-colors=["#7ce8ffff","#55d0ffff","#00acdfff","#2895cbff","#1676a9ff","#00456bff"]
+colors=[["#7ce8ffff","#55d0ffff","#00acdfff","#2895cbff","#1676a9ff","#00456bff"],["#fcbcd7ff","#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff","#5d1a43ff","#981164ff"]]
 
 # Read the .csv files and concatenate them
 cumdf=[]
 csvfull=[]
+# Loop over the folders containing the CSV files and pool the data into a single dataframe.
+for i,folder in enumerate(folders):
+
+    csvlist=glob.glob(os.path.join(folder,"*.csv"))
+    print(csvlist)
 
 
+    Overall_data= pd.concat(map(pd.read_csv, csvlist))
+    cumdf.append(Overall_data)
 
-Overall_data= pd.read_csv(csvpath)
-print(Overall_data.shape)
-print(list(Overall_data.columns))
+    print(Overall_data.shape)
+    print(list(Overall_data.columns))
+    print(Overall_data)
+
+Overall_data.dropna(axis=0, how='all', inplace=True)
+for path in Overall_data["image1"]:
+  
+    Overall_data["image1"]= os.path.basename(path)
+for path in Overall_data["image2"]:
+    Overall_data["image2"]= os.path.basename(path)
+
+#Overall_data= pd.read_csv(csvpath)
+#print(Overall_data.shape)
+#print(list(Overall_data.columns))
 
 df=Overall_data[Overall_data["Noise type"]=="Uniform"]
 df=df[df["Noise number photons"]==0]
 
+dfcontrol=df.copy()
+powersC=numpy.unique(df["Power"])
+print(powersC)
 SQ1C=numpy.array(df[["squirrel_f1"]])
 SQ2C=numpy.array(df[["squirrel_f2"]])
 PowC=numpy.array(df[["Power"]])
 
+dfmean=df.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
+dfstd=df.groupby("Power")[ ['Power',  'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
 
-types=["Uniform","IRF","Alexa647"]
-fig2,ax2=plt.subplots(ncols=2,nrows=3,sharex=True,sharey=True,figsize=(27,9))
+types=["Uniform","IRF","Alexa647","2Species"]
+fig2,ax2=plt.subplots(ncols=3,nrows=4,sharex=True,sharey=True,figsize=(8,10))
 for t,type in enumerate(types):
-    fig1,ax1=plt.subplots(figsize=(8,6))
+    fig3,ax3=plt.subplots(ncols=3,nrows=2,sharex=True,sharey=True,figsize=(18,9))
+    #fig1,ax1=plt.subplots(figsize=(8,6))
     df=Overall_data[Overall_data["Noise type"]==type]
     pixels=numpy.unique(df["Noise percent pixels"])
     photons=numpy.unique(df["Noise number photons"])
+    print(type)
     print(pixels)
     print(photons)
-    if 0 in pixels:
+    if 0 in pixels and t<3:
+        print("Removing 0 from pixels")
         pixels=numpy.delete(pixels,numpy.where(pixels==0)[0][0])
     print(pixels)
-    if 0 in photons:
+    if 0 in photons and t<3:
+        print("Removing 0 from photons")
         photons=numpy.delete(photons,numpy.where(photons==0)[0][0])
     print(photons)
    
     for i,p in enumerate(pixels):
-        if p==0:
+        if p==0 and t<3:
             continue
         df2=df[df["Noise percent pixels"]==p]
-        ax2[t,i].errorbar(20,numpy.mean(SQ1C),yerr=numpy.std(SQ1C),c="k",fmt="o", label="Control F1",markersize=10)
-        ax2[t,i].errorbar(20,numpy.mean(SQ2C),yerr=numpy.std(SQ2C),c="grey", fmt="o", label="Control F2",markersize=10)
+
+        #ax2[t,i].errorbar(powersC,dfmean["squirrel_f1"],yerr=dfstd["squirrel_f1"],c="k",fmt="o", label="Control F1",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
+        #ax2[t,i].errorbar(powersC,dfmean["squirrel_f2"],yerr=dfstd["squirrel_f2"],c="grey", fmt="o", label="Control F2",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
+        #ax3[0,i].errorbar(powersC,dfmean["squirrel_f1"],yerr=dfstd["squirrel_f1"],c="k",fmt="o", label="Control F1",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
+        #ax3[1,i].errorbar(powersC,dfmean["squirrel_f2"],yerr=dfstd["squirrel_f2"],c="grey", fmt="o", label="Control F2",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
 
         for j,n in enumerate(photons):
 
             df3=df2[df2["Noise number photons"]==n]
+            powers=numpy.unique(df3["Power"])
+            print(powers)
+            mergedf=pd.merge(dfcontrol,df3, on=["Power","image1","image2"], suffixes=('_control', '_noise'))
+            mergedf["Delta_SQ1"]=mergedf["squirrel_f1_noise"]-mergedf["squirrel_f1_control"]
+            mergedf["Delta_SQ2"]=mergedf["squirrel_f2_noise"]-mergedf["squirrel_f2_control"]
+            mergedfmean=mergedf.groupby("Power")[ ["Delta_SQ1", "Delta_SQ2"]].mean(numeric_only=True)
+            mergedfstd=mergedf.groupby("Power")[ ["Delta_SQ1", "Delta_SQ2"]].sem(numeric_only=True)
+            print(dfcontrol.shape)
+            print(dfcontrol.columns)
+            print(df3.shape)
+            print(df3.columns)
+            print(mergedf.columns)
+            print(mergedf.shape)
+
+            df3mean=df3.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
+            df3std=df3.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
+
+      
+
+        
+
             #ax2[t,i].scatter(df3["Power"],df3["squirrel_f1"],c=colors[0], label="{} photons".format(n))
             #ax2[t,i].scatter(df3["Power"],df3["squirrel_f2"],c=colors[1], label="{} photons".format(n))
-            ax2[t,i].errorbar(20,numpy.mean(df3["squirrel_f1"]),yerr=numpy.std(df3["squirrel_f1"]),fmt="o",c=colors[0], label="{} photons F1".format(n),markersize=10)
-            ax2[t,i].errorbar(20,numpy.mean(df3["squirrel_f2"]),yerr=numpy.std(df3["squirrel_f2"]),fmt="o",c=colors[1], label="{} photons F2".format(n),markersize=10)
+            ax2[t,i].axhline(0,c="k",ls="--")
+            ax2[t,i].errorbar(powers,mergedfmean["Delta_SQ1"],yerr=mergedfstd["Delta_SQ1"],fmt="o",c=colors[0][j], label="{} photons F1".format(n),ecolor=colors[0][j], capsize=10, elinewidth=0.8, ms=8)
+            ax2[t,i].errorbar(powers,mergedfmean["Delta_SQ2"],yerr=mergedfstd["Delta_SQ2"],fmt="o",c=colors[1][j], label="{} photons F2".format(n),ecolor=colors[1][j], capsize=10, elinewidth=0.8, ms=8)
+            #ax2[t,i].errorbar(powers,df3mean["squirrel_f1"],yerr=df3std["squirrel_f1"],fmt="o",c=colors[0][j], label="{} photons F1".format(n),ecolor=colors[0][j], capsize=5, elinewidth=0.8, ms=5)
+            #ax2[t,i].errorbar(powers,df3mean["squirrel_f2"],yerr=df3std["squirrel_f2"],fmt="o",c=colors[1][j], label="{} photons F2".format(n),ecolor=colors[1][j], capsize=5, elinewidth=0.8, ms=5)
+            ax3[0,i].errorbar(powers,df3mean["squirrel_f1"],yerr=df3std["squirrel_f1"],fmt="o",c=colors[0][j], label="{} photons F1".format(n),ecolor=colors[0][j], capsize=5, elinewidth=0.8, ms=5)
+            ax3[1,i].errorbar(powers,df3mean["squirrel_f2"],yerr=df3std["squirrel_f2"],fmt="o",c=colors[1][j], label="{} photons F2".format(n),ecolor=colors[1][j], capsize=5, elinewidth=0.8, ms=5)
 
-        ax2[t,i].set_title("{}:{}% pixels".format(type,p))
-        ax2[t,i].set_xlabel("Power")
-        ax2[t,i].set_ylabel("SQUIRREL")
-ax2[t,i].legend(frameon=False,loc='upper right')
 
-fig2.savefig(os.path.join(savefolder,"Triangledraw_{}.pdf".format(type)),transparent=True, bbox_inches='tight')
+        #ax2[t,i].set_title("{}:{}% pixels".format(type,p))
+        ax2[t,i].set_xlim([5,45])
+        #if t<2:
+        #    ax2[t,i].set_xticklabels([])
+        #if i>0:
+        #    ax2[t,i].set_yticklabels([])
+        ax3[0,i].set_title("{}:{}% pixels".format(type,p))
+        ax2[2,i].set_xlabel("Power")
+        ax2[t,0].set_ylabel("SQUIRREL")
+        ax3[0,i].set_xlabel("Power")
+        ax3[0,i].set_ylabel("SQUIRREL F1")
+        ax3[1,i].set_xlabel("Power")
+        ax3[1,i].set_ylabel("SQUIRREL F2")
+        ax3[0,0].legend(frameon=False)
+        ax3[1,0].legend(frameon=False)
+        ax2[0,0].legend(frameon=False,loc='upper right')
+
+    fig3.savefig(os.path.join(savefolder,"SQUIRREL_{}.pdf".format(type)),transparent=True, bbox_inches='tight')
+fig2.subplots_adjust(wspace=0,hspace=0)
+fig2.savefig(os.path.join(savefolder,"SQUIRREL.pdf"),transparent=True, bbox_inches='tight')
 plt.show()

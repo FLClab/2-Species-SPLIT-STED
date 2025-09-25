@@ -125,7 +125,8 @@ csvfull=[]
 for i,folder in enumerate(folders):
     colors = ["xkcd:peacock blue", "xkcd:brick orange"]
     colors = ["cyan","magenta","gold"]
-    csvlist=glob.glob(os.path.join(folder,"*","*.csv"))
+    #csvlist=glob.glob(os.path.join(folder,"*","*.csv"))
+    csvlist = glob.glob(os.path.join(folder, "*.csv"))
 
 
     Overall_data= pd.concat(map(pd.read_csv, csvlist))
@@ -325,7 +326,8 @@ for i,folder in enumerate(folders):
     axoverall3.scatter(cumstats[0,:]+offsetin[i],cumstats[6,:],label="Squirrel Fraction 1 "+labels[i])
     axoverall3.scatter(cumstats[0,:]+offsetout[i],cumstats[7,:], label =" Squirrel Fraction 2 "+labels[i])
     axoverall3.legend()
-
+Fig.savefig('Resolution_Squirrel_stderrorbars_fit.pdf', transparent='True', bbox_inches="tight")
+Fig1.savefig('Resolution_Squirrel_semerrorbars_fit.pdf', transparent='True', bbox_inches="tight")
 
 Overall_data= pd.concat([df.assign(identity=k) for k,df in zip(labels,cumdf)])
 print(Overall_data.shape)
