@@ -49,7 +49,8 @@ Ax[1,0].tick_params(axis ='both',length=2, width=0.8)
 Ax[1,1].tick_params(axis ='both',length=2, width=0.8)
 Ax[0,1].set_xticks([0,10,20,30,40])
 Ax[0,1].set_xticklabels(mwpowers,fontsize=16)
-
+Ax3.set_xticks([0,10,20,30,40])
+Ax3.set_xticklabels(mwpowers)
 cumdf=[]
 csvfull=[]
 colors=[["#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff"],["#55d0ffff","#00acdfff","#0080bfff","#00456bff"]]
@@ -107,11 +108,12 @@ table_deltatau_std=numpy.array(table_deltatau_std)
 print(table_deltatau_mean)
 print(table_deltatau_std)
 # Plot the difference in lifetime values between the 2 samples as a function of STED power
+Ax3.errorbar(table_deltatau_mean[:,0],table_deltatau_mean[:,1],yerr=table_deltatau_std[:,1],fmt='o',color='grey',ecolor='black', capsize=3.5, elinewidth=0.8, ms=3.5)
 #seaborn.violinplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3,width=0.7)
-seaborn.boxplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3,showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
-seaborn.stripplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3, size=2,color="hotpink")
+#seaborn.boxplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3,native_scale=True,showfliers = False, whis=(0, 100),width=0.5,boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
+#seaborn.stripplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3,native_scale=True, size=2,color="black",rasterized=True)
 Ax3.set_ylim([0.5, 2])
-
+Ax3.set_xlim([-3, 43])
 tauerror=table_deltatau_std[table_deltatau_mean[:,0]==0][0,1]
 tau=table_deltatau_mean[table_deltatau_mean[:,0]==0][0,1]
 Fig4, Ax4 = plt.subplots(nrows=2,ncols=3,figsize=(12,8))
@@ -119,7 +121,7 @@ Fig2, Ax2 = plt.subplots(figsize=(4,3))
 Fig5, Ax5 = plt.subplots(figsize=(4,3))
 powers=[10,20,30,40]
 
-Fig3.savefig('MLEmonoexp_DeltaTau_Boxplot.pdf', transparent='True', bbox_inches="tight")
+Fig3.savefig('MLEmonoexp_DeltaTau_errorbar.pdf', transparent='True', bbox_inches="tight")
 
 
 # Plot the lifetime values as a function of STED power for each sample
