@@ -33,8 +33,8 @@ labelsSPLIT=["Bassoon","PSD95"]
 
 
 # Folders containing the lifetime measurements for the 2 different samples
-folder1=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the first fluorophore"))
-folder2=easygui.diropenbox(default=os.path.join(os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the second fluorophore"))
+folder1=easygui.diropenbox(default=os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the first fluorophore")
+folder2=easygui.diropenbox(default=os.path.expanduser("Desktop"),title="Select folder containing the lifetime measurements of the second fluorophore")
 foldersMLE=[folder1,folder2]
 
 # Create the plots
@@ -49,6 +49,7 @@ Ax[1,0].tick_params(axis ='both',length=2, width=0.8)
 Ax[1,1].tick_params(axis ='both',length=2, width=0.8)
 Ax[0,1].set_xticks([0,10,20,30,40])
 Ax[0,1].set_xticklabels(mwpowers,fontsize=16)
+
 cumdf=[]
 csvfull=[]
 colors=[["#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff"],["#55d0ffff","#00acdfff","#0080bfff","#00456bff"]]
@@ -106,7 +107,11 @@ table_deltatau_std=numpy.array(table_deltatau_std)
 print(table_deltatau_mean)
 print(table_deltatau_std)
 # Plot the difference in lifetime values between the 2 samples as a function of STED power
-seaborn.violinplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3,width=0.7)
+#seaborn.violinplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3,width=0.7)
+seaborn.boxplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3,showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
+seaborn.stripplot(x=table_deltatau[:,0],y=table_deltatau[:,1],ax=Ax3, size=2,color="hotpink")
+Ax3.set_ylim([0.5, 2])
+
 tauerror=table_deltatau_std[table_deltatau_mean[:,0]==0][0,1]
 tau=table_deltatau_mean[table_deltatau_mean[:,0]==0][0,1]
 Fig4, Ax4 = plt.subplots(nrows=2,ncols=3,figsize=(12,8))
@@ -114,13 +119,14 @@ Fig2, Ax2 = plt.subplots(figsize=(4,3))
 Fig5, Ax5 = plt.subplots(figsize=(4,3))
 powers=[10,20,30,40]
 
-Fig3.savefig('MLEmonoexp_DeltaTau.pdf', transparent='True', bbox_inches="tight")
+Fig3.savefig('MLEmonoexp_DeltaTau_Boxplot.pdf', transparent='True', bbox_inches="tight")
 
 
 # Plot the lifetime values as a function of STED power for each sample
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"hotpink"},medianprops={"color": "k"})
 seaborn.boxplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["lifetime"],ax=Ax5, showfliers = False, whis=(0, 100),boxprops={"facecolor": None, "edgecolor":"deepskyblue"},medianprops={"color": "k"})
-seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5, size=2,color="hotpink")
+seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[1])]["lifetime"],ax=Ax5
+)
 seaborn.stripplot(x=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["Power"], y=Overall_data_MLE.loc[(Overall_data_MLE["identity"] == labelsSPLIT[0])]["lifetime"],ax=Ax5,  size=2,color="deepskyblue")
 Ax5.set_ylim([0.5, 3.5])
 Fig5.savefig('MLEmonoexp_TauBoxplot.pdf', transparent='True', bbox_inches="tight")

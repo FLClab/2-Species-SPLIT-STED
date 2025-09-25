@@ -96,8 +96,8 @@ filenames = [f1,f2]
 
 # List of powers to use for the phasor calculation 
 # string to look for in the filenames
-powers=["_*","_5","_10","_15","_20","_30"]
-powers=["_10","_10","_20","_30","_40"]
+powers=["_*","_5","_10","_15","_20"]
+#powers=["_10","_10","_20","_30","_40"]
 
 # Values to use for the powers in the plot
 #powersnum=[0,10,20,30,40]
@@ -125,7 +125,7 @@ colors_centroids=[["#7ce8ffff","#55d0ffff","#00acdfff","#0080bfff","#00456bff","
 
 #names= ['Bassoon CF594', 'Homer STAR Orange']
 
-names=['PSD95_STRED','rBassoon_ATTO647N']
+names=['PSD95_AF647','rBassoon_ST635P']
 Positions={}
 MeanPositions={}
 Ellipsedims={}

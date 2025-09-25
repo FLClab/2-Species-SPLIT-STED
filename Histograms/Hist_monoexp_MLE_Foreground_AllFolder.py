@@ -137,7 +137,7 @@ for image_id,imagei in enumerate(images):
         ax.set_ylabel("Normalized Intensity")
         #ax.set_ylim([0,0.06])
         ax.plot(absci, expon, color='black')
-        fig.savefig(os.path.join(savefolder, "Histogram_Foreground_{}_{}.pdf".format(os.path.basename(imagei),mapcomp[key])), transparent='True', bbox_inches="tight")
+        #fig.savefig(os.path.join(savefolder, "Histogram_Foreground_{}_{}.pdf".format(os.path.basename(imagei),mapcomp[key])), transparent='True', bbox_inches="tight")
         plt.close(fig)
 Overall_data.to_csv(os.path.join(savefolder, "MLE_foreground_{}.csv".format(savefoldername)))
 
