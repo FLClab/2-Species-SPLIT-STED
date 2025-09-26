@@ -66,7 +66,7 @@ filename2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Selec
 # Image IDs to use as controls for each STED power
 #Powerslist=[[10,[7,7,1,0,0,0,1,19]],[20,[7,7,1,0,0,0,1,19]],[30,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
 Powerslist=[[20,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
-Powerslist=[[20,[3,3,1,0,0,0,1,8]],[30,[3,3,1,0,0,0,1,8]],[40,[3,3,1,0,0,0,1,8]]] #PSD95 Bassoon Cy3 MiniNew_10,20,30
+Powerslist=[[10,[3,3,1,0,0,0,1,8]],[20,[3,3,1,0,0,0,1,8]],[30,[3,3,1,0,0,0,1,8]],[40,[3,3,1,0,0,0,1,8]]] #PSD95 Bassoon Cy3 MiniNew_10,20,30
 #Powerslist=[[20,[2,2,1,0,0,0,1,4]]] #PSD95 Bassoon Cy3 in MiniNew
 #Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]# Spectrin Bassoon Cy5
 
@@ -77,6 +77,9 @@ types=["Uniform","IRF","Alexa647"]
 #photons=[10,20,30,40,50]
 pixels=[100]
 photons=[3,5,7]
+random.seed(42)
+numpy.random.seed(seed=42)
+
 combos=list(itertools.product(pixels,photons))
 for type in types:
     print(type)
@@ -136,7 +139,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
     colors=['lightsteelblue', 'deepskyblue', 'royalblue','midnightblue','lightsalmon','lightcoral','crimson','darkred','springgreen']
 
     # Create a folder to save the results
-    savefolder = "Simulation_Cy3_{}Percent_3Species_LineControls_PSD95Bassoon_NoisePoisson".format(STEDPOWER)
+    savefolder = "Simulation_Cy3_{}Percent_3Species_LineControls_PSD95Bassoon_NoisePoisson_Intensity_Seed42".format(STEDPOWER)
     savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefolder)
     os.makedirs(savefolder,exist_ok=True)
 
@@ -353,7 +356,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
 
 
     # Create a dataframe to store the results
-    Overall_data=pd.DataFrame(columns=["Power",'image1', 'image2', 'resolution1', 'resolution2', "res_fraction1", "res_fraction2","res_fraction3",
+    Overall_data=pd.DataFrame(columns=["Power",'image1', 'image2', 'resolution1', 'resolution2',"Foreground_int","Background_int","Foreground_int_post","Background_int_post","res_fraction1", "res_fraction2","res_fraction3",
                                        "squirrel_f1","squirrel_f2","squirrelsmooth_f1","squirrelsmooth_f2","Noise percent pixels","Noise number photons","Noise type"])
     pairnoiseid=0
     # Loop over different noise levels
@@ -365,13 +368,13 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
         else:
             if noise[2]=="IRF":
                 
-                #filename=r'C:\Users\FLCLab\Documents\GitHub\2-Species-SPLIT-STED\Acquisition\IRF_Measurement\GoldBead_individuel_CONF_640_Cy5_45us_50p.msr'
-                filename=r'C:\Users\andde\Documents\GitHub\2-Species-SPLIT-STED\Acquisition\IRF_Measurement\GoldBead_individuel_CONF_640_Cy5_45us_50p.msr'
+                filename=r'C:\Users\FLCLab\Documents\GitHub\2-Species-SPLIT-STED\Acquisition\IRF_Measurement\GoldBead_individuel_CONF_640_Cy5_45us_50p.msr'
+                #filename=r'C:\Users\andde\Documents\GitHub\2-Species-SPLIT-STED\Acquisition\IRF_Measurement\GoldBead_individuel_CONF_640_Cy5_45us_50p.msr'
                 key= 'STAR 635P_CONF {0}'
                 #key=0 # For Tiff file,
             elif noise[2]=="Alexa647":
-                #filename=r'C:\Users\FLCLab\Documents\GitHub\2-Species-SPLIT-STED\Simulation\alphaTubulin_AF647_STEDPowerBleach_5to20_1_18_5percentSTED.tiff'
-                filename=r'C:\Users\andde\Documents\GitHub\2-Species-SPLIT-STED\Simulation\alphaTubulin_AF647_STEDPowerBleach_5to20_1_18_5percentSTED.tiff'
+                filename=r'C:\Users\FLCLab\Documents\GitHub\2-Species-SPLIT-STED\Simulation\alphaTubulin_AF647_STEDPowerBleach_5to20_1_18_5percentSTED.tiff'
+                #filename=r'C:\Users\andde\Documents\GitHub\2-Species-SPLIT-STED\Simulation\alphaTubulin_AF647_STEDPowerBleach_5to20_1_18_5percentSTED.tiff'
                 key= 0 # For Tiff file,
 
             imagemsr = load_image(filename)
@@ -403,6 +406,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
             ComboMasklist = []
 
             seuils=[]
+            threshs=[]
             # For each image in the pair, calculate the resolution and the foreground mask
             for i, msr in enumerate(msrfiles):
 
@@ -419,6 +423,8 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
 
                 print(image1.shape)
                 seuil=3
+                thresh=get_foreground(numpy.sum(image1[:,:,10:111],axis=2))
+                threshs.append(thresh)
                 seuils.append(seuil)
                 mask=numpy.sum(image1[:,:,10:111],axis=2)>seuil
                 mask=scipy.ndimage.binary_fill_holes(mask)
@@ -459,6 +465,8 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
             Imagelist.append(Combo)
             ControlImagesList.append(Combo)
             image1=Combo.copy()
+            
+
 
 
             # Calculate the phasor of the foreground of the combined image 
@@ -467,12 +475,15 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
             dg = pd.DataFrame(columns=['g', 's'])
             print(image1.shape)
             imsum = image1[:,:,10:111].sum(axis=2)
+            imsum_nogate=image1.sum(axis=2)
             imsum = imsum.astype('int16')
             seuil=min(seuils)
+            thresh=min(threshs)
+            ov_data.extend([numpy.mean(imsum_nogate[imsum_nogate>thresh]),numpy.mean(imsum_nogate[imsum_nogate<thresh])])
 
 
                     # Add Noise to the image
-            print("Adding {} photons to {}percent of the pixels".format(noise[1], noise[0]))
+            print("Adding {} photons to {}percent of the pixels using {} Distribution".format(noise[1], noise[0],noise[2]))
             if noise[1]>0:
                 values=numpy.linspace(0,image1.shape[2],num=image1.shape[2],endpoint=False)
                 print(values.shape)
@@ -506,6 +517,9 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
                 #  for t in tlist:
                 #     t=int(t)
                     #    image1[x[n], y[n],t] += 1
+            imsumpost = image1.sum(axis=2)
+            imsumpost = imsumpost.astype('int16')
+            ov_data.extend([numpy.mean(imsumpost[imsum_nogate>thresh]),numpy.mean(imsumpost[imsum_nogate<thresh])])
 
             print("Caclulation for an image of shape", image1.shape, "...")
             params_dict["foreground_threshold"] = seuil
@@ -606,19 +620,30 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
             print("res_fraction1", res_fraction1 * 20, "res_fraction2", res_fraction2 * 20,"res_fraction3", res_fraction3 * 20)
             
             # Calculate the NanoJ-SQUIRREL scores and error maps for the fractions
-            squirrel_f1 = Squirrel(method="L-BFGS-B", normalize=True).evaluate([fraction2], Combosingle1 * Combomask1,
+            try:
+                squirrel_f1 = Squirrel(method="L-BFGS-B", normalize=True).evaluate([fraction2], Combosingle1 * Combomask1,
                                                                             Combosingle1 * Combomask1,
                                                                             Combomask1, Combomask1)
-            squirrel_f2 = Squirrel(method="L-BFGS-B", normalize=True).evaluate([fraction1], Combosingle2 * Combomask2,
-                                                                            Combosingle2 * Combomask2,
-                                                                            Combomask2, Combomask2)
+                squirrel_f2 = Squirrel(method="L-BFGS-B", normalize=True).evaluate([fraction1], Combosingle2 * Combomask2,
+                                                                                Combosingle2 * Combomask2,
+                                                                                Combomask2, Combomask2)
 
-            squirrelmap1,squirrelsmoothf1 = Squirrel(method="L-BFGS-B", normalize=True).return_map([fraction2], Combosingle1 * Combomask1,
-                                                                            Combosingle1 * Combomask1,
-                                                                            Combomask1, Combomask1)
-            squirrelmap2,squirrelsmoothf2  = Squirrel(method="L-BFGS-B", normalize=True).return_map([fraction1], Combosingle2 * Combomask2,
-                                                                            Combosingle2 * Combomask2,
-                                                                            Combomask2, Combomask2)
+                squirrelmap1,squirrelsmoothf1 = Squirrel(method="L-BFGS-B", normalize=True).return_map([fraction2], Combosingle1 * Combomask1,
+                                                                                Combosingle1 * Combomask1,
+                                                                                Combomask1, Combomask1)
+                squirrelmap2,squirrelsmoothf2  = Squirrel(method="L-BFGS-B", normalize=True).return_map([fraction1], Combosingle2 * Combomask2,
+                                                                                Combosingle2 * Combomask2,
+                                                                                Combomask2, Combomask2)
+            except IndexError:
+                print("Squirrel Failed, no foreground left")
+                squirrel_f1 = numpy.nan
+                squirrel_f2= numpy.nan
+                squirrelsmoothf1= numpy.nan
+        
+                squirrelsmoothf2= numpy.nan
+                squirrelmap1=numpy.zeros(Combosingle2.shape)
+                squirrelmap2=numpy.zeros(Combosingle2.shape)
+                continue
             # Add the resolutions and the NanoJ-SQUIRREL scores to the dataframe
             ov_data.extend([res_fraction1 * 20, res_fraction2 * 20,res_fraction3 * 20, squirrel_f1, squirrel_f2,squirrelsmoothf1[2],squirrelsmoothf2[2], noise[0], noise[1], noise[2]])
             Overall_data.loc[pairnoiseid] = ov_data
