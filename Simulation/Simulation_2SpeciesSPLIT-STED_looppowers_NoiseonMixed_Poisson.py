@@ -66,7 +66,7 @@ filename2=easygui.diropenbox(default=os.path.expanduser("~Desktop"),title="Selec
 # Image IDs to use as controls for each STED power
 #Powerslist=[[10,[7,7,1,0,0,0,1,19]],[20,[7,7,1,0,0,0,1,19]],[30,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
 Powerslist=[[20,[7,7,1,0,0,0,1,19]],[40,[7,7,1,0,0,0,1,19]]] #PSD95 Bassoon Cy3
-Powerslist=[[10,[3,3,1,0,0,0,1,8]],[20,[3,3,1,0,0,0,1,8]],[30,[3,3,1,0,0,0,1,8]],[40,[3,3,1,0,0,0,1,8]]] #PSD95 Bassoon Cy3 MiniNew_10,20,30
+Powerslist=[[20,[3,3,1,0,0,0,1,8]],[30,[3,3,1,0,0,0,1,8]],[40,[3,3,1,0,0,0,1,8]]] #PSD95 Bassoon Cy3 MiniNew_10,20,30
 #Powerslist=[[20,[2,2,1,0,0,0,1,4]]] #PSD95 Bassoon Cy3 in MiniNew
 #Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]# Spectrin Bassoon Cy5
 
@@ -741,7 +741,7 @@ def Simulate3speciesLineControls(STEDPOWER, NUMIM, Noiselist):
 for power in Powerslist:
     stats=Simulate3speciesLineControls(power[0],power[1],Noiselist)
     print(stats.shape)
-    plt.show()
+    plt.close("all")
 
 
 
