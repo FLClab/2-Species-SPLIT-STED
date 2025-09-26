@@ -120,10 +120,10 @@ for t,type in enumerate(types):
         df2=df[df["Noise percent pixels"]==p]
 
 
-        ax3[0].errorbar(powersC,dfmean['Foreground_int'],yerr=dfstd["Foreground_int"],c="k",fmt="o", label="Foreground before",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
-        ax3[1].errorbar(powersC,dfmean["Background_int"],yerr=dfstd["Background_int"],c="grey", fmt="o", label="Background before",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
-        ax2[0,t].errorbar(powersC,dfmean['Foreground_int'],yerr=dfstd["Foreground_int"],c="k",fmt="o", label="Foreground before",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
-        ax2[1,t].errorbar(powersC,dfmean["Background_int"],yerr=dfstd["Background_int"],c="grey", fmt="o", label="Background before",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
+        ax3[0].errorbar(powersC,dfmean['Foreground_int'],yerr=dfstd["Foreground_int"],c="k",fmt="o", label="Foreground original image",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
+        ax3[1].errorbar(powersC,dfmean["Background_int"],yerr=dfstd["Background_int"],c="grey", fmt="o", label="Background original image",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
+        ax2[0,t].errorbar(powersC,dfmean['Foreground_int'],yerr=dfstd["Foreground_int"],c="k",fmt="o", label="Foreground original image",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
+        ax2[1,t].errorbar(powersC,dfmean["Background_int"],yerr=dfstd["Background_int"],c="grey", fmt="o", label="Background original image",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
 
 
 
@@ -139,8 +139,9 @@ for t,type in enumerate(types):
             df3std=df3.groupby("Power")[ ['Power', 'Foreground_int', 'Background_int', 'Foreground_int_post', 'Background_int_post']].sem(numeric_only=True)
 
       
-
-
+            #ax3[0].errorbar(powers,df3mean["Foreground_int"],yerr=df3std["Foreground_int"],fmt="o",c="gold", label="λ={} Foreground Pre".format(n),ecolor="gold", capsize=5, elinewidth=0.8, ms=5)
+            #ax3[1].errorbar(powers,df3mean["Background_int"],yerr=df3std["Background_int"],fmt="o",c="gold", label="λ={} Background Pre".format(n),ecolor="gold", capsize=5, elinewidth=0.8, ms=5)
+            ax3[1].errorbar(powers,df3mean["Background_int_post"],yerr=df3std["Background_int_post"],fmt="o",c=colors[1][j], label="λ={} Background".format(n),ecolor=colors[1][j], capsize=5, elinewidth=0.8, ms=5)
             ax3[0].errorbar(powers,df3mean["Foreground_int_post"],yerr=df3std["Foreground_int_post"],fmt="o",c=colors[0][j], label="λ={} Foreground".format(n),ecolor=colors[0][j], capsize=5, elinewidth=0.8, ms=5)
             ax3[1].errorbar(powers,df3mean["Background_int_post"],yerr=df3std["Background_int_post"],fmt="o",c=colors[1][j], label="λ={} Background".format(n),ecolor=colors[1][j], capsize=5, elinewidth=0.8, ms=5)
             ax2[0,t].errorbar(powers,df3mean["Foreground_int_post"],yerr=df3std["Foreground_int_post"],fmt="o",c=colors[0][j], label="λ={} Foreground".format(n),ecolor=colors[0][j], capsize=5, elinewidth=0.8, ms=5)
@@ -156,14 +157,14 @@ for t,type in enumerate(types):
         #    ax2[t,i].set_yticklabels([])
         ax3[i].set_title("{}".format(type))
         ax2[1,t].set_xlabel("Power")
-        ax2[0,0].set_ylabel("Foreground Intensity")
-        ax2[1,0].set_ylabel("Background Intensity")
+        ax2[0,0].set_ylabel("Mean of Foreground Intensity")
+        ax2[1,0].set_ylabel("Mean of Background Intensity")
         ax3[1].set_xlim([5,45])
         ax3[0].set_xlim([5,45])
         ax3[0].set_xlabel("Power")
-        ax3[0].set_ylabel("Foreground Intensity")
+        ax3[0].set_ylabel("Mean of Foreground Intensity")
         ax3[1].set_xlabel("Power")
-        ax3[1].set_ylabel("Background Intensity")
+        ax3[1].set_ylabel("Mean of Background Intensity")
         ax3[0].legend(frameon=False)
         ax3[1].legend(frameon=False)
         ax2[0,1].legend(frameon=False,loc='upper right')

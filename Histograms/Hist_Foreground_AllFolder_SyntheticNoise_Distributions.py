@@ -134,11 +134,11 @@ for image_id,imagei in enumerate(images):
         #values=numpy.linspace(0,image1.shape[2],num=image1.shape[2],endpoint=False)
         
         absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
-        vals=random.choices(absci, weights=y, k=20)
-        valsuni=random.choices(absci, k=20)
+        vals=random.choices(absci, weights=y, k=10000)
+        valsuni=random.choices(absci, k=10000)
         fig4,ax4=plt.subplots(figsize=(3,1))
-        ax4.hist(vals, bins=250, range=(0, 20),histtype='step', fill=False, color='lime',linewidth=2)
-        ax4.hist(valsuni, bins=250, range=(0, 20),histtype='step', fill=False, color='lime',linewidth=2)
+        ax4.hist(vals, bins=250, range=(0, 20),histtype='step',density=True, fill=False, color='lime',linewidth=2)
+        ax4.hist(valsuni, bins=250, range=(0, 20),histtype='step', density=True, fill=False, color='lime',linewidth=2)
         y= y / y.max()
         ax4.set_ylim([0,1])
         expon = expfun(absci,numpy.max(y), lifetime)
