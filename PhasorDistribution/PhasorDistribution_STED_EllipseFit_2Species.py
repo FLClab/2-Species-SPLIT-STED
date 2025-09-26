@@ -97,7 +97,7 @@ filenames = [f1,f2]
 # List of powers to use for the phasor calculation 
 # string to look for in the filenames
 powers=["_*","_5","_10","_15","_20"]
-#powers=["_10","_10","_20","_30","_40"]
+powers=["_*","_10","_20","_30","_40"]
 
 # Values to use for the powers in the plot
 #powersnum=[0,10,20,30,40]
@@ -111,7 +111,7 @@ mwpowers=["","0","44","88"]
 #keys=['Conf_ 594 {2}','STED_594 {2}','STED_594 {2}','STED_594 {2}','STED_594 {2}']
 keys=['Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys=['Conf640 {10}','STED640 {10}','STED640 {10}','STED640 {10}','STED640 {10}']
-#keys=['Confocal_561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
+keys=['Confocal_561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
 #keys=['Conf_635P {2}','Conf_635P {2}','Conf_635P {2}','Conf_635P {2}']
 #keys=['STED 561 {11}','STED 561 {11}','STED 561 {11}','STED 561 {11}']
 
@@ -123,9 +123,9 @@ colors=[['deepskyblue', 'deepskyblue','deepskyblue','deepskyblue','deepskyblue',
 colors_centroids=[["#7ce8ffff","#55d0ffff","#00acdfff","#0080bfff","#00456bff","#033550ff","#022233ff"],["#fcbcd7ff","#f9a3cbff","#ef87beff","#e569b3ff","#bf4290ff","#5d1a43ff","#981164ff"]]
 #colors=["orangered"]
 
-#names= ['Bassoon CF594', 'Homer STAR Orange']
+names= ['Bassoon CF594', 'PSD95 STAR Orange']
 
-names=['PSD95_AF647','rBassoon_ST635P']
+#names=['PSD95_AF647','rBassoon_ST635P']
 Positions={}
 MeanPositions={}
 Ellipsedims={}
@@ -192,7 +192,7 @@ for k,filename in enumerate(filenames) :
       
             print("Caclulation for an image of shape", image1.shape, "...")
             #params_dict["foreground_threshold"] = get_foreground(image1)
-            params_dict["foreground_threshold"]=5
+            params_dict["foreground_threshold"]=10
             print("foreground_threshold=", params_dict["foreground_threshold"])
             x,y,g_smoothed,s_smoothed, orginal_idxs= Median_Phasor(image1, params_dict, **params_dict)
             df['x']=x.flatten()
