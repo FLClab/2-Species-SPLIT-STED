@@ -1,4 +1,5 @@
 
+from matplotlib import pyplot
 import numpy
 
 def linmap(val, mapMin, mapMax):
@@ -194,20 +195,54 @@ def getDCorr(im, r, Ng=10):
 
     # print(2 / kcMax * 20, A0, AMax)
 
-    return kcMax, A0
+    return kcMax, A0,d0,d
 
 def calculate(image, N=20, Nr=50, Ng=10):
     pps=5
     r = numpy.linspace(0, 1, Nr)
 
     image = apodImRect(image, N)
-    KcMax, A0 = getDCorr(image, r, Ng)
+    KcMax, A0 ,d0,d = getDCorr(image, r, Ng)
+
+    return 2 / KcMax
+
+def calculate_makegraph(image,ax, N=20, Nr=50, Ng=10):
+    pps=5
+    r = numpy.linspace(0, 1, Nr)
+
+    image = apodImRect(image, N)
+    KcMax, A0 ,d0,d = getDCorr(image, r, Ng)
+
+
+    
+    for k in range(d0.shape[0]):
+        r[k] = r[0] + (r[-1]-r[0])*k/(Nr-1)
+
+    ax.plot(r, numpy.array(d0), c="k")
+    dg = numpy.zeros((Nr))
+    for k in range(Ng):
+        for j in range(Nr):
+            dg[j] = numpy.array(d[j][k])
+        ax.plot(r, dg, c="g")
+    
+    for k in range(d0.shape[0]):
+        r[k] = r[0] + (r[-1]-r[0])*k/(Nr-1)
+        for k in range(Ng, 2*Ng):
+            for j in range(Nr):
+                dg[j] = numpy.array(d[j][k])
+            ax.plot(r, dg, c="b")
+    ax.axvline(x=KcMax, color="b", linestyle="-", label="Cut-off frequency")
+    ax.set_xlabel(f"Normalized frequency")
+    ax.set_ylabel("Cross-correlation coefficients")
+    ax.set_title(f"Decorrelation analysis resolution: {numpy.round((2 / KcMax)*20, 1)} nm")
+    #pyplot.show()
+
 
     return 2 / KcMax
 
 if __name__ == "__main__":
 
     import tifffile
-    im = tifffile.imread("test_image.tif")
+    im = tifffile.imread("test_image.tiff")
     calculate(im)
 

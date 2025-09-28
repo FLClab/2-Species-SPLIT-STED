@@ -77,7 +77,7 @@ for key in mapcomp:
 
 # -----------------------------------------------------------
 
-    seuil= 5
+    seuil= 3
     indice=20
     mlifetime = numpy.empty((imsum.shape))
 
@@ -106,9 +106,10 @@ for key in mapcomp:
                         bounds = bounds)
             bg, tau, amp =  w["x"]
             mlifetime[iy, ix] = w['x'][1]
-
+    mlifetime_nan=mlifetime.copy()
+    mlifetime_nan[imsum < seuil]=numpy.nan
     fig1, ax1 = plt.subplots()
-    imgplot1 = ax1.imshow(mlifetime, cmap='jet', vmin=0, vmax=4)
+    imgplot1 = ax1.imshow(mlifetime_nan, cmap='jet', vmin=1, vmax=4)
     ax1.axis('off')
     cbar =fig1.colorbar(imgplot1)
     cbar.set_label("Lifetime [ns]")
@@ -120,8 +121,8 @@ for key in mapcomp:
 
     overlayer = LifetimeOverlayer(mlifetime, imsum/imsum.max(), cname='jet')
     lifetime_rgb, cmap = overlayer.get_overlay(
-        lifetime_minmax=(0, 4),
-        intensity_minmax=(0, 0.7)
+        lifetime_minmax=(1, 4),
+        intensity_minmax=(0, 0.4)
                 )
             
     """ If error, watch out conversion in lifetime.py """
@@ -134,7 +135,7 @@ for key in mapcomp:
 
     # Save the figures and images
     filenameout = os.path.basename(images).split(extension)[0] + "_MLE_Lifetime_{}.tiff".format(key)
-    tifffile.imwrite(os.path.join(savefolder,filenameout), mlifetime.astype(numpy.uint16))
+    tifffile.imwrite(os.path.join(savefolder,filenameout), mlifetime)
     filenameout = os.path.basename(images).split(extension)[0] + "_Intensity_{}.tiff".format(key)
     tifffile.imwrite(os.path.join(savefolder,filenameout), imsum.astype(numpy.uint16))
     fig1.savefig(os.path.join(savefolder,os.path.basename(imagei).split(extension)[0] +'MLELifetime_{}.pdf'.format(key)), transparent='True', bbox_inches="tight")

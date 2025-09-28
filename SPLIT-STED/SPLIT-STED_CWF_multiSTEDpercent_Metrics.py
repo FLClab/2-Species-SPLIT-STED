@@ -69,11 +69,11 @@ mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
              'STED FLIM' :'STED 561 {11}',
              'Conf post' : 'Confocal_Post {15}',
             'STED High' : 'STED 561_HighP {16}'}
-mapcomp = {  'Conf pre'  : 'Confocal_Pre {14}',
-             'Conf FLIM' :'Conf_ 594 {2}',
-             'STED FLIM' :'STED_594 {2}', 
-              'Conf post' : 'Confocal_Post {15}',
-            'STED High' :None}
+# mapcomp = {  'Conf pre'  : 'Confocal_Pre {14}',
+#              'Conf FLIM' :'Conf_ 594 {2}',
+#              'STED FLIM' :'STED_594 {2}', 
+#               'Conf post' : 'Confocal_Post {15}',
+#             'STED High' :None}
 
 
 # mapcomp = { 
@@ -163,6 +163,7 @@ for i,im in enumerate(images) :
     imagemsr = load_image(im)
     #print(imagemsr.keys())
     print('image opened with success')
+    figdec,axdec = plt.subplots(nrows=1,ncols=3,figsize=(12,4),sharey=True)
 
     #Extract the depletion power from the image filename
     image_id=i
@@ -270,6 +271,7 @@ for i,im in enumerate(images) :
             imsave(filenameout, imsum.astype(numpy.uint16), luts="Red Hot")
             #tifffile.imwrite(filenameout, imsum.astype(numpy.uint16))
             res_conf = decorr.calculate(imsum)
+            res_conf=decorr.calculate_makegraph(imsum,ax=axdec[0])
             objec.append(res_conf)
         # Find the centroid coordinates of the phasor distribution
             n=1
@@ -303,6 +305,7 @@ for i,im in enumerate(images) :
 
     # Measure the resolution of the STED-FLIM image (intensity sum over time bins)
         res_sted_stack = decorr.calculate(image1[:,:,10:].sum(axis=2))
+        res_sted_stack = decorr.calculate_makegraph(image1[:,:,10:].sum(axis=2),ax=axdec[1])
 
         if numpy.isinf(res_sted_stack):
             res_sted_stack = 0
@@ -456,6 +459,9 @@ for i,im in enumerate(images) :
         
 # Measure the resolution of the SPLIT-STED image
         res_splitsted = decorr.calculate(im_splitsted)
+        res_splitsted = decorr.calculate_makegraph(im_splitsted,ax=axdec[2])
+        figdec.savefig(os.path.join(savefolder,"DecorrelationGraph_SPLITSTED_DTCWT_{}.pdf".format(os.path.basename(im).split(extension)[0])),transparent='True')
+        
         if numpy.isinf(res_splitsted):
             res_splitsted = 0
         objec.append(res_splitsted)
