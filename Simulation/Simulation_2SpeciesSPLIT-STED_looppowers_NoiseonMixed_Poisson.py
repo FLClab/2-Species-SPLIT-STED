@@ -1,11 +1,10 @@
 """
 
-Program that creates synthetic 2 species STED-FLIM images by summing single species images and then 
-unmixing them using the 2 Species SPLIT-STED method.
-The program then compares the unmixed images to the ground truth images and computes different metrics such as resolution and nanoJ-SQUIRREL
+Program that creates synthetic 2 species STED-FLIM images by summing single species images. 
+Synthetic background is added by sampling a number of photons from a Poisson distribution and placing them in time bins by sampling from different temporal distributions.
+The script then performs unmixing using the 2 Species SPLIT-STED method and compares the unmixed images to the ground truth images and computes different metrics such as resolution and nanoJ-SQUIRREL
 
-
-The routine is defined as a function and called at the end of the script in a loop over the different STED powers.
+The routine is defined as a function and called at the end of the script in a loop over the different STED powers and Noise quantities.
 
 """
 
@@ -71,9 +70,11 @@ Powerslist=[[10,[3,3,1,0,0,0,1,8]],[20,[3,3,1,0,0,0,1,8]],[30,[3,3,1,0,0,0,1,8]]
 #Powerslist=[[5,[0,0,1,9,22,22,7,0]],[10,[0,0,1,9,22,22,7,0]],[15,[0,0,1,9,22,22,7,0]],[20,[0,0,1,9,22,22,7,0]]]# Spectrin Bassoon Cy5
 
 labels = ['Bassoon_CF594 Confocal','Bassoon_CF594 STED 10%','Bassoon_CF594 STED 20%','Bassoon_CF594 STED 30%','PSD95_STORANGE Confocal','PSD95_STORANGE STED 10%','PSD95_STORANGE STED 20%','PSD95_STORANGE STED 30%', 'Mixture']
+
+# List of the different noise conditions to simulate
 Noiselist=[]
 types=["Uniform","IRF","Alexa647"]
-#pixels=[1,5,10,15,20,25,50]
+
 #photons=[10,20,30,40,50]
 pixels=[100]
 photons=[3,5,7]

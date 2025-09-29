@@ -1,12 +1,9 @@
 
 """
-This script calculates phasor distributions of 2 different dyes imaged independently
-it then calculates the centroid of the phasor distribution and the ellipse that best fits the distribution
+This script calculates phasor distributions of a list of different dyes imaged independently.
+It then calculates the centroid of the phasor distribution and the ellipse that best fits the 70th percentile of the distribution
 
-it then calculates for all pairs of images of the same power the following metrics: 
--the distance between the centroids 
--the intersection over union of the ellipses
--the shortest distance between the ellipses
+It then plots the centroid and ellipse for each dye on the same phasor plot
 
 and saves the results in a csv file
 """

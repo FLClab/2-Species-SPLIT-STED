@@ -3,6 +3,8 @@
     This script is used to compute the lifetime of the entire foreground in each FLIM  image in a folder.
 
     The lifetime is measured using a fit of the histogram with a mono-exponential model with MLE error estimation
+
+    Also the script generates histogram plots of the lifetime distribution in the foreground for each image.
 The script will output a csv file with the lifetime values for each image in the folder
 """
 

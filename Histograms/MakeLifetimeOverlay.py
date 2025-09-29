@@ -1,7 +1,7 @@
 
 
 """"  
-       Returns the lifetime image modulated in intensity
+       Takes an intensity image and a mean lifetime map image and returns the lifetime image modulated in intensity
 """
 import os
 import matplotlib.pyplot as plt

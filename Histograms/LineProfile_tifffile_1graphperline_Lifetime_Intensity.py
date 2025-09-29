@@ -4,6 +4,8 @@
    The user can draw multiple lines on the image and the script will generate a graph for each line.
  The script will also generate an image showing the position of the lines drawn on the image.
    The user can choose the channels to display for line tracing in the image.
+
+   This version is adapted to images with two types of channels: Intensity and Lifetime.
 """
 
 

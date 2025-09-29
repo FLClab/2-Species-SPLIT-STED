@@ -1,11 +1,10 @@
 """
 
-Program that creates synthetic 2 species STED-FLIM images by summing single species images and then 
-unmixing them using the 2 Species SPLIT-STED method.
-The program then compares the unmixed images to the ground truth images and computes different metrics such as resolution and nanoJ-SQUIRREL
+Program that creates synthetic 2 species STED-FLIM images by summing single species images. 
+Synthetic background is added by sampling pixel positions from a Uniform distribution and placing them in time bins by sampling from different temporal distributions.
+The script then performs unmixing using the 2 Species SPLIT-STED method and compares the unmixed images to the ground truth images and computes different metrics such as resolution and nanoJ-SQUIRREL
 
-
-The routine is defined as a function and called at the end of the script in a loop over the different STED powers.
+The routine is defined as a function and called at the end of the script in a loop over the different STED powers and Noise types and quantities (% of image pixels and number of photons per pixel).
 
 """
 
