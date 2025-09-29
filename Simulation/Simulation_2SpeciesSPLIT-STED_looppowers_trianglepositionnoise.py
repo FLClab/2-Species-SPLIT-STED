@@ -102,10 +102,6 @@ def BuildTriangleWithNoise(noise):
         An array containing the coordinates of the triangle vertices for the noise level.
 
     Saves : 
-    For each pair of images:
-        - A pdf file of the phasor plot colorcoded by the mixture fraction
-        - ground truth and predicted fraction images
-    Overall:
         - A CSV file of the coordinates of the triangle vertices for each noise level
         - A legend file containing the paths to the control images used
     """
