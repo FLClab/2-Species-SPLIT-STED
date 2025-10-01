@@ -134,11 +134,21 @@ for image_id,imagei in enumerate(images):
         y=numpy.sum(image1[imsum>seuil, :],axis=0)
         #
         #values=numpy.linspace(0,image1.shape[2],num=image1.shape[2],endpoint=False)
-        
+        values=numpy.linspace(0,250,num=250,endpoint=False)
+        tvalues=values*0.08
+        tvalues=tvalues+0.08
+        print(tvalues)
+        taus=[1,2,3,4,5]
+        fig4,ax4=plt.subplots(figsize=(3,1))
+        for tau in taus:
+            distribution=numpy.exp(-tvalues/tau)
+            tlist=random.choices(tvalues, weights=distribution, k=10000)
+            #noisegrid=numpy.random.poisson(lam=l, size=10000).astype(int)
+            ax4.hist(tlist, bins=250, range=(0.08, 20),histtype='step',density=True ,fill=False, label=f'tau={tau}',linewidth=2)
         absci = numpy.linspace(0,y.shape[0]-1, num =y.shape[0])*0.08
         vals=random.choices(absci, weights=y, k=10000)
         valsuni=random.choices(absci, k=10000)
-        fig4,ax4=plt.subplots(figsize=(3,1))
+
         ax4.hist(vals, bins=250, range=(0, 20),histtype='step',density=True, fill=False, color='lime',linewidth=2)
         ax4.hist(valsuni, bins=250, range=(0, 20),histtype='step', density=True, fill=False, color='lime',linewidth=2)
         y= y / y.max()
@@ -148,6 +158,7 @@ for image_id,imagei in enumerate(images):
         ax.set_xlabel("Time (ns)")
         ax4.set_xlabel("Time (ns)")
         ax.set_ylabel("Normalized Intensity")
+        ax4.legend()
         #ax.set_ylim([0,0.06])
         ax.plot(absci, expon, color='black')
         fig.savefig(os.path.join(savefolder, "Histogram_Foreground_{}_{}.pdf".format(os.path.basename(imagei),mapcomp[key])), transparent='True', bbox_inches="tight")
