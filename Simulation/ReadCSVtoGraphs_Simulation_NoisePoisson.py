@@ -82,6 +82,7 @@ df=Overall_data[Overall_data["Noise type"]=="Uniform"]
 df=df[df["Noise number photons"]==0]
 
 dfcontrol=df.copy()
+dfcontrol.drop_duplicates(["Power","image1","image2"],inplace=True)
 powersC=numpy.unique(df["Power"])
 print(powersC)
 SQ1C=numpy.array(df[["squirrel_f1"]])
@@ -91,17 +92,17 @@ PowC=numpy.array(df[["Power"]])
 dfmean=df.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
 dfstd=df.groupby("Power")[ ['Power',  'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
 
-df=Overall_data[Overall_data["Noise type"]=="2Species"]
-df2s=df.copy()
-dfmean2s=df.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
-dfstd2s=df.groupby("Power")[ ['Power',  'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
-mergedf=pd.merge(dfcontrol,df2s, on=["Power","image1","image2"], suffixes=('_control', '_noise'))
-mergedf["Delta_SQ1"]=mergedf["squirrel_f1_noise"]-mergedf["squirrel_f1_control"]
-mergedf["Delta_SQ2"]=mergedf["squirrel_f2_noise"]-mergedf["squirrel_f2_control"]
-mergedfmean2s=mergedf.groupby("Power")[ ["Power","Delta_SQ1", "Delta_SQ2"]].mean(numeric_only=True)
-mergedfstd2s=mergedf.groupby("Power")[ ["Power","Delta_SQ1", "Delta_SQ2"]].sem(numeric_only=True)
+# df=Overall_data[Overall_data["Noise type"]=="2Species"]
+# df2s=df.copy()
+# dfmean2s=df.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
+# dfstd2s=df.groupby("Power")[ ['Power',  'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
+# mergedf=pd.merge(dfcontrol,df2s, on=["Power","image1","image2"], suffixes=('_control', '_noise'))
+# mergedf["Delta_SQ1"]=mergedf["squirrel_f1_noise"]-mergedf["squirrel_f1_control"]
+# mergedf["Delta_SQ2"]=mergedf["squirrel_f2_noise"]-mergedf["squirrel_f2_control"]
+# mergedfmean2s=mergedf.groupby("Power")[ ["Power","Delta_SQ1", "Delta_SQ2"]].mean(numeric_only=True)
+# mergedfstd2s=mergedf.groupby("Power")[ ["Power","Delta_SQ1", "Delta_SQ2"]].sem(numeric_only=True)
 
-types=["Uniform","IRF","Alexa647"]
+types=["Uncorr","IRF","Alexa647"]
 fig2,ax2=plt.subplots(ncols=3,nrows=2,sharex=True,sharey=True,figsize=(10,6))
 for t,type in enumerate(types):
     fig3,ax3=plt.subplots(ncols=1,nrows=2,sharex=True,sharey=True,figsize=(4,8))
@@ -136,10 +137,10 @@ for t,type in enumerate(types):
         ax2[0,t].plot(powersC,dfmean["squirrel_f1"],c="k", label="2 Species SPLIT-STED \n No Background - F1", marker="o", ls='--')
         ax2[1,t].plot(powersC,dfmean["squirrel_f2"],c="k", label="2 Species SPLIT-STED \n No Background - F2", marker="o", ls='--')
 
-        ax2[0,t].fill_between(powersC, dfmean2s["squirrel_f1"]-dfstd2s["squirrel_f1"], dfmean2s["squirrel_f1"]+dfstd2s["squirrel_f1"], color="grey", alpha=0.2)
-        ax2[1,t].fill_between(powersC, dfmean2s["squirrel_f2"]-dfstd2s["squirrel_f2"], dfmean2s["squirrel_f2"]+dfstd2s["squirrel_f2"], color="grey", alpha=0.2)
-        ax2[0,t].plot(powersC,dfmean2s["squirrel_f1"],c="grey", label="2 Species STED-FLIM\n No Background - F1", marker="*", ls='--')
-        ax2[1,t].plot(powersC,dfmean2s["squirrel_f2"],c="grey", label="2 Species STED-FLIM \n No Background - F2", marker="*", ls='--')
+        # ax2[0,t].fill_between(powersC, dfmean2s["squirrel_f1"]-dfstd2s["squirrel_f1"], dfmean2s["squirrel_f1"]+dfstd2s["squirrel_f1"], color="grey", alpha=0.2)
+        # ax2[1,t].fill_between(powersC, dfmean2s["squirrel_f2"]-dfstd2s["squirrel_f2"], dfmean2s["squirrel_f2"]+dfstd2s["squirrel_f2"], color="grey", alpha=0.2)
+        # ax2[0,t].plot(powersC,dfmean2s["squirrel_f1"],c="grey", label="2 Species STED-FLIM\n No Background - F1", marker="*", ls='--')
+        # ax2[1,t].plot(powersC,dfmean2s["squirrel_f2"],c="grey", label="2 Species STED-FLIM \n No Background - F2", marker="*", ls='--')
 
         #ax2[0,t].fill_between(powersC, mergedfmean2s["Delta_SQ1"]-mergedfstd2s["Delta_SQ1"], mergedfmean2s["Delta_SQ1"]+mergedfstd2s["Delta_SQ1"], color="k", alpha=0.2)
         #ax2[1,t].fill_between(powersC, mergedfmean2s["Delta_SQ2"]-mergedfstd2s["Delta_SQ2"], mergedfmean2s["Delta_SQ2"]+mergedfstd2s["Delta_SQ2"], color="k", alpha=0.2)
