@@ -60,13 +60,16 @@ labels=["Bassoon_CF594",'PSD95_STORANGE',"Mixture"]
 # Keys to the channels to use. For Tiff files, use channel ID
 keyscontrols = ['STED 561 {11}','STED 561 {11}']
 keysmixed = ['STED 561 {11}','STED 561 {11}']
+#keyscontrols = ['STED_635P {2}', 'STED_635P {2}']
+#keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
+#keyscontrols=[1,1] # For Tiff file, use channel ID
+#keysmixed=[1,1] # For Tiff file, use channel ID
 
 Noiselist=[]
-types=["Uniform","IRF","Alexa647"]
-#pixels=[1,5,10,15,20,25,50]
-#photons=[10,20,30,40,50]
-pixels=[100]
-photons=[3,5,7]
+types=["Uncorr","IRF","Alexa647"]
+
+pixels=[100]  # Not used anymore except for setting it to 0 to not add noise
+photons=[3,5,7] # Lambda of the Poisson distribution of photons to add
 combos=list(itertools.product(pixels,photons))
 for type in types:
     print(type)
@@ -78,14 +81,11 @@ for type in types:
         print("combo",combo)
         Noiselist.append(combo)
 
-Noiselist.append([0,0,"Uniform"])
+Noiselist.append([0,0,"Uniform"]) # Add a condition with no noise
 print(Noiselist)
 random.seed(42)
 numpy.random.seed(seed=42)
-#keyscontrols = ['STED_635P {2}', 'STED_635P {2}']
-#keysmixed = [ 'STED_635P {2}', 'STED_635P {2}']
-#keyscontrols=[1,1] # For Tiff file, use channel ID
-#keysmixed=[1,1] # For Tiff file, use channel ID
+
 # -----------------------------------------------------------
 def Simulate2SpeciesSTED(STEDPOWER,NUMIM,NoiseList):
     """
@@ -118,7 +118,7 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM,NoiseList):
     colors=['royalblue','orangered','springgreen']
   
     # Create a folder to save the results
-    savefolder = "Simulation_Cy3_{}Percent_2Species_PSD95Bassoon_NoiseonMixed_Poisson".format(STEDPOWER)
+    savefolder = "Simulation_Cy3_{}Percent_2Species_PSD95Bassoon_NoiseonMixed_Poisson_Uncorr".format(STEDPOWER)
     savefolder = os.path.join(os.path.expanduser("~/Desktop"), savefolder)
     os.makedirs(savefolder,exist_ok=True)
 
@@ -242,15 +242,20 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM,NoiseList):
         if noise[2]=="Uniform":
             distribution=numpy.ones((1,250),dtype=int) # Uniform distribution of photons across time bins
             distribution=distribution[0,:]
+        elif noise[2]=="Uncorr":
+            tvalues=numpy.linspace(0,image1.shape[2],num=image1.shape[2],endpoint=False)
+            tvalues=tvalues*0.08
+            tvalues=tvalues+0.08
+
 
         else:
             if noise[2]=="IRF":
                 
-                filename=r'C:\Users\FLCLab\Documents\GitHub\2-Species-SPLIT-STED\Acquisition\IRF_Measurement\GoldBead_individuel_CONF_640_Cy5_45us_50p.msr'
+                filename=os.path.join(os.path.dirname(os.path.dirname(__file__)), "Acquisition", "IRF_Measurement","GoldBead_individuel_CONF_640_Cy5_45us_50p.msr")
                 key= 'STAR 635P_CONF {0}'
                 #key=0 # For Tiff file,
             elif noise[2]=="Alexa647":
-                filename=r'C:\Users\FLCLab\Documents\GitHub\2-Species-SPLIT-STED\Simulation\alphaTubulin_AF647_STEDPowerBleach_5to20_1_18_5percentSTED.tiff'
+                filename=os.path.join(os.path.dirname(__file__),"alphaTubulin_AF647_STEDPowerBleach_5to20_1_18_5percentSTED.tiff")
                 key= 0 # For Tiff file,
 
             imagemsr = load_image(filename)
@@ -347,24 +352,28 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM,NoiseList):
             if noise[1]>0:
                 values=numpy.linspace(0,image1.shape[2],num=image1.shape[2],endpoint=False)
                 print(values.shape)
-                print(distribution.shape)
+                #print(distribution.shape)
 
-                num_noisypixels= int(noise[0]/100*image1.shape[0]*image1.shape[1]) # Calculate number of pixels to add noise to
+                # Sample the number of photons to add to each pixel from a Poisson distribution
                 noisegrid=numpy.random.poisson(lam=noise[1], size=(image1.shape[0], image1.shape[1])).astype(int)
                 #noisegrid=int(noisegrid)
                 print("noisegrid.shape:", noisegrid.shape)
                 print("noisegrid min:", noisegrid.min())
                 print("noisegrid max:", noisegrid.max())
                 print("noisegrid mean:", noisegrid.mean())
-
-
-
+                if noise[2]=="Uncorr":
+                    tau=random.randrange(1,6,1)  # Randomly select a lifetime between 1 and 5 ns
+                    distribution=numpy.exp(-tvalues/tau) # Create an exponential decay distribution with the selected lifetime
+                # For each pixel, sample the arrival times of the photons from the selected distribution
                 for x,y in numpy.ndindex(noisegrid.shape):
                     numphotons = noisegrid[x, y]
+
                     tlist=random.choices(values, weights=distribution, k=numphotons)
                     for t in tlist:
                         t=int(t)
                         image1[x, y,t] += 1
+
+
             CoM_x, CoM_y = [], []
             d_melange = pd.DataFrame(columns=['g', 's'])
             df = pd.DataFrame(columns=['x', 'y'])
@@ -451,36 +460,36 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM,NoiseList):
             Overall_data.loc[pairnoiseid] = ov_data
             pairnoiseid+=1
 
-            # # Save the SQUIRREL error maps to tiff files
-            # imagecomp=numpy.dstack((squirrelmap1,squirrelmap2))
-            # imagecomp=numpy.moveaxis(imagecomp,2,0)
-            # filenameout = os.path.join(savefolder,"{}_SquirrelMaps.tiff".format(Pair_id))
-            # tifffile.imwrite(filenameout, imagecomp)
+            # Save the SQUIRREL error maps to tiff files
+            imagecomp=numpy.dstack((squirrelmap1,squirrelmap2))
+            imagecomp=numpy.moveaxis(imagecomp,2,0)
+            filenameout = os.path.join(savefolder,"{}_SquirrelMaps.tiff".format(Pair_id))
+            tifffile.imwrite(filenameout, imagecomp)
 
-            # # Save the ground truth and predicted fraction images to a tiff file
-            # imagecomp=numpy.dstack((GroundTruth_Fraction[0],GroundTruth_Fraction[1],Combosingle1,Combosingle2,imsum))
-            # imagecomp=numpy.moveaxis(imagecomp,2,0)
-            # filenameout =os.path.join(savefolder, "{}_GroundTruth.tiff".format(Pair_id))
-            # print(filenameout)
-            # tifffile.imwrite(filenameout, imagecomp)
+            # Save the ground truth and predicted fraction images to a tiff file
+            imagecomp=numpy.dstack((GroundTruth_Fraction[0],GroundTruth_Fraction[1],Combosingle1,Combosingle2,imsum))
+            imagecomp=numpy.moveaxis(imagecomp,2,0)
+            filenameout =os.path.join(savefolder, "{}_GroundTruth.tiff".format(Pair_id))
+            print(filenameout)
+            tifffile.imwrite(filenameout, imagecomp)
 
-            # # Save the individual masks and the combined mask to a tiff file
-            # imagecomp=numpy.dstack((ComboMasklist[0],ComboMasklist[1],Combomask))
-            # imagecomp=numpy.moveaxis(imagecomp,2,0)
-            # filenameout = os.path.join(savefolder,"{}_Masks.tiff".format(Pair_id))
-            # tifffile.imwrite(filenameout, imagecomp)
+            # Save the individual masks and the combined mask to a tiff file
+            imagecomp=numpy.dstack((ComboMasklist[0],ComboMasklist[1],Combomask))
+            imagecomp=numpy.moveaxis(imagecomp,2,0)
+            filenameout = os.path.join(savefolder,"{}_Masks.tiff".format(Pair_id))
+            tifffile.imwrite(filenameout, imagecomp)
 
-        #     # Save the unmixed fraction images to a tiff file
-        #     imagecomp=numpy.dstack((Predicted_Fraction[0],Predicted_Fraction[1],fraction1,fraction2))
-        #     imagecomp=numpy.moveaxis(imagecomp,2,0)
-        #     filenameout = os.path.join(savefolder,"{}_Predictions.tiff".format(Pair_id))
-        #     tifffile.imwrite(filenameout, imagecomp)
+            # Save the unmixed fraction images to a tiff file
+            imagecomp=numpy.dstack((Predicted_Fraction[0],Predicted_Fraction[1],fraction1,fraction2))
+            imagecomp=numpy.moveaxis(imagecomp,2,0)
+            filenameout = os.path.join(savefolder,"{}_Predictions.tiff".format(Pair_id))
+            tifffile.imwrite(filenameout, imagecomp)
 
-        # # Create a composite image of the ground truth images and save it to a tiff file
-        #     imagecomp=numpy.dstack((Combosingle1,Combosingle2))
-        #     imagecomp=numpy.moveaxis(imagecomp,2,0)
-        #     filenameout =os.path.join(savefolder, "{}_GroundTruth_Composite.tiff".format(Pair_id))
-        #     imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("Cyan Hot","Magenta Hot"), pixelsize=(20E-3,20E-3))
+        # Create a composite image of the ground truth images and save it to a tiff file
+            imagecomp=numpy.dstack((Combosingle1,Combosingle2))
+            imagecomp=numpy.moveaxis(imagecomp,2,0)
+            filenameout =os.path.join(savefolder, "{}_GroundTruth_Composite.tiff".format(Pair_id))
+            imsave(file=filenameout, data=imagecomp.astype(numpy.uint16), composite=True, luts=("Cyan Hot","Magenta Hot"), pixelsize=(20E-3,20E-3))
         # Create a composite image of the unmixed images and save it to a tiff file
             imagecomp=numpy.dstack((fraction2,fraction1))
             imagecomp=numpy.moveaxis(imagecomp,2,0)
@@ -555,8 +564,8 @@ def Simulate2SpeciesSTED(STEDPOWER,NUMIM,NoiseList):
                 lifetime_minmax=(0., 1),
                 intensity_minmax=(0, 0.5)  # inTensity saturated to get more bright regions
             )
-            #filenameout = os.path.join(savefolder,"{}_OverlayF1.tiff".format(Pair_id))
-            #tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))    
+            filenameout = os.path.join(savefolder,"{}_OverlayF1.tiff".format(Pair_id))
+            tifffile.imwrite(filenameout, lifetime_rgb.astype(numpy.float32))    
 
     
     Overall_data.to_csv(os.path.join(savefolder,"Overall_data_{}.csv".format(STEDPOWER)))

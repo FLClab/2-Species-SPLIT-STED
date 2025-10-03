@@ -24,25 +24,12 @@ import scipy
 
 matplotlib.rcParams['axes.linewidth'] = 0.8
 
-fig,ax=plt.subplots(figsize=(3,1))
-lambdas=[3,5,7]
-for l in lambdas:
-    noisegrid=numpy.random.poisson(lam=l, size=10000).astype(int)
-    ax.hist(noisegrid, bins=21, range=(0, 20),histtype='step',density=True, fill=False, label=f'λ={l}')
-ax.legend()
-#plt.show()    
-ax.set_xlabel('Photon Count')
-ax.set_ylabel('Frequency')
-
-
-
 # Ask user name of the folder where the plots will be saved and create it
 savefoldername =str(input("Name of folder: "))
 savefolder=os.path.join(os.path.expanduser("~/Desktop"),savefoldername + "_Simulation_Noise")
 os.makedirs(savefolder,exist_ok=True)
 
 #Path to folder containing the .csv files
-#csvpath = easygui.fileopenbox(default=os.path.expanduser("~/Desktop"),multiple=False)
 folder=easygui.diropenbox(default=os.path.expanduser("~/Desktop"))
 folders=[folder]
 
@@ -74,9 +61,7 @@ for path in Overall_data["image1"]:
 for path in Overall_data["image2"]:
     Overall_data["image2"]= os.path.basename(path)
 
-#Overall_data= pd.read_csv(csvpath)
-#print(Overall_data.shape)
-#print(list(Overall_data.columns))
+
 
 df=Overall_data[Overall_data["Noise type"]=="Uniform"]
 df=df[df["Noise number photons"]==0]
@@ -92,15 +77,7 @@ PowC=numpy.array(df[["Power"]])
 dfmean=df.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
 dfstd=df.groupby("Power")[ ['Power',  'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
 
-# df=Overall_data[Overall_data["Noise type"]=="2Species"]
-# df2s=df.copy()
-# dfmean2s=df.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
-# dfstd2s=df.groupby("Power")[ ['Power',  'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
-# mergedf=pd.merge(dfcontrol,df2s, on=["Power","image1","image2"], suffixes=('_control', '_noise'))
-# mergedf["Delta_SQ1"]=mergedf["squirrel_f1_noise"]-mergedf["squirrel_f1_control"]
-# mergedf["Delta_SQ2"]=mergedf["squirrel_f2_noise"]-mergedf["squirrel_f2_control"]
-# mergedfmean2s=mergedf.groupby("Power")[ ["Power","Delta_SQ1", "Delta_SQ2"]].mean(numeric_only=True)
-# mergedfstd2s=mergedf.groupby("Power")[ ["Power","Delta_SQ1", "Delta_SQ2"]].sem(numeric_only=True)
+
 
 types=["Uncorr","IRF","Alexa647"]
 fig2,ax2=plt.subplots(ncols=3,nrows=2,sharex=True,sharey=True,figsize=(10,6))
@@ -127,8 +104,7 @@ for t,type in enumerate(types):
             continue
         df2=df[df["Noise percent pixels"]==p]
 
-        #ax2[t,i].errorbar(powersC,dfmean["squirrel_f1"],yerr=dfstd["squirrel_f1"],c="k",fmt="o", label="Control F1",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
-        #ax2[t,i].errorbar(powersC,dfmean["squirrel_f2"],yerr=dfstd["squirrel_f2"],c="grey", fmt="o", label="Control F2",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
+
         ax3[0].errorbar(powersC,dfmean["squirrel_f1"],yerr=dfstd["squirrel_f1"],c="k",fmt="o", label="Control F1",ecolor="k", capsize=5, elinewidth=0.8, ms=5)
         ax3[1].errorbar(powersC,dfmean["squirrel_f2"],yerr=dfstd["squirrel_f2"],c="grey", fmt="o", label="Control F2",ecolor="grey", capsize=5, elinewidth=0.8, ms=5)
 
@@ -137,15 +113,7 @@ for t,type in enumerate(types):
         ax2[0,t].plot(powersC,dfmean["squirrel_f1"],c="k", label="2 Species SPLIT-STED \n No Background - F1", marker="o", ls='--')
         ax2[1,t].plot(powersC,dfmean["squirrel_f2"],c="k", label="2 Species SPLIT-STED \n No Background - F2", marker="o", ls='--')
 
-        # ax2[0,t].fill_between(powersC, dfmean2s["squirrel_f1"]-dfstd2s["squirrel_f1"], dfmean2s["squirrel_f1"]+dfstd2s["squirrel_f1"], color="grey", alpha=0.2)
-        # ax2[1,t].fill_between(powersC, dfmean2s["squirrel_f2"]-dfstd2s["squirrel_f2"], dfmean2s["squirrel_f2"]+dfstd2s["squirrel_f2"], color="grey", alpha=0.2)
-        # ax2[0,t].plot(powersC,dfmean2s["squirrel_f1"],c="grey", label="2 Species STED-FLIM\n No Background - F1", marker="*", ls='--')
-        # ax2[1,t].plot(powersC,dfmean2s["squirrel_f2"],c="grey", label="2 Species STED-FLIM \n No Background - F2", marker="*", ls='--')
 
-        #ax2[0,t].fill_between(powersC, mergedfmean2s["Delta_SQ1"]-mergedfstd2s["Delta_SQ1"], mergedfmean2s["Delta_SQ1"]+mergedfstd2s["Delta_SQ1"], color="k", alpha=0.2)
-        #ax2[1,t].fill_between(powersC, mergedfmean2s["Delta_SQ2"]-mergedfstd2s["Delta_SQ2"], mergedfmean2s["Delta_SQ2"]+mergedfstd2s["Delta_SQ2"], color="k", alpha=0.2)
-        #ax2[0,t].plot(powersC,mergedfmean2s["Delta_SQ1"],c="k", label="2 Species STED-FLIM \n No Background - F1", marker="o", ls='--')
-        #ax2[1,t].plot(powersC,mergedfmean2s["Delta_SQ2"],c="k", label="2 Species STED-FLIM \n No Background - F2", marker="o", ls='--')
 
         for j,n in enumerate(photons):
 
@@ -164,31 +132,11 @@ for t,type in enumerate(types):
             df3mean=df3.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].mean(numeric_only=True)
             df3std=df3.groupby("Power")[ ['Power', 'squirrel_f1', 'squirrel_f2']].sem(numeric_only=True)
 
-      
-
-        
-
-            #ax2[t,i].scatter(df3["Power"],df3["squirrel_f1"],c=colors[0], label="{} photons".format(n))
-            #ax2[t,i].scatter(df3["Power"],df3["squirrel_f2"],c=colors[1], label="{} photons".format(n))
-            #ax2[t,i].axhline(0,c="k",ls="--")
-            #ax2[0,t].scatter(mergedf["Power"],mergedf["Delta_SQ1"],c=colors[0][j], label="λ={} F1".format(n), alpha=0.5, s=10)
-            #ax2[1,t].scatter(mergedf["Power"],mergedf["Delta_SQ2"],c=colors[1][j], label="λ={} F2".format(n), alpha=0.5, s=10)
-
-            #ax2[0,t].fill_between(powers, mergedfmean["Delta_SQ1"]-mergedfstd["Delta_SQ1"], mergedfmean["Delta_SQ1"]+mergedfstd["Delta_SQ1"], color=colors[0][j], alpha=0.2)
-            #ax2[1,t].fill_between(powers, mergedfmean["Delta_SQ2"]-mergedfstd["Delta_SQ2"], mergedfmean["Delta_SQ2"]+mergedfstd["Delta_SQ2"], color=colors[1][j], alpha=0.2)
-            #ax2[0,t].plot(powers,mergedfmean["Delta_SQ1"],c=colors[0][j], label="λ={} F1".format(n), marker="o", ls='--')
-            #ax2[1,t].plot(powers,mergedfmean["Delta_SQ2"],c=colors[1][j], label="λ={} F2".format(n), marker="o", ls='--')
-
             ax2[0,t].fill_between(powers, df3mean["squirrel_f1"]-df3std["squirrel_f1"], df3mean["squirrel_f1"]+df3std["squirrel_f1"], color=colors[0][j], alpha=0.2)
             ax2[1,t].fill_between(powers, df3mean["squirrel_f2"]-df3std["squirrel_f2"], df3mean["squirrel_f2"]+df3std["squirrel_f2"], color=colors[1][j], alpha=0.2)
             ax2[0,t].plot(powers,df3mean["squirrel_f1"],c=colors[0][j], label="λ={} F1".format(n), marker="o", ls='--')
             ax2[1,t].plot(powers,df3mean["squirrel_f2"],c=colors[1][j], label="λ={} F2".format(n), marker="o", ls='--')
 
-
-            #ax2[0,t].errorbar(powers,mergedfmean["Delta_SQ1"],yerr=mergedfstd["Delta_SQ1"],fmt="o",c=colors[0][j], label="λ={} F1".format(n),ecolor=colors[0][j], capsize=10, elinewidth=0.8, ms=8)
-            #ax2[1,t].errorbar(powers,mergedfmean["Delta_SQ2"],yerr=mergedfstd["Delta_SQ2"],fmt="o",c=colors[1][j], label="λ={} F2".format(n),ecolor=colors[1][j], capsize=10, elinewidth=0.8, ms=8)
-            #ax2[t,i].errorbar(powers,df3mean["squirrel_f1"],yerr=df3std["squirrel_f1"],fmt="o",c=colors[0][j], label="{} photons F1".format(n),ecolor=colors[0][j], capsize=5, elinewidth=0.8, ms=5)
-            #ax2[t,i].errorbar(powers,df3mean["squirrel_f2"],yerr=df3std["squirrel_f2"],fmt="o",c=colors[1][j], label="{} photons F2".format(n),ecolor=colors[1][j], capsize=5, elinewidth=0.8, ms=5)
             ax3[0].errorbar(powers,df3mean["squirrel_f1"],yerr=df3std["squirrel_f1"],fmt="o",c=colors[0][j], label="λ={} F1".format(n),ecolor=colors[0][j], capsize=5, elinewidth=0.8, ms=5)
             ax3[1].errorbar(powers,df3mean["squirrel_f2"],yerr=df3std["squirrel_f2"],fmt="o",c=colors[1][j], label="λ={} F2".format(n),ecolor=colors[1][j], capsize=5, elinewidth=0.8, ms=5)
 
@@ -196,10 +144,7 @@ for t,type in enumerate(types):
         ax2[0,t].set_title("{}".format(type))
         ax2[0,t].set_xlim([5,45])
         ax2[1,t].set_xlim([5,45])
-        #if t<2:
-        #    ax2[t,i].set_xticklabels([])
-        #if i>0:
-        #    ax2[t,i].set_yticklabels([])
+
         ax3[i].set_title("{}".format(type))
         ax2[1,t].set_xlabel("Power")
         ax2[0,0].set_ylabel("SQUIRREL F1")
@@ -215,6 +160,18 @@ for t,type in enumerate(types):
 
     fig3.savefig(os.path.join(savefolder,"SQUIRREL_{}.pdf".format(type)),transparent=True, bbox_inches='tight')
 fig2.subplots_adjust(wspace=0,hspace=0)
-fig2.savefig(os.path.join(savefolder,"DeltaSQUIRREL.pdf"),transparent=True, bbox_inches='tight')
+fig2.savefig(os.path.join(savefolder,"SQUIRREL_AllBackgrounds.pdf"),transparent=True, bbox_inches='tight')
+
+
+
+# Plot the Poisson distributions used for the noise simulations
+fig,ax=plt.subplots(figsize=(3,1))
+lambdas=[3,5,7]
+for l in lambdas:
+    noisegrid=numpy.random.poisson(lam=l, size=10000).astype(int)
+    ax.hist(noisegrid, bins=21, range=(0, 20),histtype='step',density=True, fill=False, label=f'λ={l}')
+ax.legend()
+ax.set_xlabel('Photon Count')
+ax.set_ylabel('Frequency')
 fig.savefig(os.path.join(savefolder,"Poisson_Dists.pdf"),transparent=True, bbox_inches='tight')
 plt.show()
