@@ -76,11 +76,11 @@ mapcomp = { 'Conf pre'  : 'Confocal_Pre {14}',
 #             'STED High' :None}
 
 
-# mapcomp = { 
-#              'Conf FLIM' : 0,
-#              'STED FLIM' :1,
-#              'STED High' :None
-# }
+mapcomp = { 
+             'Conf FLIM' : 0,
+             'STED FLIM' :1,
+             'STED High' :None
+}
 
 #mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
 #             'Conf FLIM' : 'Conf_635P {2}', 
@@ -365,7 +365,7 @@ for i,im in enumerate(images) :
 
 
     # Plot the color-coded phasor distribution of the SPLIT-STED image and line connecting the phasor centroids
-        mixphasor = ax4.scatter(g, s, c=t2[1,:],cmap=phasorcolor, s=2,rasterized=True)
+        mixphasor = ax4.scatter(g, s, c=t2[1,:],cmap=phasorcolor, s=1,rasterized=True)
         p3minscat=ax4.scatter(projectionp3min[0],projectionp3min[1],s=50,c='orangered')
         p3maxscat=ax4.scatter(projectionp3max[0],projectionp3max[1],s=50,c='orangered')
         p2pnscat=ax4.scatter([P_n[0],p2[0]],[P_n[1],p2[1]],s=50,c='gold')

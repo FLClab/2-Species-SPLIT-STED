@@ -57,9 +57,9 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 #f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
 #f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
 #f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
-f1="D:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\alphaTubulin_Alexa647\\"
-f2="D:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\rabBassoon STAR635P\\"
-f3="D:\\Zenodo\\FarRedDyes_DualLabel\\FixedCells\\Tubulin_Alexa647_Bassoon_STAR635P\\"
+f1="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\alphaTubulin_Alexa647\\"
+f2="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\rabBassoon STAR635P\\"
+f3="E:\\Zenodo\\FarRedDyes_DualLabel\\FixedCells\\Tubulin_Alexa647_Bassoon_STAR635P\\"
 
 filenamescontrol = [f1, f2]
 filenamemixed=f3
@@ -67,7 +67,7 @@ filenamemixed=f3
 # Labels for the legend
 # These labels correspond to the fluorophores used in the control images and the mixed images.
 colors=['magenta',  'c' ,'lightgreen']
-cmapbin = matplotlib.colors.ListedColormap(["magenta","cyan","gray"])
+cmapbin = matplotlib.colors.ListedColormap(["cyan","magenta","gray"])
 normmpl = matplotlib.colors.BoundaryNorm([0,1,2], cmapbin.N)
 labels = ['Bassoon CF594', 'PSD95 STAR Orange', 'Mixture']
 
@@ -183,9 +183,9 @@ dim_cercle = {
 }
 pnscatter=ax_scatter.scatter(Pn_x,Pn_y, c='darkred' )
 p2scatter=ax_scatter.scatter(P2_x,P2_y, c='darkred' )
-circle1 = Circle((dim_cercle["x0"], dim_cercle["y0"]), dim_cercle["r"], fill=False, color= 'yellow')
+circle1 = Circle((dim_cercle["x0"], dim_cercle["y0"]), dim_cercle["r"], fill=False, color= 'cyan')
 ax_scatter.add_patch(circle1)
-circle2 = Circle((dim_cercle["x1"], dim_cercle["y1"]), dim_cercle["r1"], fill=False, color = 'blue')
+circle2 = Circle((dim_cercle["x1"], dim_cercle["y1"]), dim_cercle["r1"], fill=False, color = 'magenta')
 ax_scatter.add_patch(circle2)
 fig4.savefig(os.path.join(savefolder,
                             "Phasor_2species_Confocal_ControlsOnly.pdf"),

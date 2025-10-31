@@ -70,11 +70,11 @@ mapcomp = { 'Conf pre'  : 'Conf_pre {6}',
 #              'STED FLIM' :'STED 561 {11}',
 #              'Conf post' : 'Confocal_Post {15}',
 #             'STED High' : 'STED 561_HighP {16}'}
-# mapcomp = { 
-#              'Conf FLIM' : 0,
-#              'STED FLIM' :1,
-#              'STED High' :None
-# }
+mapcomp = { 
+             'Conf FLIM' : 0,
+             'STED FLIM' :1,
+             'STED High' :None
+}
 
 colors=["springgreen",'orangered','gold','deepskyblue']
 labels=["STED Phasor","Phasor centroids","Pure species coordinates","Projection Line"]
@@ -217,7 +217,7 @@ for i,im in enumerate(images) :
         #print("Caclulation for an image of shape", image1.shape, "...")
         params_dict["foreground_threshold"] = seuil
 
-        params_dict["Nb_to_sum"] = image1.shape[2]
+        #params_dict["Nb_to_sum"] = image1.shape[2]
         #print("foreground_threshold=", params_dict["foreground_threshold"])
 
 
@@ -327,7 +327,7 @@ for i,im in enumerate(images) :
 
         #counts,bins,barsx=ax_hist_x.hist(g, bins=250, color='springgreen', density=True, histtype='step')
         #counts,bins,barsy=ax_hist_y.hist(s, bins=250, orientation='horizontal', color='springgreen', density=True, histtype='step')
-        mixphasor = ax4.scatter(g, s, c=t2[1,:],cmap=phasorcolor, s=2,rasterized=True)
+        mixphasor = ax4.scatter(g, s, c=t2[1,:],cmap=phasorcolor, s=1,rasterized=True)
         #p3scat=ax4.scatter([CoM_x[0],CoM_x[1]],[CoM_y[0],CoM_y[1]],s=50,c='orangered')
         p3minscat=ax4.scatter(projectionp3min[0],projectionp3min[1],s=50,c='orangered')
         p3maxscat=ax4.scatter(projectionp3max[0],projectionp3max[1],s=50,c='orangered')

@@ -49,9 +49,12 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 # -----------------------------------------------------------
 
 # Select the folders containing the control images and the mixed images. Open a dialog box to select the folders.
-f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
-f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
-f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
+#f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
+#f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
+#f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
+f1="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\alphaTubulin_Alexa647\\"
+f2="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\rabBassoon STAR635P\\"
+f3="E:\\Zenodo\\FarRedDyes_DualLabel\\FixedCells\\Tubulin_Alexa647_Bassoon_STAR635P\\"
 filenamescontrol = [f1, f2]
 filenamemixed=f3
 
@@ -64,16 +67,16 @@ colors=['magenta',  'c' ,'springgreen']
 
 # Which channels to use (keys in the msr files, channel numbers in the tiff files)
 
-#keys=[1,1,1] # For Tiff files
+keys=[1,1,1] # For Tiff files
 
 #keys=['STED640 {10}', 'STED640 {10}', 'STED640 {10}']
 #keys = ['STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
-keys = ['STED 561 {11}', 'STED 561 {11}','STED 561 {11}']
+#keys = ['STED 561 {11}', 'STED 561 {11}','STED 561 {11}']
 
 
 # List of STED depletion powers to analyze and the ID of the images to use as controls.
-powers=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
-#powers=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
+#powers=[[10,[0,0]],[20,[0,0]],[30,[0,0]],[40,[0,0]]]
+powers=[[5,[0,0]],[10,[0,0]],[15,[0,0]],[20,[0,0]]]
 
 # Aske the user to input the output folder name. Create the output folder on the Desktop.
 savefolder=str(input("Name of Output folder: "))

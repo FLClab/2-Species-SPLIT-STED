@@ -80,9 +80,12 @@ if None in [f1,f2,f3,savefolder]:
 
 
     # Select the folders containing the control images and the mixed images
-    f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
-    f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
-    f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
+    #f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
+    #f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
+    #f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
+    f1="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\alphaTubulin_Alexa647\\"
+    f2="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\rabBassoon STAR635P\\"
+    f3="E:\\Zenodo\\FarRedDyes_DualLabel\\FixedCells\\Tubulin_Alexa647_Bassoon_STAR635P\\"
 
     savefolder=str(input("Name of Output folder: "))
 
@@ -94,7 +97,7 @@ if None in [f1,f2,f3,savefolder]:
     #numimlist=[6,6,1,4,5,5,3,1]
     #numimlist=[1,1,5,4,17,17,7,0] # PSD-Bassoon Cy5
     #numimlist=[0,0,1,9,22,22,7,0] # Spectrin Bassoon Cy5
-    #numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
+    numimlist=[15,15,0,5,22,22,7,0] #Tubulin Bassoon Cy5
     #numimlist=[7,7,1,0,0,0,1,19] # PSD Bassoon Cy3
     #numimlist = [1,1,0,8,8,8,9,7] #Actin Bassoon CY3
     #numimlist=[18,18,19,2,19,19,0,18] # Spectrin Bassoon Cy3
@@ -110,7 +113,7 @@ labels=["Confocal","STED 10%","STED 20%","STED 30%","Confocal","STED 10%","STED 
 
 filenamescontrol = [f1,f1,f1,f1, f2,f2,f2,f2]
 filenamemixed=f3
-keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
+#keys = [ 'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}',  'Conf_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}', 'STED_635P {2}']
 #keys = ['Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','Conf_ 594 {2}', 'STED_594 {2}', 'STED_594 {2}', 'STED_594 {2}','STED_594 {2}']
 #keys = ['Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'Confocal_561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}', 'STED 561 {11}']
 keys=[0,1,1,1,0,1,1,1,1]

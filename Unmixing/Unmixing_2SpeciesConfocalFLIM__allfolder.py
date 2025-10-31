@@ -54,9 +54,12 @@ matplotlib.rcParams['axes.linewidth'] = 0.8
 # -----------------------------------------------------------
 
 # Select the folders containing the control images and the mixed images. Open a dialog box to select the folders.
-f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
-f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
-f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
+#f1=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the first fluorophore")
+#f2=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the control images for the second fluorophore")
+#f3=easygui.diropenbox(default=os.path.expanduser("~Desktop"), title="Select folder containing the mixed images (the mixture of the two fluorophores)")
+f2="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\alphaTubulin_Alexa647\\"
+f1="E:\\Zenodo\\FarRedDyes_SingleLabel\\FixedCells\\rabBassoon STAR635P\\"
+f3="E:\\Zenodo\\FarRedDyes_DualLabel\\FixedCells\\Tubulin_Alexa647_Bassoon_STAR635P\\"
 filenamescontrol = [f1, f2]
 filenamemixed=f3
 
