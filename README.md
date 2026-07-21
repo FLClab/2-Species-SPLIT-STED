@@ -3,7 +3,7 @@
 All the codes used to produce figures and analyze data for:  
 _Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED._
  
- A preprint version of the paper is available <a href="https://doi.org/10.1101/2025.07.17.661952">here</a>.
+ The paper is available is available <a href="https://doi.org/10.1101/2025.07.17.661952">here</a> and preprint version of the paper is available <a href="https://doi.org/10.1101/2025.07.17.661952">here</a>.
 
 The Confocal- and STED-FLIM images of neuronal proteins dataset is available to downlad from the [Zenodo dataset](https://doi.org/10.5281/zenodo.15438494)
 
@@ -128,21 +128,23 @@ This can be replaced by an explicit statement of an integer to use as the index.
 
 <a id="citation"></a>
 ## Citation
-If you use any material from this repository please cite the following preprint:
-> Deschênes, A. et al. Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED. bioRxiv 2025.07.17.661952 (2025) doi:10.1101/2025.07.17.661952.
-
+If you use any material from this repository please cite the following paper:
+> Deschênes, A. et al. Enhancing STED Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species SPLIT-STED. Methods in Microscopy, vol. 3, no. 1, 2026, pp. 27-41. https://doi.org/10.1515/mim-2025-0026
 ```
-@article{deschenes2025,
-  title = {Enhancing {{STED Microscopy}} via {{Fluorescence Lifetime Unmixing}} and {{Filtering}} in {{Two-Species SPLIT-STED}}},
-  author = {Desch{\^e}nes, Andr{\'e}anne and Ollier, Antoine and Lafontaine, Marie and {Michaud-Gagnon}, Albert and Santiague, Jeffrey-Gabriel Steavan and Bilodeau, Anthony and Gagn{\'e}, Christian and {De Koninck}, Paul and {Lavoie-Cardinal}, Flavie},
-  year = {2025},
-  month = jul,
-  pages = {2025.07.17.661952},
-  issn = {2692-8205},
-  doi = {10.1101/2025.07.17.661952},
-  urldate = {2025-07-18},
-  chapter = {New Results},
-  copyright = {{\copyright} 2025, Posted by Cold Spring Harbor Laboratory. This pre-print is available under a Creative Commons License (Attribution-NonCommercial-NoDerivs 4.0 International), CC BY-NC-ND 4.0, as described at http://creativecommons.org/licenses/by-nc-nd/4.0/},
+@article{deschenes2026,
+  title = {Enhancing {{STED}} Microscopy via Fluorescence Lifetime Unmixing and Filtering in Two-Species {{SPLIT-STED}}},
+  author = {Desch{\^e}nes, Andr{\'e}anne and Ollier, Antoine and Lafontaine, Marie and {Michaud-Gagnon}, Albert and Santiague, Jeffrey-Gabriel Steavan and Bilodeau, Anthony and Gagn{\'e}, Christian and Koninck, Paul De and {Lavoie-Cardinal}, Flavie},
+  year = 2026,
+  month = apr,
+  journal = {Methods in Microscopy},
+  volume = {3},
+  number = {1},
+  pages = {27--41},
+  publisher = {De Gruyter},
+  issn = {2942-3899},
+  doi = {10.1515/mim-2025-0026},
+  copyright = {De Gruyter expressly reserves the right to use all content for commercial text and data mining within the meaning of Section 44b of the German Copyright Act.},
   langid = {english}
 }
+
 ```
